@@ -1,8 +1,7 @@
-2003-04-17 James Turner <james@worldforge.org>
-	- Add ProjectBuilder files for the stable branch. Incldues a
-	  target to build the 'ping' test utility, though it doesn't
-	  seem to work quite as expected.
-
+ 2003-04-17 James Turner <james@worldforge.org>
+    - Add ProjectBuilder files for the stable branch. Incldues a
+      target to build the 'ping' test utility, though it doesn't
+      seem to work quite as expected.
  2003-01-31 Al Riddoch <alriddoch@zepler.org>,
     - Move sources into skstream subdir for portability,
       and fix up includes.
