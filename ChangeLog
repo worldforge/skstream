@@ -1,4 +1,7 @@
  2003-09-26 Al Riddoch <alriddoch@zepler.org>
+    - Write elaborate tests to pick up socket calls when building for windows.
+    - ping/ping.cpp: Remove unused variable.
+ 2003-09-26 Al Riddoch <alriddoch@zepler.org>
     - Write some tests to pick up the socket and name resolver libs on
       System V.
     - Clean up handling of libs required to get socket calls in general.

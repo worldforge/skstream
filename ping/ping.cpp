@@ -105,8 +105,6 @@ void ping(const std::string& host) {
 
   ping_socket.setTarget(host,FreeSockets::echo);
 
-  unsigned nRet;
-
   ECHO_REPLY reply;
   for(unsigned i=0; i < Ping_Count; i++) {
     send_request(ping_socket,host);

@@ -6,7 +6,7 @@ dnl Initialise automake
 
 SKSTREAM_MAJOR=0
 SKSTREAM_MINOR=2
-SKSTREAM_MICRO=98
+SKSTREAM_MICRO=99
 SKSTREAM_VERSION=$SKSTREAM_MAJOR.$SKSTREAM_MINOR.$SKSTREAM_MICRO
 
 AC_SUBST(SKSTREAM_VERSION)
@@ -191,14 +191,14 @@ AC_LANG_SAVE
 AC_LANG_CPLUSPLUS
 AC_CACHE_VAL(ac_cv_socket_type,
 [
-    AC_TRY_COMPILE([#include <winsock2.h>],
+    AC_TRY_COMPILE([#include <ws2tcpip.h>],
     [
         SOCKET foo;
     ],
     [
         ac_cv_socket_type=SOCKET
         SKSTREAM_SOCKET_TYPE=$ac_cv_socket_type
-        SKSTREAM_SOCKET_HEADER="#include <winsock2.h>"
+        SKSTREAM_SOCKET_HEADER="#include <ws2tcpip.h>"
     ],
     [
         ac_cv_socket_type=int
@@ -363,7 +363,7 @@ AC_TRY_COMPILE([#include <sys/types.h>
     AC_DEFINE(HAVE_IPV6, 1, true if we have sockaddr_in6 and AF_INET6)
 ],
 [
-    AC_TRY_COMPILE([#include <winsock2.h>],
+    AC_TRY_COMPILE([#include <ws2tcpip.h>],
     [
         sockaddr_in6 sin6;
         sin6.sin6_family = AF_INET6;
@@ -395,7 +395,7 @@ AC_TRY_COMPILE([#include <sys/types.h>
     AC_DEFINE(HAVE_IN_ADDR_T, 1, true if we have in_addr_t)
 ],
 [
-    AC_TRY_COMPILE([#include <winsock2.h>],
+    AC_TRY_COMPILE([#include <ws2tcpip.h>],
     [
         in_addr_t ia;
     ],
@@ -416,13 +416,28 @@ AC_LANG_SAVE
 AC_LANG_CPLUSPLUS
 AC_CHECK_FUNC(gethostbyname,,
 [
-    AC_CHECK_LIB(nsl, gethostbyname,
-                     [
-                         LIBS="$LIBS -lnsl"
-                         SKSTREAM_EXTRA_LIBS="$SKSTREAM_EXTRA_LIBS -lnsl"
-                     ],
-                     AC_MSG_ERROR(Unable to find gethostbyname() socket call.)
-                )
+    AC_MSG_CHECKING([for gethostbyname in ws2tcpip.h])
+    AC_TRY_COMPILE(
+    [
+        #include <ws2tcpip.h>
+    ],
+    [
+        ::gethostbyname("foo");
+    ],
+    [
+        AC_MSG_RESULT(yes)
+    ],
+    [
+        AC_MSG_RESULT(no)
+        AC_CHECK_LIB(nsl, gethostbyname,
+        [
+            LIBS="$LIBS -lnsl"
+            SKSTREAM_EXTRA_LIBS="$SKSTREAM_EXTRA_LIBS -lnsl"
+        ],
+        [
+            AC_MSG_ERROR(Unable to find gethostbyname() socket call.)
+        ])
+    ])
 ])
 
 AC_LANG_RESTORE
@@ -433,13 +448,28 @@ AC_LANG_SAVE
 AC_LANG_CPLUSPLUS
 AC_CHECK_FUNC(connect,,
 [
-    AC_CHECK_LIB(socket, connect,
-                     [
-                         LIBS="$LIBS -lsocket"
-                         SKSTREAM_EXTRA_LIBS="$SKSTREAM_EXTRA_LIBS -lsocket"
-                     ],
-                     AC_MSG_ERROR(Unable to find connect() socket call.)
-                 )
+    AC_MSG_CHECKING([for connect in ws2tcpip.h])
+    AC_TRY_COMPILE(
+    [
+        #include <ws2tcpip.h>
+    ],
+    [
+        ::connect(0, 0, 0);
+    ],
+    [
+        AC_MSG_RESULT(yes)
+    ],
+    [
+        AC_MSG_RESULT(no)
+        AC_CHECK_LIB(socket, connect,
+        [
+            LIBS="$LIBS -lsocket"
+            SKSTREAM_EXTRA_LIBS="$SKSTREAM_EXTRA_LIBS -lsocket"
+        ],
+        [
+            AC_MSG_ERROR(Unable to find connect() socket call.)
+        ])
+    ])
 ])
 
 AC_LANG_RESTORE
@@ -449,7 +479,7 @@ dnl Test for closesocket
 AC_MSG_CHECKING([for closesocket])
 AC_LANG_SAVE
 AC_LANG_CPLUSPLUS
-AC_TRY_COMPILE([#include <winsock2.h>],
+AC_TRY_COMPILE([#include <ws2tcpip.h>],
 [
     closesocket(0);
 ],
@@ -463,11 +493,39 @@ AC_TRY_COMPILE([#include <winsock2.h>],
 
 AC_LANG_RESTORE
 
+dnl Test for getaddrinfo
+
+AC_LANG_SAVE
+AC_LANG_CPLUSPLUS
+AC_CHECK_FUNC(getaddrinfo,
+[
+    AC_DEFINE(HAVE_GETADDRINFO, 1, "Define to 1 if you have the `getaddrinfo' function.")
+],
+[
+    AC_MSG_CHECKING([for getaddrinfo in ws2tcpip.h])
+    AC_TRY_COMPILE(
+    [
+        #include <ws2tcpip.h>
+    ],
+    [
+        ::getaddrinfo(0, 0, 0, 0);
+    ],
+    [
+        AC_MSG_RESULT(yes)
+        AC_DEFINE(HAVE_GETADDRINFO, 1, "Define to 1 if you have the `getaddrinfo' function.")
+    ],
+    [
+        AC_MSG_RESULT(no)
+    ])
+])
+
+AC_LANG_RESTORE
+
 dnl Test for C library functions
 
 AC_LANG_SAVE
 AC_LANG_CPLUSPLUS
-AC_CHECK_FUNCS([getaddrinfo inet_aton])
+AC_CHECK_FUNCS([inet_aton])
 
 AC_LANG_RESTORE
 
