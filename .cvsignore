@@ -22,5 +22,6 @@ skstream-config
 skstream.lo
 skstream.spec
 stamp-h
+stamp-h[0-9]*
 stamp-h.in
 depcomp
