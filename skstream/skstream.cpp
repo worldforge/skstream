@@ -23,7 +23,14 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.13  2002-07-16 21:10:06  malcolm
+ * Revision 1.14  2002-07-22 19:33:48  rsteinke
+ *     - changed sizeof(sockaddr) to sizeof(sockaddr_in) in
+ *       several locations, so that we pass the correct size
+ *       of in_peer and out_peer in socketbuf
+ *     - reordered initializers in socketbuf constructors
+ *       to match their declaration order in the class
+ *
+ * Revision 1.13  2002/07/16 21:10:06  malcolm
  * Had to add another tiny tweak for win32 nonblocking stuff.  ioctlsocket()
  * explicitly requires a pointer to an unsigned long, not just a 0 (NULL),
  * for the third argument, in windows.  Sheesh.
@@ -164,7 +171,7 @@ using namespace std;
 /////////////////////////////////////////////////////////////////////////////
 // Constructor
 socketbuf::socketbuf(SOCKET_TYPE sock, unsigned insize, unsigned outsize)
-    : _socket(sock), streambuf(), Timeout(false) {
+    : streambuf(), _socket(sock), Timeout(false) {
   _buffer = NULL;
   // allocate 16k buffer each for input and output
   const int bufsize = insize+outsize;
@@ -178,14 +185,14 @@ socketbuf::socketbuf(SOCKET_TYPE sock, unsigned insize, unsigned outsize)
   _timeout.tv_sec  = 0;
   _timeout.tv_usec = 0;
 
-  int size = sizeof(sockaddr);
+  int size = sizeof(sockaddr_in);
   ::getpeername(sock,(sockaddr*)&out_peer,(SOCKLEN*)&size);
   in_peer = out_peer;
 }
 
 // Constructor
 socketbuf::socketbuf(SOCKET_TYPE sock, char* buf, int length)
-    : _socket(sock),streambuf(), Timeout(false)
+    : streambuf(), _socket(sock), Timeout(false)
 {
   _buffer = NULL;
   if(this != setbuf(buf,length)) {
@@ -194,7 +201,7 @@ socketbuf::socketbuf(SOCKET_TYPE sock, char* buf, int length)
   _timeout.tv_sec  = 0;
   _timeout.tv_usec = 0;
 
-  int size = sizeof(sockaddr);
+  int size = sizeof(sockaddr_in);
   getpeername(sock,(sockaddr*)&out_peer,(SOCKLEN*)&size);
   in_peer = out_peer;
 }
@@ -258,7 +265,7 @@ int socketbuf::overflow(int nCh) { // traits::eof()
   #endif
 
   // send pending data or return EOF on error
-  int insize = sizeof(sockaddr);
+  int insize = sizeof(sockaddr_in);
   size=sendto(_socket, pbase(),pptr()-pbase(),0,(sockaddr*)&out_peer,insize);
 
   if(size < 0) {
@@ -317,7 +324,7 @@ int socketbuf::underflow() {
   #endif
 
   // receive data or return EOF on error
-  int insize = sizeof(sockaddr);
+  int insize = sizeof(sockaddr_in);
   size = ::recvfrom(_socket, eback(), egptr()-eback(), 0,
                     (sockaddr*)&in_peer,(SOCKLEN*)&insize);
 

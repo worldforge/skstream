@@ -1,3 +1,9 @@
+ 07/22/2002 Ron Steinke <rsteinke@w-link.net>,
+    - changed sizeof(sockaddr) to sizeof(sockaddr_in) in
+      several locations, so that we pass the correct size
+      of in_peer and out_peer in socketbuf
+    - reordered initializers in socketbuf constructors
+      to match their declaration order in the class
  07/21/2002 Al Riddoch <alriddoch@zepler.org>,
     - configure.in: Added --enable-debug option for debug build,
       increment version and interface version due to changes, add
