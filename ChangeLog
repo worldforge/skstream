@@ -1,3 +1,5 @@
+ 2003-11-15 Al Riddoch <alriddoch@zepler.org>,
+    - Fix license typo in the rpm spec.
  2003-06-23 Al Riddoch <alriddoch@zepler.org>,
     - Tweak Makefile.ams to make distcheck work.
     - test/basicskstreamtest.h, test/childskstreamtest.h, test/skservertest.h,
