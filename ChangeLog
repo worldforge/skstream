@@ -1,3 +1,5 @@
+ 2003-07-24 Al Riddoch <alriddoch@zepler.org>
+    - Add a more complex test for closesocket for mingw32.
  2003-07-23 Al Riddoch <alriddoch@zepler.org>
     - skstream/skstream.h: Fix header for windows build.
  2003-07-23 James Turner <james@worldforge.org>

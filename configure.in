@@ -353,12 +353,30 @@ AC_TRY_COMPILE([#include <sys/types.h>
     ])
 ])
 
+dnl Test for closesocket
+
+AC_MSG_CHECKING([for closesocket])
+AC_LANG_SAVE
+AC_LANG_CPLUSPLUS
+AC_TRY_COMPILE([#include <winsock.h>],
+[
+    closesocket(0);
+],
+[
+    AC_DEFINE(HAVE_CLOSESOCKET, 1, "Define to 1 if you have the `closesocket' function.")
+    AC_MSG_RESULT(yes)
+],
+[
+    AC_MSG_RESULT(no)
+])
+
+AC_LANG_RESTORE
 
 dnl Test for C library functions
 
 AC_LANG_SAVE
 AC_LANG_CPLUSPLUS
-AC_CHECK_FUNCS([getaddrinfo inet_aton closesocket])
+AC_CHECK_FUNCS([getaddrinfo inet_aton])
 
 AC_LANG_RESTORE
 
