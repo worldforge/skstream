@@ -23,7 +23,11 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.14  2002-07-22 19:33:48  rsteinke
+ * Revision 1.15  2002-10-14 05:05:45  malcolm
+ * Added a Sleep(0) call during check for getsockopt() that appears to be needed
+ * to circumvent a bug during nonblocking connect.  See MS KB Q165989.
+ *
+ * Revision 1.14  2002/07/22 19:33:48  rsteinke
  *     - changed sizeof(sockaddr) to sizeof(sockaddr_in) in
  *       several locations, so that we pass the correct size
  *       of in_peer and out_peer in socketbuf
@@ -561,7 +565,7 @@ void tcp_socket_stream::close()
 #ifndef _WIN32
     ::close(_connecting_socket);
 #else
-		::closesocket(_connecting_socket);
+    ::closesocket(_connecting_socket);
 #endif
     _connecting_socket = INVALID_SOCKET;
   }
@@ -597,6 +601,7 @@ bool tcp_socket_stream::is_ready(unsigned int milliseconds)
 #ifndef _WIN32
   getsockopt(_socket, SOL_SOCKET, SO_ERROR, &errnum, &errsize);
 #else
+  Sleep(0);
   getsockopt(_socket, SOL_SOCKET, SO_ERROR, (LPSTR)&errnum, &errsize); 
 #endif
 
@@ -607,7 +612,7 @@ bool tcp_socket_stream::is_ready(unsigned int milliseconds)
 #ifndef _WIN32
     ::close(_socket);
 #else
-		::closesocket(_socket);
+    ::closesocket(_socket);
 #endif
     return true;
   }
