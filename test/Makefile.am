@@ -6,6 +6,8 @@ else
 TESTPROGS = 
 endif
 
+TESTS = $(TESTPROGS)
+
 check_PROGRAMS = $(TESTPROGS)
 
 skstreamtestrunner_SOURCES = skstreamtestrunner.cpp \

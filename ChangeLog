@@ -1,4 +1,10 @@
  2003-09-27 Al Riddoch <alriddoch@zepler.org>
+    - test/childskstreamtest.h: Get rid of some of the java-isms, and
+      handle some failures a little more cleanly. Fix the udp test.
+    - test/skstreamtestrunner.cpp: Ensure that the tests exit status
+      reflects whether it passes or fails.
+    - Fix Makefile.am so tests are actually run.
+ 2003-09-27 Al Riddoch <alriddoch@zepler.org>
     - skstream/skstreamconfig.h.windows: Update headers and defines
       to build latest code on MSVC
  2003-09-26 Al Riddoch <alriddoch@zepler.org>

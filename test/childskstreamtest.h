@@ -22,7 +22,15 @@
 //  Created: 2002-02-23 by Dan Tomalesky
 //
 // $Log$
-// Revision 1.4  2003-05-06 21:53:11  alriddoch
+// Revision 1.5  2003-09-27 21:15:03  alriddoch
+//  2003-09-27 Al Riddoch <alriddoch@zepler.org>
+//     - test/childskstreamtest.h: Get rid of some of the java-isms, and
+//       handle some failures a little more cleanly. Fix the udp test.
+//     - test/skstreamtestrunner.cpp: Ensure that the tests exit status
+//       reflects whether it passes or fails.
+//     - Fix Makefile.am so tests are actually run.
+//
+// Revision 1.4  2003/05/06 21:53:11  alriddoch
 //  2003-05-06 Al Riddoch <alriddoch@zepler.org>
 //     - skstream/skstream.h, skstream/skstream.cpp, skstream_unix.h:
 //       Re-work basic_socket_stream so it can have either stream or datagram
@@ -101,7 +109,7 @@ class tcpskstreamtest : public CppUnit::TestCase
 
     private: 
         tcp_socket_stream *skstream;
-        std::string *hostname;
+        std::string hostname;
         int port;
 
     public:
@@ -115,18 +123,28 @@ class tcpskstreamtest : public CppUnit::TestCase
 
         void testConstructor_2()
         {
-            tcp_socket_stream *sks = new tcp_socket_stream(*hostname, port);
+            tcp_socket_stream *sks = new tcp_socket_stream(hostname, port);
 
             CPPUNIT_ASSERT(sks);
 
-            CPPUNIT_ASSERT(sks->is_open());
-
+            if(!sks->is_open())
+            {
+                if(sks->getLastError() == ECONNREFUSED)
+                {
+                    CPPUNIT_ASSERT_MESSAGE("Check that echo service is running on local machine", sks->is_open());
+                }
+                else
+                {
+                    CPPUNIT_ASSERT(sks->is_open());
+                }
+            }
+                    
             delete sks;
         }
 
         void testOpen()
         {
-            skstream->open(*hostname, port);
+            skstream->open(hostname, port);
             
             if(!skstream->is_open())
             {
@@ -142,16 +160,16 @@ class tcpskstreamtest : public CppUnit::TestCase
                     
         }
 
-	void testOpenNonblock()
-	{
-	    skstream->open(*hostname, port, true);
+        void testOpenNonblock()
+        {
+            skstream->open(hostname, port, true);
 
-	    int waitcount = 0;
-	    while(!skstream->isReady()) // wait
-		++waitcount;
+            int waitcount = 0;
+            while(!skstream->isReady()) // wait
+                ++waitcount;
 
-	    // FIXME print waitcount somehow, to verify we're not connecting
-	    // immediately
+            // FIXME print waitcount somehow, to verify we're not connecting
+            // immediately
          
             if(!skstream->is_open())
             {
@@ -165,7 +183,7 @@ class tcpskstreamtest : public CppUnit::TestCase
                 }
             }
    
-	}
+        }
 
         void setUp()
         {
@@ -173,7 +191,7 @@ class tcpskstreamtest : public CppUnit::TestCase
             
             //echo service must be running (check inetd settings or if you
             //are a winders user, you have to install it)
-            hostname = new std::string("127.0.0.1");
+            hostname = "127.0.0.1";
                 //new std::string("localhost");
             port = 7;
         }
@@ -181,7 +199,6 @@ class tcpskstreamtest : public CppUnit::TestCase
         void tearDown()
         {
             delete skstream;
-            delete hostname;
             port = 0;
         }
 
@@ -203,7 +220,7 @@ class udpskstreamtest : public CppUnit::TestCase
             udp_socket_stream skstream;
             CPPUNIT_ASSERT(skstream);
 
-            CPPUNIT_ASSERT(skstream.is_open());
+            CPPUNIT_ASSERT(!skstream.is_open());
         }
 
         void setUp()

@@ -22,7 +22,15 @@
 //  Created: 2000-10-03 by Bryce
 //
 // $Log$
-// Revision 1.5  2002-02-26 20:33:55  grimicus
+// Revision 1.6  2003-09-27 21:15:03  alriddoch
+//  2003-09-27 Al Riddoch <alriddoch@zepler.org>
+//     - test/childskstreamtest.h: Get rid of some of the java-isms, and
+//       handle some failures a little more cleanly. Fix the udp test.
+//     - test/skstreamtestrunner.cpp: Ensure that the tests exit status
+//       reflects whether it passes or fails.
+//     - Fix Makefile.am so tests are actually run.
+//
+// Revision 1.5  2002/02/26 20:33:55  grimicus
 // 02/26/2002 Dan Tomalesky <grim@xynesis.com>
 //     * Added test cases for skserver and friends
 //
@@ -142,6 +150,9 @@ int main(int argc, char **argv)
 
     runner.addTest(tp);
 
-    runner.run();
-    return 0;
+    if (runner.run()) {
+        return 0;
+    } else {
+        return 1;
+    }
 }
