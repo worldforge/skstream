@@ -1,3 +1,5 @@
+ 2002-06-10 Al Riddoch <alriddoch@zepler.org>
+    -Add generated rpm spec and sort out interface versioning. Install docs.
  05/27/2002 Michael Koch <konqueror@gmx.de>
     -Add support for FreeBSD.
  05/20/2002 Ron Steinke <rsteinke@w-link.net>,

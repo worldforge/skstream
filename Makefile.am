@@ -1,4 +1,5 @@
 lib_LTLIBRARIES = libskstream.la
+libskstream_la_LDFLAGS = -version-info @SKSTREAM_VERSION_INFO@
 
 libskstream_la_SOURCES = skstream.cpp skserver.cpp
 
@@ -27,3 +28,10 @@ VisualC.zip:
 	@SK_ZIP@ -r VisualC.zip VisualC/ -x '*CVS/*'
 
 SUBDIRS = . test
+
+install-data-local:
+	mkdir -p $(DESTDIR)$(datadir)/doc/skstream-$(VERSION)
+	$(INSTALL_DATA) README $(DESTDIR)$(datadir)/doc/skstream-$(VERSION)
+	$(INSTALL_DATA) COPYING $(DESTDIR)$(datadir)/doc/skstream-$(VERSION)
+	$(INSTALL_DATA) AUTHORS $(DESTDIR)$(datadir)/doc/skstream-$(VERSION)
+	$(INSTALL_DATA) NEWS $(DESTDIR)$(datadir)/doc/skstream-$(VERSION)

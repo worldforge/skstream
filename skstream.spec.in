@@ -1,0 +1,61 @@
+%define name       skstream
+%define version	   @SKSTREAM_VERSION@
+%define release    1
+%define serial     1
+%define prefix     /usr
+%define sysconfdir /etc
+
+Summary:           An iostream socket library.
+Name:              %{name} 
+Version:           %{version} 
+Release:           %{release}
+Copyright:         LGPL
+Group:             Amusements/Games
+Source:            %{name}-%{version}.tar.gz
+BuildRoot:         /var/tmp/%{name}-%{version}-buildroot
+Requires:          libstdc++
+BuildRequires:     libstdc++-devel >= 2.95.2
+
+%description
+@SKSTREAM_PACKAGE@ is an iostream based socket library in C++. It is based on the Freesockets library, and has been packaged for use by WorldForge.
+
+%package devel
+Summary:           An iostream socket library headers and static libs.
+Group:             Amusements/Games
+Requires:          %{name} = %{version}
+
+%description devel
+@SKSTREAM_PACKAGE@ is an iostream based socket library in C++. It is based on the Freesockets library, and has been packaged for use by WorldForge.
+
+%prep
+%setup
+
+%build
+CFLAGS=$RPM_OPT_FLAGS ./configure --prefix=%{prefix}
+make
+
+%install
+rm -rf $RPM_BUILD_ROOT
+make prefix=$RPM_BUILD_ROOT%{prefix} install
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+%files
+%defattr(-,root,root)
+%{prefix}/lib/libskstream.so.@SKSTREAM_CURRENT@
+%{prefix}/lib/libskstream.so.@SKSTREAM_VERSION_NO@
+%{prefix}/share/doc/%{name}-%{version}/README
+%{prefix}/share/doc/%{name}-%{version}/COPYING
+%{prefix}/share/doc/%{name}-%{version}/AUTHORS
+%{prefix}/share/doc/%{name}-%{version}/NEWS
+
+%files devel
+%defattr(-,root,root)
+%{prefix}/bin/skstream-config
+%{prefix}/include/skstream.h
+%{prefix}/include/skserver.h
+%{prefix}/include/sasproto.h
+%{prefix}/lib/libskstream.a
+%{prefix}/lib/libskstream.so
+%{prefix}/share/aclocal/skstream.m4
