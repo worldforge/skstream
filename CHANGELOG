@@ -47,6 +47,8 @@ Future Work:
 
 Change Log:
  02/19/2002 Dan Tomalesky <grim@xynesis.com>
+    -changed socketbuf(int, unsigned, unsigned) to have variable names
+     so it is easier to read in the declaration.
     -Added License header into skstream.h
     -Added cppunit test class and Auto* for supporting it. 
        (doesn't do anything yet)

@@ -22,7 +22,16 @@
 //  Created: 2000-10-03 by Bryce
 //
 // $Log$
-// Revision 1.1  2002-02-19 22:04:31  grimicus
+// Revision 1.2  2002-02-20 05:04:07  grimicus
+// 2002-02-19 Grimicus <grim@xynesis.com>
+//
+//     * updated socketbuf(SOCKET_TYPE, unsigned, unsigned) to have variable
+//       names in the declaration so it was a bit easier to look at. (and know
+//       what the heck they were suppose to be for)
+//
+//     * Added some tests in for socketbuf.  Not very good ones but its a start
+//
+// Revision 1.1  2002/02/19 22:04:31  grimicus
 // 2002-02-19 Grimicus <grim@xynesis.com>
 //
 //     * Added License header to skstream.h
@@ -34,10 +43,15 @@
 
 #include "socketbuftest.h"
 
+CPPUNIT_TEST_SUITE_REGISTRATION(socketbuftest);
+
 int main(int argc, char **argv)
 {
     CppUnit::TextTestRunner runner;
-    runner.addTest(socketbuftest::suite());
+    CppUnit::Test* tp =
+            CppUnit::TestFactoryRegistry::getRegistry().makeTest();
+
+    runner.addTest(tp);
 
     runner.run();
     return 0;

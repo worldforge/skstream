@@ -22,7 +22,16 @@
 //  Created: 2002-02-19 by Dan Tomalesky
 //
 // $Log$
-// Revision 1.1  2002-02-19 22:04:31  grimicus
+// Revision 1.2  2002-02-20 05:04:07  grimicus
+// 2002-02-19 Grimicus <grim@xynesis.com>
+//
+//     * updated socketbuf(SOCKET_TYPE, unsigned, unsigned) to have variable
+//       names in the declaration so it was a bit easier to look at. (and know
+//       what the heck they were suppose to be for)
+//
+//     * Added some tests in for socketbuf.  Not very good ones but its a start
+//
+// Revision 1.1  2002/02/19 22:04:31  grimicus
 // 2002-02-19 Grimicus <grim@xynesis.com>
 //
 //     * Added License header to skstream.h
@@ -33,44 +42,86 @@
 #ifndef SOCKETBUFTEST_H
 #define SOCKETBUFTEST_H
 
-#include <cppunit/TestCaller.h>
+#include "skstream.h"
+
 #include <cppunit/TestCase.h>
-#include <cppunit/TestSuite.h>
+#include <cppunit/extensions/HelperMacros.h>
 
-class socketbuftest;
-
-typedef CppUnit::TestCaller<socketbuftest> socketbuftestcaller;
-
-class socketbuftest : CppUnit::TestCase
+class socketbuftest : public CppUnit::TestCase
 {
-    private:
-        socketbuf *sbuf;
+    //some macros for building the suite() method
+    CPPUNIT_TEST_SUITE(socketbuftest);
+    CPPUNIT_TEST(testConstructor_1);
+    CPPUNIT_TEST(testConstructor_2);
+    CPPUNIT_TEST(testSetOutpeer);
+    CPPUNIT_TEST_SUITE_END();
+
+    private: 
+        socketbuf *socketBuffer;
+        std::string *hostname;
+        unsigned port;
 
     public:
         socketbuftest(std::string name) : TestCase(name) { }
         socketbuftest() { }
 
-        void testConstructor()
+        void testConstructor_1()
         {
-            CPPUNIT_ASSERT(true);
+            socketbuf *socketBuf;
+
+            for(int i = FreeSockets::proto_IP; i <= FreeSockets::proto_RAW; ++i)
+            {
+                socketBuf = new socketbuf(i);
+
+                CPPUNIT_ASSERT(socketBuf);
+
+                //always clean up...
+                delete socketBuf;
+            }
+
+
+            //what happens when you set the socketbuf(0, 0, 0);
+            socketBuf = new socketbuf(0, 0, 0);
+            CPPUNIT_ASSERT(socketBuf);
+            delete socketBuf;
         }
 
-        static CppUnit::TestSuite *suite()
+        void testConstructor_2()
         {
-            CppUnit::TestSuite *suite = new CppUnit::TestSuite();
-            suite->addTest(new socketbuftestcaller("testStuff", 
-                                                   &socketbuftest::testStuff));
-            return suite;
+            socketbuf *socketBuf;
+            char * ch; 
+
+            for(int i = FreeSockets::proto_IP; i <= FreeSockets::proto_RAW; ++i)
+            {
+                ch = new char [20];
+                int length = sizeof(ch);
+                socketBuf = new socketbuf(i, ch, length);
+
+                CPPUNIT_ASSERT_MESSAGE("testing i", socketBuf);
+
+                delete socketBuf;
+            }
+        }
+
+        void testSetOutpeer()
+        {
+            CPPUNIT_ASSERT(socketBuffer->setOutpeer(*hostname, port));
         }
 
         void setUp()
         {
-            sbuf = new socketbuf();
+            socketBuffer = new socketbuf(FreeSockets::proto_TCP);
+            hostname = new std::string("www.worldforge.org");
+            port = 80;
         }
 
         void tearDown()
         {
+            delete socketBuffer;
+            delete hostname;
+            port = 0;
         }
+
 };
 
 #endif

@@ -96,7 +96,7 @@ private:
 
 public:
   // Contructors
-  socketbuf(SOCKET_TYPE, unsigned=0x8000, unsigned=0x8000);
+  socketbuf(SOCKET_TYPE sock, unsigned insize=0x8000, unsigned outsize=0x8000);
   socketbuf(SOCKET_TYPE sock, char* buf, int length);
 
   virtual ~socketbuf();
