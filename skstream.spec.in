@@ -31,7 +31,7 @@ Requires:          %{name} = %{version}
 %setup
 
 %build
-CXXFLAGS=$RPM_OPT_FLAGS ./configure --prefix=%{prefix}
+CXXFLAGS=$RPM_OPT_FLAGS ./configure --enable-static --prefix=%{prefix}
 make
 
 %install
@@ -49,8 +49,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files devel
 %defattr(-,root,root)
-%{prefix}/bin/skstream-config
-%{prefix}/include/skstream
-%{prefix}/lib/libskstream.a
-%{prefix}/lib/libskstream.so
-%{prefix}/share/aclocal/skstream.m4
+%{prefix}/include/skstream-0.3/skstream
+%{prefix}/lib/libskstream-0.3.a
+%{prefix}/lib/libskstream-0.3.so
+%{prefix}/lib/pkgconfig/skstream-0.3.pc
