@@ -22,7 +22,12 @@
 //  Created: 2002-02-19 by Dan Tomalesky
 //
 // $Log$
-// Revision 1.4  2002-02-24 03:15:41  grimicus
+// Revision 1.5  2003-05-04 21:30:16  alriddoch
+//  2003-05-04 Al Riddoch <alriddoch@zepler.org>
+//     - Sort out nasty hard tabs from address checks.
+//     - Start work on updating the checks.
+//
+// Revision 1.4  2002/02/24 03:15:41  grimicus
 // 02/23/2002 Dan Tomalesky <grim@xynesis.com>
 //
 //     * Added in CVS logging variable so that changes show up in modified files
@@ -85,7 +90,7 @@
 #ifndef SOCKETBUFTEST_H
 #define SOCKETBUFTEST_H
 
-#include "skstream.h"
+#include <skstream/skstream.h>
 
 #include <cppunit/TestCase.h>
 #include <cppunit/extensions/HelperMacros.h>
@@ -96,13 +101,13 @@ class socketbuftest : public CppUnit::TestCase
     CPPUNIT_TEST_SUITE(socketbuftest);
     CPPUNIT_TEST(testConstructor_1);
     CPPUNIT_TEST(testConstructor_2);
-    CPPUNIT_TEST(testSetOutpeer);
+    CPPUNIT_TEST(testGetOutpeer);
     CPPUNIT_TEST(testGetInpeer);
     CPPUNIT_TEST(testSetSocket);
     CPPUNIT_TEST_SUITE_END();
 
     private: 
-        socketbuf *socketBuffer;
+        stream_socketbuf *socketBuffer;
         std::string *hostname;
         SOCKET_TYPE socket;
         unsigned port;
@@ -113,7 +118,7 @@ class socketbuftest : public CppUnit::TestCase
 
         void testConstructor_1()
         {
-            socketbuf *sb = new socketbuf(socket);
+            stream_socketbuf *sb = new stream_socketbuf(socket);
 
             CPPUNIT_ASSERT(sb);
 
@@ -125,28 +130,29 @@ class socketbuftest : public CppUnit::TestCase
             char * ch = new char [20];
             int length = sizeof(ch);
 
-            socketbuf * socketBuf = new socketbuf(socket, ch, length);
+            stream_socketbuf * socketBuf = new stream_socketbuf(socket, ch, length);
 
             CPPUNIT_ASSERT(socketBuf);
 
             delete socketBuf;
         }
 
-        void testSetOutpeer()
+        void testGetOutpeer()
         {
-            CPPUNIT_ASSERT(socketBuffer->setOutpeer(*hostname, port));
-            sockaddr_in sain = socketBuffer->getOutpeer();
+            sockaddr_storage sain = socketBuffer->getOutpeer();
+
+            //these tests are no longer useful
 
             //check the port was set
-            CPPUNIT_ASSERT(sain.sin_port);
+            // CPPUNIT_ASSERT(sain.sin_port);
 
             //check the address was set
-            CPPUNIT_ASSERT(sain.sin_addr.s_addr);
+            // CPPUNIT_ASSERT(sain.sin_addr.s_addr);
         }
 
         void testGetInpeer()
         {
-            sockaddr_in sain = socketBuffer->getInpeer();
+            sockaddr_storage sain = socketBuffer->getInpeer();
 
             //these tests don't do anything it seems. hopefully some better
             //ones will surface at some point.
@@ -161,7 +167,7 @@ class socketbuftest : public CppUnit::TestCase
 
         void testSetSocket()
         {
-            socketbuf socketBuf(INVALID_SOCKET);
+            stream_socketbuf socketBuf(INVALID_SOCKET);
 
             CPPUNIT_ASSERT(socketBuf.getSocket() == INVALID_SOCKET);
 
@@ -173,7 +179,7 @@ class socketbuftest : public CppUnit::TestCase
         void setUp()
         {
             socket = ::socket(AF_INET, SOCK_STREAM, FreeSockets::proto_TCP);
-            socketBuffer = new socketbuf(socket);
+            socketBuffer = new stream_socketbuf(socket);
             
             //echo service must be running (check inetd settings or if you
             //are a winders user, you have to install it)

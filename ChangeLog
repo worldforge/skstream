@@ -1,3 +1,6 @@
+ 2003-05-04 Al Riddoch <alriddoch@zepler.org>
+    - Sort out nasty hard tabs from address checks.
+    - Start work on updating the checks.
  2003-05-04 James Turner <james@worldforge.org>
     - Fix the Unix and IPv6 tests under OS-X (autoconf build), OS-X
       needs <sys/types.h> included before any other header for

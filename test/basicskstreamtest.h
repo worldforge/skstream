@@ -22,7 +22,12 @@
 //  Created: 2002-02-19 by Dan Tomalesky
 //
 // $Log$
-// Revision 1.5  2002-06-12 20:48:40  xmp
+// Revision 1.6  2003-05-04 21:30:16  alriddoch
+//  2003-05-04 Al Riddoch <alriddoch@zepler.org>
+//     - Sort out nasty hard tabs from address checks.
+//     - Start work on updating the checks.
+//
+// Revision 1.5  2002/06/12 20:48:40  xmp
 // The usual std namespace stuff.  IE this was made on gcc-2.95, and gcc-3.1 is stricter.
 //
 // Revision 1.4  2002/03/01 14:00:09  grimicus
@@ -113,7 +118,7 @@
 #ifndef BASICSKSTREAMTEST_H
 #define BASICSKSTREAMTEST_H
 
-#include "skstream.h"
+#include <skstream/skstream.h>
 
 #include <cppunit/TestCase.h>
 #include <cppunit/extensions/HelperMacros.h>
