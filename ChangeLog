@@ -1,3 +1,8 @@
+2004-01-14  Al Riddoch  <alriddoch@zepler.org>
+
+	* test/basicskstreamtest.h: Socket buffers are now automatically
+	  deleted by the socket streams which own them.
+
 2004-12-31  Al Riddoch  <alriddoch@zepler.org>
 
 	* skstream.spec.in: Update spec with License URL Package Vendor

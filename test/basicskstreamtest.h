@@ -22,7 +22,13 @@
 //  Created: 2002-02-19 by Dan Tomalesky
 //
 // $Log$
-// Revision 1.7  2003-05-06 21:53:11  alriddoch
+// Revision 1.8  2005-01-14 17:36:36  alriddoch
+// 2004-01-14  Al Riddoch  <alriddoch@zepler.org>
+//
+// 	* test/basicskstreamtest.h: Socket buffers are now automatically
+// 	  deleted by the socket streams which own them.
+//
+// Revision 1.7  2003/05/06 21:53:11  alriddoch
 //  2003-05-06 Al Riddoch <alriddoch@zepler.org>
 //     - skstream/skstream.h, skstream/skstream.cpp, skstream_unix.h:
 //       Re-work basic_socket_stream so it can have either stream or datagram
@@ -164,7 +170,6 @@ class basicskstreamtest : public CppUnit::TestCase
             CPPUNIT_ASSERT(sks);
 
             delete sks;
-            delete skb;
         }
 
         void testConstructor_2()
@@ -186,7 +191,6 @@ class basicskstreamtest : public CppUnit::TestCase
                 CPPUNIT_ASSERT(sks->getProtocol() == i);
 
                 delete sks;
-                delete skb;
             }
             
             //test with crumby settings...should this fail?
@@ -194,7 +198,6 @@ class basicskstreamtest : public CppUnit::TestCase
             sks = new basic_socket_stream(*skb, (unsigned)0);
             CPPUNIT_ASSERT(sks);
             delete sks;
-            delete skb;
         }
 
         void testConstructor_3()
@@ -207,8 +210,8 @@ class basicskstreamtest : public CppUnit::TestCase
             unsigned insize = 5, outsize = 6;
             SOCKET_TYPE sock = skstream->getSocket();
 
-            stream_socketbuf skb(sock, insize, outsize);
-            basic_socket_stream sks(skb);
+            stream_socketbuf * skb = new stream_socketbuf (sock, insize, outsize);
+            basic_socket_stream sks(*skb);
 
             CPPUNIT_ASSERT(sks);
 
