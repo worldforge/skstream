@@ -1,0 +1,99 @@
+/**************************************************************************
+ FreeSockets - Portable C++ classes for IP(sockets) applications. (v0.3)
+ Copyright (C) 2000-2001 Rafael Guterres Jeffman
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Library General Public
+    License as published by the Free Software Foundation; either
+    version 2 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Library General Public License for more details.
+
+    You should have received a copy of the GNU Library General Public
+    License along with this library; if not, write to the Free
+    Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+**************************************************************************/
+
+Current Version: 0.3
+
+REMAINING BUGS:
+  - Setting the size of the underlying buffer is not yet working.
+
+Supported and Tested plataforms:
+  Windows 95/98/2000
+  Linux
+  BeOS
+
+Compilers used for testing:
+  Borland C++Buider 3, 4 & 5. Borland C++ Free Compiler.
+  GCC 2.91 & 2.95 (Linux)
+  GCC BeOS
+
+Plataform Remarks:
+-BeOS
+  * Timeout control is unavaiable under BeOS due to its implementation of
+  sockets. BeOS support select() only when reading and not for writing or
+  exceptions. This will change when BONE is officially released.
+  * SOCK_RAW is not supported under BeOS.
+-Linux
+  * RAW Sockets can only be used under Linux when SUID is ROOT.
+
+Future Work:
+  - A multi-threaded TCP server class.
+
+Change Log:
+ 01/07/2002 Krystian G Bates
+	Removed the code in socketbuf::sync() that caused both input and output 
+	buffers to be emptied on `<< flush'
+ 01/09/2001 - RGJ
+    Added the function timeout(), which returns true if a timeout has occured.
+    It also clears the state bits of the stream so it can send/received after
+    a timeout is detected. If badbit is set, the stream still cannot send and/or
+    receive.
+ 12/28/2000 - RGJ
+    FreeSockets version 0.3 released under GNU LGPL License.
+ 11/27/2000 - RGJ
+    Changed constructors of nearly all classes.
+    Now the size of the buffers may be defined.
+    Added support for RAW sockets.
+ 11/24/2000 - RGJ
+    Added a namespace (FreeSockets) to hold:
+      - Enumeration IP_Services: define common IP ports used.
+      - Enumeration IP_Protocols: define some avaiable protocols.
+ 11/23/2000 - RGJ
+    Class hierarchy was redesigned.
+    Version 0.2 released.
+  9/20/2000 - RGJ
+    Added support for UDP server sockets .
+    Added a stream manipulator to set remote host.
+  9/15/2000 - RGJ
+    Added support for client UDP sockets.
+  8/24/2000 - RGJ
+    Added timeout control using select().
+  8/23/2000 - RGJ
+    Completed port to BSD Sockets(*NIX).
+  8/3/2000 - RGJ
+    Added support for server sockets.
+    Added class basic_protocol that can be used to create multithreaded
+    servers. FreeThreads(http://fly.to/rafasgj) are used to provide an
+    object oriented portable multithreading API.
+  7/30/2000 - RGJ
+    First release of FreeSockets(v 0.1).
+    Support for client sockets.
+    Only Windows plataform supported.
+
+Contact Information:
+  Feel free to send comments, suggestions or bug reports by e-mail to
+    Rafael Guterres Jeffman <rafasgj@exatas.unisinos.br>
+
+  I use only GCC under Linux, Windows and BeOS and Borland's Free C++
+  Compiler under Windows. Since, these are the only plataforms/compilers
+  I can help with.
+  I DO NOT(and certainly have no plans to) use Microsoft's Visual C++.
+  Have fun!
+  And visit GOBO, o Invariante at http://eden.cscience.org/~lode/gobo).
+

@@ -1,0 +1,157 @@
+dnl Initialise autoconf
+
+AC_INIT(skstream.cpp)
+
+dnl Initialise automake
+
+AM_INIT_AUTOMAKE("skstream", "0.2.1")
+AM_CONFIG_HEADER(config.h)
+
+dnl Test for GNU libtool
+
+AM_PROG_LIBTOOL
+
+dnl Test for C++ compiler
+
+AC_PROG_CXX
+
+dnl Test for socklen_t and define it to int if it's not there.
+dnl socklen_t should be used with functions like getpeername and recvfrom because
+dnl some platforms use int*'s and some use size_t*'s. Note that we can't simply
+dnl use AC_CHECK_TYPE because socklen_t isn't in the standard headers.
+AC_MSG_CHECKING(if socklen_t is defined)
+AC_TRY_COMPILE(
+   [#include <sys/socket.h>],
+   [socklen_t len = 42; return len;],
+   		[AC_MSG_RESULT(yes)],
+   		[AC_MSG_RESULT(no)
+    		AC_DEFINE(socklen_t, int, need to define this on BSD platforms)]) 
+
+
+dnl Test for ANSI standard language features
+
+dnl Test for C++ bool keyword
+
+AC_MSG_CHECKING([for C++ bool keyword])
+AC_LANG_SAVE
+AC_LANG_CPLUSPLUS
+AC_CACHE_VAL(ac_cv_feature_bool,
+[
+    AC_TRY_COMPILE(,
+    [
+        bool t = true, f = false;
+    ],
+    [
+        ac_cv_feature_bool=yes
+    ],
+    [
+        ac_cv_feature_bool=no
+    ])
+])
+
+if test "$ac_cv_feature_bool" = yes ; then
+    AC_MSG_RESULT(yes)
+else
+    AC_MSG_RESULT(no)
+fi
+
+AC_LANG_RESTORE
+
+dnl Test for C++ namespaces
+
+AC_MSG_CHECKING([for C++ namespaces])
+AC_LANG_SAVE
+AC_LANG_CPLUSPLUS
+AC_CACHE_VAL(ac_cv_feature_namespaces,
+[
+    AC_TRY_COMPILE(
+    [
+        namespace foo { int i; }
+        namespace bar { int i; }
+        namespace baz { int i; }
+
+        using namespace foo;
+        using bar::i;
+    ],
+    [
+        foo::i = 1;
+        bar::i = 2;
+        baz::i = 3;
+    ],
+    [
+        ac_cv_feature_namespaces=yes
+    ],
+    [
+        ac_cv_feature_namespaces=no
+    ])
+])
+
+if test "$ac_cv_feature_namespaces" = yes ; then
+    AC_MSG_RESULT(yes)
+else
+    AC_MSG_RESULT(no)
+fi
+
+AC_LANG_RESTORE
+
+dnl Test for C++ exception handling
+
+AC_MSG_CHECKING([for C++ exception handling])
+AC_LANG_SAVE
+AC_LANG_CPLUSPLUS
+AC_CACHE_VAL(ac_cv_feature_exceptions,
+[
+    AC_TRY_COMPILE(,
+    [
+			try
+			{
+			    throw 17;
+			}
+			catch (int i)
+			{
+			}
+			catch (...)
+			{
+			}
+		        ],
+    [
+        ac_cv_feature_exceptions=yes
+    ],
+    [
+        ac_cv_feature_exceptions=no
+    ])
+])
+
+if test "$ac_cv_feature_exceptions" = yes ; then
+    AC_MSG_RESULT(yes)
+else
+    AC_MSG_RESULT(no)
+fi
+
+AC_LANG_RESTORE
+
+dnl Test for C++ Standard Library
+
+AC_LANG_SAVE
+AC_LANG_CPLUSPLUS
+AC_CHECK_HEADERS(cstdio iostream string)
+
+AC_LANG_RESTORE
+
+SKSTREAM_LIBS="-lskstream"
+AC_SUBST(SKSTREAM_LIBS)
+
+SKSTREAM_CFLAGS=""
+AC_SUBST(SKSTREAM_CFLAGS)
+
+SYSTEM_LIBS=""
+AC_SUBST(SYSTEM_LIBS)
+
+AC_DEFINE(CONFIG_H_INCLUDED, 1, true if config.h was included)
+
+dnl Generate files
+
+AC_OUTPUT([
+	Makefile
+	skstream-config
+])
