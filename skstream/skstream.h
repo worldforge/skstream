@@ -23,7 +23,14 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.42  2003-09-26 22:26:44  alriddoch
+ * Revision 1.43  2003-09-28 00:53:54  alriddoch
+ *  2003-09-27 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skstream.h: Add accessors so address sizes in buffer class
+ *       are accessible from outside stream class.
+ *     - ping/ping.cpp: Re-work code for handling conversion of addresses
+ *       to presentation format for protocol independance.
+ *
+ * Revision 1.42  2003/09/26 22:26:44  alriddoch
  *  2003-09-26 Al Riddoch <alriddoch@zepler.org>
  *     - Add option to get streams remote details as reverse lookup, rather
  *       than just presentation form.
@@ -598,6 +605,14 @@ public:
 
   const sockaddr_storage & getInpeer() const { 
     return _sockbuf.getInpeer(); 
+  }
+
+  SOCKLEN getOutpeerSize() const {
+    return _sockbuf.getOutpeerSize();
+  }
+
+  SOCKLEN getInpeerSize() const {
+    return _sockbuf.getInpeerSize();
   }
 
   bool is_open() const { 

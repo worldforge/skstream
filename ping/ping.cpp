@@ -2,23 +2,25 @@
 #include "config.h"
 #endif // HAVE_CONFIG_H
 
-#include <cstdlib>
-#include <iostream>
-#include <string>
-#include <time.h>
-#include <arpa/inet.h>
-
-#include <map>
-#include <utility>
-#include <cstdio>
-
-#include <signal.h> // to trap Ctrl+C : SIGINT
-
-#include <skstream/skstream.h>
-
 #include "ping.h"
 
-// using namespace std;
+#include <iostream>
+#include <string>
+#include <map>
+#include <utility>
+
+#include <cstdio>
+
+#include <time.h>
+
+#ifndef _WIN32
+#include <fcntl.h>
+#include <sys/types.h>
+#include <netdb.h>
+#include <errno.h>
+#include <arpa/inet.h>
+#include <signal.h> // to trap Ctrl+C : SIGINT
+#endif // _WIN32
 
 //---------------------------------------------------------------------------
 // globals
@@ -144,26 +146,20 @@ void send_request(raw_socket_stream& sock, const std::string& host) {
       in_cksum((unsigned short*)&echoReq,sizeof(ECHO_REQUEST));
 
   const sockaddr_storage & sst = sock.getOutpeer();
-#ifndef HAVE_IPV6
+
+#ifndef HAVE_GETADDRINFO
+#warning Legacy resolver code
   std::cout << "Pinging "<<host<<"["<<::inet_ntoa(((sockaddr_in &)sst).sin_addr);
-#else // HAVE_IPV6
-  void * adr = 0;
-  if (sst.ss_family == AF_INET) {
-    adr = &((sockaddr_in&)sst).sin_addr;
-  } else if (sst.ss_family == AF_INET6) {
-    adr = &((sockaddr_in6&)sst).sin6_addr;
+#else // HAVE_GETADDRINFO
+  char hbuf[NI_MAXHOST];
+
+  if (::getnameinfo((const sockaddr*)&sst, sock.getOutpeerSize(),
+                    hbuf, sizeof(hbuf), 0, 0, NI_NUMERICHOST) == 0) {
+    std::cout << "Pinging " << host << "[" << hbuf;
+  } else {
+    std::cout << "Pinging [unknown";
   }
-  char buf[INET6_ADDRSTRLEN];
-  const char * address = 0;
-  if (adr != 0) {
-    address = ::inet_ntop(sst.ss_family, adr, buf, INET6_ADDRSTRLEN);
-  }
-  if (address == 0) {
-    perror("inet_ntop");
-    address = "unknown";
-  }
-  std::cout << "Pinging "<<host<<"["<<address;
-#endif // HAVE_IPV6
+#endif // HAVE_GETADDRINFO
   std::cout << "] with " << REQ_DATASIZE << " bytes of data." << std::endl;
 
   sock.setTimeout(3,0);
@@ -214,7 +210,21 @@ void print_statistics(const ECHO_REPLY& reply) {
   // again: portability vs. precision
   clock_t elapsed = clock() - reply.echoRequest.dwTime;
 
-  std::string replier(::inet_ntoa(reply.ipHdr.iaSrc));
+  std::string replier;
+#ifndef HAVE_GETADDRINFO
+#warning Legacy resolver code
+  replier = ::inet_ntoa(reply.ipHdr.iaSrc);
+#else // HAVE_GETADDRINFO
+  char hbuf[NI_MAXHOST];
+
+  if (::getnameinfo((const sockaddr*)&reply.ipHdr.iaSrc,
+                    sizeof(reply.ipHdr.iaSrc),
+                    hbuf, sizeof(hbuf), 0, 0, NI_NUMERICHOST) == 0) {
+    replier = hbuf;
+  } else {
+    replier = "[unknown]";
+  }
+#endif // HAVE_GETADDRINFO
 
   stat_type::iterator iter = statistics.find(replier);
   if(iter == statistics.end())

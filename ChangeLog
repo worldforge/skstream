@@ -1,4 +1,9 @@
  2003-09-27 Al Riddoch <alriddoch@zepler.org>
+    - skstream/skstream.h: Add accessors so address sizes in buffer class
+      are accessible from outside stream class.
+    - ping/ping.cpp: Re-work code for handling conversion of addresses
+      to presentation format for protocol independance.
+ 2003-09-27 Al Riddoch <alriddoch@zepler.org>
     - test/childskstreamtest.h: Get rid of some of the java-isms, and
       handle some failures a little more cleanly. Fix the udp test.
     - test/skstreamtestrunner.cpp: Ensure that the tests exit status
