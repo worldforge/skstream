@@ -23,7 +23,12 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.34  2003-09-24 01:05:46  alriddoch
+ * Revision 1.35  2003-09-24 14:47:06  alriddoch
+ *  2003-09-24 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skstream.cpp: Add check, and fallback definition for
+ *       in_addr_t.
+ *
+ * Revision 1.34  2003/09/24 01:05:46  alriddoch
  *  2003-09-24 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skstream.h, skstream/skstream.cpp: Re-write connecting
  *       code for IP datagram and stream sockets so they try each of the
@@ -323,6 +328,13 @@ static inline int closesocket(SOCKET_TYPE sock)
     return ::close(sock);
 }
 #endif // HAVE_CLOSESOCKET
+
+#ifndef HAVE_IN_ADDR_T
+// This may cause problems on L64 systems, if they don't have in_addr_t
+// but only windows does not have in_addr_t to my knowledge.
+// AJR 2003-09-24
+unsigned long in_addr_t;
+#endif // HAVE_IN_ADDR_T
 
 /////////////////////////////////////////////////////////////////////////////
 // class socketbuf implementation

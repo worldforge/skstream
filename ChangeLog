@@ -1,4 +1,7 @@
  2003-09-24 Al Riddoch <alriddoch@zepler.org>
+    - skstream/skstream.cpp: Add check, and fallback definition for
+      in_addr_t.
+ 2003-09-24 Al Riddoch <alriddoch@zepler.org>
     - skstream/skstream.h, skstream/skstream.cpp: Re-write connecting
       code for IP datagram and stream sockets so they try each of the
       results from getaddrinfo in turn. Needs work on non-blocking

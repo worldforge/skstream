@@ -340,7 +340,7 @@ AC_TRY_COMPILE([#include <sys/types.h>
     AC_DEFINE(HAVE_IPV6, 1, true if we have sockaddr_in6 and AF_INET6)
 ],
 [
-    AC_TRY_COMPILE([#include <windows.h>],
+    AC_TRY_COMPILE([#include <winsock2.h>],
     [
         sockaddr_in6 sin6;
         sin6.sin6_family = AF_INET6;
@@ -353,6 +353,39 @@ AC_TRY_COMPILE([#include <sys/types.h>
         AC_MSG_RESULT(no)
     ])
 ])
+
+AC_LANG_RESTORE
+
+dnl Test for in_addr_t
+
+AC_LANG_SAVE
+AC_LANG_CPLUSPLUS
+AC_MSG_CHECKING([for in_addr_t])
+AC_TRY_COMPILE([#include <sys/types.h>
+                #include <sys/socket.h>
+                #include <netinet/in.h>],
+[
+    in_addr_t ia;
+],
+[
+    AC_MSG_RESULT(yes)
+    AC_DEFINE(HAVE_IN_ADDR_T, 1, true if we have in_addr_t)
+],
+[
+    AC_TRY_COMPILE([#include <winsock2.h>],
+    [
+        in_addr_t ia;
+    ],
+    [
+        AC_MSG_RESULT(yes)
+        AC_DEFINE(HAVE_IPV6, 1, true if we have in_addr_t)
+    ],
+    [
+        AC_MSG_RESULT(no)
+    ])
+])
+
+AC_LANG_RESTORE
 
 dnl Test for closesocket
 
