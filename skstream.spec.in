@@ -12,26 +12,26 @@ Group: System Environment/Libraries
 Source: %{name}-%{version}.tar.gz
 Requires: libstdc++
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
-BuildRequires: libstdc++-devel >= 2.95.2
+BuildRequires: libstdc++-devel
 
 %description
-@SKSTREAM_PACKAGE@ is an iostream based socket library in C++. It is based on
+%{name} is an iostream based socket library in C++. It is based on
 the Freesockets library, and has been packaged for use by WorldForge.
 
 %package devel
 Summary: An iostream socket library headers and static libs.
 Group: Development/Libraries
-Requires: %{name} = %{version}
+Requires: %{name} = %{version} libstdc++-devel
 
 %description devel
-@SKSTREAM_PACKAGE@ is an iostream based socket library in C++. It is based on
+%{name} is an iostream based socket library in C++. It is based on
 the Freesockets library, and has been packaged for use by WorldForge.
 
 %prep
 %setup -q
 
 %build
-%configure --enable-static
+CXXFLAGS=$RPM_OPT_FLAGS %configure --enable-static
 make
 
 %install
