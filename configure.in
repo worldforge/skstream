@@ -192,7 +192,8 @@ AC_LANG_SAVE
 AC_LANG_CPLUSPLUS
 AC_CACHE_VAL(ac_cv_socklen_type,
 [
-    AC_TRY_COMPILE([#include <unistd.h>],
+    AC_TRY_COMPILE([#include <unistd.h>
+                    #include <sys/socket.h>],
     [
         socklen_t foo;
     ],

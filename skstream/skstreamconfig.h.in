@@ -24,9 +24,6 @@
 @SKSTREAM_SOCKET_HEADER@
 @SKSTREAM_TIMEVAL_HEADER@
 
-typedef @SKSTREAM_SOCKLEN_TYPE@ SOCKLEN;
-typedef @SKSTREAM_SOCKET_TYPE@ SOCKET_TYPE;
-
 #if @SKSTREAM_WINDOWS_HEADER_FLAG@
   // No windows headers required yet.
 #endif
@@ -44,6 +41,9 @@ typedef @SKSTREAM_SOCKET_TYPE@ SOCKET_TYPE;
   #include <net/netdb.h>
   #include <errno.h>
 #endif
+
+typedef @SKSTREAM_SOCKLEN_TYPE@ SOCKLEN;
+typedef @SKSTREAM_SOCKET_TYPE@ SOCKET_TYPE;
 
 #define SOCKET_BLOCK_ERROR @SKSTREAM_BLOCK_ERROR_VAL@
 

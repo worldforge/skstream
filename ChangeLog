@@ -1,3 +1,6 @@
+ 2003-08-17 Al Riddoch <alriddoch@zepler.org>
+    - Re-order contents of config header so it works on systems
+      which require more headers for socklen_t.
  2003-08-16 Al Riddoch <alriddoch@zepler.org>
     - Fix packaging of skserver_unix.h.
  2003-08-09 Al Riddoch <alriddoch@zepler.org>
