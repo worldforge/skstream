@@ -1,3 +1,5 @@
+ 2003-07-25 Al Riddoch <alriddoch@zepler.org>
+    - Don't build or run the unit tests if CppUnit is not found.
  2003-07-24 Al Riddoch <alriddoch@zepler.org>
     - Add a more complex test for closesocket for mingw32.
  2003-07-23 Al Riddoch <alriddoch@zepler.org>

@@ -1,6 +1,12 @@
 INCLUDES = -I$(top_srcdir)
 
-check_PROGRAMS = skstreamtestrunner
+if USE_CPPUNIT
+TESTPROGS = skstreamtestrunner
+else
+TESTPROGS = 
+endif
+
+check_PROGRAMS = $(TESTPROGS)
 
 skstreamtestrunner_SOURCES = skstreamtestrunner.cpp \
         basicskstreamtest.h \

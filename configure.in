@@ -384,10 +384,14 @@ dnl Test for Libraries
 
 AC_LANG_SAVE
 AC_LANG_CPLUSPLUS
+found_cppunit=no
 AM_PATH_CPPUNIT(1.6.1,, 
-            AC_MSG_WARN(Couldn't Find CppUnit - Tests will not work)
+    AC_MSG_WARN(Couldn't Find CppUnit - Tests will not work)
+    found_cppunit=no
 )
 AC_LANG_RESTORE
+
+AM_CONDITIONAL(USE_CPPUNIT, test "$found_cppunit" = "yes")
 
 dnl test for support programs
 
