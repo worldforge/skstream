@@ -1,3 +1,7 @@
+It may be apropriate to write a test to see if
+getaddrinfo(0, "", &req, &ans);
+reliably gives us a general purpose listen socket, given AI_PASSIVE.
+
 tcp_socket_stream is passing a reference up to the next class to be
 constructed before the stream buffer object referred to has been constructed.
 This results in a "Conditional jump or move depends on uninitialised value"
