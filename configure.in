@@ -4,7 +4,7 @@ AC_INIT(skstream.cpp)
 
 dnl Initialise automake
 
-AM_INIT_AUTOMAKE("skstream", "0.2.1")
+AM_INIT_AUTOMAKE("skstream", "0.2.2")
 AM_CONFIG_HEADER(config.h)
 
 dnl Test for GNU libtool
