@@ -23,7 +23,39 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.2  2002-02-24 03:15:41  grimicus
+ * Revision 1.3  2002-02-26 20:33:55  grimicus
+ * 02/26/2002 Dan Tomalesky <grim@xynesis.com>
+ *     * Added test cases for skserver and friends
+ *
+ *     * Adding .cvsignore files so that it doesn't mess with non-cvs files anymore
+ *
+ *     * In skserver.cpp and skstream.cpp, in the close() methods, I commented out
+ *       the return; in the error part of the shutdown() call because it is
+ *       possible that a socket can exist without it actually having been used,
+ *       so this could error out on those cases and the socket is never actually
+ *       closed.
+ *
+ *     * In skserver.h, added can_accept() to tcp_socket_server so that it can be
+ *       checked to see if the server socket has any connections available, so that
+ *       accept() can then be called. (if it returns false, if accept is called,
+ *       it will block until a connection is made)
+ *
+ *     * Removed the #include <iostream> from skserver.h and skstream.h as they are
+ *       not actually needed for any of the code. (else it comes in from some other
+ *       include, I'm not positive)
+ *
+ *     * Made some formatting changes in skserver.h along the same lines as I have
+ *       been doing throughout the code.
+ *
+ *     * Added testClose() to basicskstreamtest.
+ *
+ *     * Changed the socket created in basicskstreamtest from SOCK_STREAM to
+ *       SOCK_DGRAM though it doesn't make any difference what so ever in the
+ *       testing.
+ *
+ *     * Added the skservertests into the test runner.
+ *
+ * Revision 1.2  2002/02/24 03:15:41  grimicus
  * 02/23/2002 Dan Tomalesky <grim@xynesis.com>
  *
  *     * Added in CVS logging variable so that changes show up in modified files
@@ -282,7 +314,10 @@ void basic_socket_stream::close() {
   if(is_open()) {
     if(::shutdown(_sockbuf.getSocket(),0) == SOCKET_ERROR) {
       setLastError();
-      return ;
+      //not necessarily a returning offense because there could be a socket
+      //open that has never connected to anything and hence, does not need
+      //to be shutdown.
+      //return;
     }
 
     if(::closesocket(_sockbuf.getSocket()) == SOCKET_ERROR) {

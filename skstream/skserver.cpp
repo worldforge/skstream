@@ -23,7 +23,39 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.2  2002-02-24 03:15:41  grimicus
+ * Revision 1.3  2002-02-26 20:33:55  grimicus
+ * 02/26/2002 Dan Tomalesky <grim@xynesis.com>
+ *     * Added test cases for skserver and friends
+ *
+ *     * Adding .cvsignore files so that it doesn't mess with non-cvs files anymore
+ *
+ *     * In skserver.cpp and skstream.cpp, in the close() methods, I commented out
+ *       the return; in the error part of the shutdown() call because it is
+ *       possible that a socket can exist without it actually having been used,
+ *       so this could error out on those cases and the socket is never actually
+ *       closed.
+ *
+ *     * In skserver.h, added can_accept() to tcp_socket_server so that it can be
+ *       checked to see if the server socket has any connections available, so that
+ *       accept() can then be called. (if it returns false, if accept is called,
+ *       it will block until a connection is made)
+ *
+ *     * Removed the #include <iostream> from skserver.h and skstream.h as they are
+ *       not actually needed for any of the code. (else it comes in from some other
+ *       include, I'm not positive)
+ *
+ *     * Made some formatting changes in skserver.h along the same lines as I have
+ *       been doing throughout the code.
+ *
+ *     * Added testClose() to basicskstreamtest.
+ *
+ *     * Changed the socket created in basicskstreamtest from SOCK_STREAM to
+ *       SOCK_DGRAM though it doesn't make any difference what so ever in the
+ *       testing.
+ *
+ *     * Added the skservertests into the test runner.
+ *
+ * Revision 1.2  2002/02/24 03:15:41  grimicus
  * 02/23/2002 Dan Tomalesky <grim@xynesis.com>
  *
  *     * Added in CVS logging variable so that changes show up in modified files
@@ -105,8 +137,12 @@ void basic_socket_server::close() {
   if(is_open()) {
     if(::shutdown(_socket,0) == INVALID_SOCKET) {
       setLastError();
-      return;
+      //not necessarily a returning offense because there could be a socket
+      //open that has never connected to anything and hence, does not need
+      //to be shutdown.
+      //return;
     }
+
     if(::closesocket(_socket) == INVALID_SOCKET) {
       setLastError();
       return;
@@ -128,6 +164,30 @@ SOCKET_TYPE tcp_socket_server::accept() {
     return INVALID_SOCKET;
   }
   return commsock;
+}
+
+bool tcp_socket_server::can_accept() {
+  if(_socket == INVALID_SOCKET) return false;
+
+  fd_set sock_fds;
+  struct timeval tv;
+
+  tv.tv_sec=0;
+  tv.tv_usec=100000;
+
+  FD_ZERO(&sock_fds);
+  FD_SET(_socket, &sock_fds);
+
+  int ret = ::select((_socket + 1), &sock_fds, NULL, NULL, &tv);
+
+  if( ret > 0) {
+      return true;
+  }
+  else if (ret < 0) {
+      setLastError();
+  }
+
+  return false;
 }
 
 // start tcp server and put it in listen state

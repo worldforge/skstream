@@ -46,6 +46,28 @@ Future Work:
   - A multi-threaded TCP server class.
 
 Change Log:
+ 02/26/2002 Dan Tomalesky <grim@xynesis.com>
+    -added test cases for skserver and friends
+    -adding .cvsignore files so that it doesn't mess with non-cvs files anymore
+    -in skserver.cpp and skstream.cpp, in the close() methods, I commented out 
+     the return; in the error part of the shutdown() call because it is 
+     possible that a socket can exist without it actually having been used, 
+     so this could error out on those cases and the socket is never actually 
+     closed.
+    -in skserver.h, added can_accept() to tcp_socket_server so that it can be
+     checked to see if the server socket has any connections available, so that
+     accept() can then be called. (if it returns false, if accept is called, 
+     it will block until a connection is made)
+    -removed the #include <iostream> from skserver.h and skstream.h as they are
+     not actually needed for any of the code. (else it comes in from some other
+     include, I'm not positive)
+    -Made some formatting changes in skserver.h along the same lines as I have
+     been doing throughout the code.
+    -added testClose() to basicskstreamtest.
+    -changed the socket created in basicskstreamtest from SOCK_STREAM to 
+     SOCK_DGRAM though it doesn't make any difference what so ever in the
+     testing.
+    -added the skservertests into the test runner.
  02/23/2002 Dan Tomalesky <grim@xynesis.com>
     -added in CVS logging variable so that changes show up in modified files
      This will help keep changes made by worldforge in each file that is 
