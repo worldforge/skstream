@@ -1,9 +1,9 @@
 .deps
 .libs
 Makefile
+Makefile.am
 Makefile.in
-libskstream-0.3.la
+libskstream-0.2.la
 skpoll.lo
 skserver.lo
 skstream.lo
-sksystem.h

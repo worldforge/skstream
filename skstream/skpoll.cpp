@@ -23,9 +23,11 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.3  2003-04-16 14:02:35  alriddoch
- *  2003-04-16 Al Riddoch <alriddoch@zepler.org>,
- *     - Fix up includes so they work properlly
+ * Revision 1.2.2.1  2003-04-16 15:26:31  alriddoch
+ *  2003-01-31 Al Riddoch <alriddoch@zepler.org>,
+ *     - Move sources into skstream subdir for portability,
+ *       and fix up includes.
+ *     - fix up rpm spec.
  *
  * Revision 1.2  2002/12/11 20:41:25  rsteinke
  * Removed default function parameters from .cpp file. Oops!
@@ -41,10 +43,6 @@
  *       as a wrapper of isReady() for compatibility
  *
  */
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif // HAVE_CONFIG_H
 
 #include <skstream/skpoll.h>
 

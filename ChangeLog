@@ -1,28 +1,7 @@
- 2003-04-16 Al Riddoch <alriddoch@zepler.org>,
-    - Fix up includes so they work properlly
- 2003-04-16 Al Riddoch <alriddoch@zepler.org>,
-    - Move source into subdir for portability
- 2003-04-09 Al Riddoch <alriddoch@zepler.org>,
-    - Fix problem caused by ending variable name with _HEADERS.
- 2003-03-18 Al Riddoch <alriddoch@zepler.org>,
-    - Improve safety of some constructors, and move IP (host and port)
-      related functions into apropriate classes.
-    - Add in unix sockets, based on a configure check.
- 2003-03-18 Al Riddoch <alriddoch@zepler.org>,
-    - Remove legacy skstream-config script to avoid clash with stable version.
- 2003-03-18 Al Riddoch <alriddoch@zepler.org>,
-    - Increment API to version 0.3, and reset interface version, so
-      this version can co-exist with 0.2.x
- 2003-03-16 Al Riddoch <alriddoch@zepler.org>,
-    - skstream.cpp: Fix problem with virtual method being called
-      after destructor.
- 2003-03-14 Al Riddoch <alriddoch@zepler.org>,
-    - skstream.h, skstream.cpp: Re-work sockbuf class so it is
-      not specific to any one type of socket. Remove inet
-      functionality from base classes. Derive new buffer
-      classes for stream and datagram sockets, and use
-      stream version in current socket classes. This should
-      be considered work in progress. Do not port your code.
+ 2003-01-31 Al Riddoch <alriddoch@zepler.org>,
+    - Move sources into skstream subdir for portability,
+      and fix up includes.
+    - fix up rpm spec.
  2003-01-31 Al Riddoch <alriddoch@zepler.org>,
     - Convert to using pkg-config
  12/09/2002 Ron Steinke <rsteinke@w-link.net>,

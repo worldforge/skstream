@@ -23,9 +23,11 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.6  2003-04-16 14:02:35  alriddoch
- *  2003-04-16 Al Riddoch <alriddoch@zepler.org>,
- *     - Fix up includes so they work properlly
+ * Revision 1.5.2.1  2003-04-16 15:26:31  alriddoch
+ *  2003-01-31 Al Riddoch <alriddoch@zepler.org>,
+ *     - Move sources into skstream subdir for portability,
+ *       and fix up includes.
+ *     - fix up rpm spec.
  *
  * Revision 1.5  2002/12/09 22:13:21  rsteinke
  *     - created basic_socket, a virtual base class

@@ -6,12 +6,12 @@ dnl Initialise automake
 
 SKSTREAM_MAJOR=0
 SKSTREAM_MINOR=2
-SKSTREAM_MICRO=90
+SKSTREAM_MICRO=5
 SKSTREAM_VERSION=$SKSTREAM_MAJOR.$SKSTREAM_MINOR.$SKSTREAM_MICRO
 
 AC_SUBST(SKSTREAM_VERSION)
 
-SKSTREAM_CURRENT=0
+SKSTREAM_CURRENT=4
 SKSTREAM_REVISION=0
 SKSTREAM_AGE=0
 SKSTREAM_VERSION_INFO=$SKSTREAM_CURRENT:$SKSTREAM_REVISION:$SKSTREAM_AGE
@@ -169,152 +169,6 @@ AC_CHECK_HEADERS(cstdio iostream string)
 
 AC_LANG_RESTORE
 
-dnl Test for types
-
-AC_MSG_CHECKING([for socket type])
-SKSTREAM_SOCKET_TYPE=int;
-SKSTREAM_SOCKET_HEADER="#include <unistd.h>"
-AC_LANG_SAVE
-AC_LANG_CPLUSPLUS
-AC_CACHE_VAL(ac_cv_socket_type,
-[
-    AC_TRY_COMPILE([#include <winsock.h>],
-    [
-        SOCKET foo;
-    ],
-    [
-        ac_cv_socket_type=SOCKET
-        SKSTREAM_SOCKET_TYPE=$ac_cv_socket_type
-        SKSTREAM_SOCKET_HEADER="#include <winsock.h>"
-    ],
-    [
-        ac_cv_socket_type=int
-        SKSTREAM_SOCKET_TYPE=$ac_cv_socket_type
-        SKSTREAM_SOCKET_HEADER="#include <unistd.h>"
-    ])
-])
-AC_MSG_RESULT($ac_cv_socket_type)
-AC_SUBST(SKSTREAM_SOCKET_TYPE)
-AC_SUBST(SKSTREAM_SOCKET_HEADER)
-
-AC_LANG_RESTORE
-
-AC_MSG_CHECKING([for socket address length type])
-SKSTREAM_SOCKLEN_TYPE=int;
-AC_LANG_SAVE
-AC_LANG_CPLUSPLUS
-AC_CACHE_VAL(ac_cv_socklen_type,
-[
-    AC_TRY_COMPILE([#include <unistd.h>],
-    [
-        socklen_t foo;
-    ],
-    [
-        ac_cv_socklen_type=socklen_t
-        SKSTREAM_SOCKLEN_TYPE=$ac_cv_socklen_type
-    ],
-    [
-        ac_cv_socklen_type=int
-        SKSTREAM_SOCKLEN_TYPE=$ac_cv_socklen_type
-    ])
-])
-AC_MSG_RESULT($ac_cv_socklen_type)
-AC_SUBST(SKSTREAM_SOCKLEN_TYPE)
-
-AC_LANG_RESTORE
-
-AC_MSG_CHECKING([for unix domain sockets])
-AC_LANG_SAVE
-AC_LANG_CPLUSPLUS
-AC_TRY_COMPILE([#include <sys/un.h>],
-[
-    sockaddr_un sa;
-],
-[
-    AC_MSG_RESULT(yes)
-    AC_DEFINE(SKSTREAM_UNIX_SOCKETS, 1,
-              [Define if unix domain sockets are supported])
-],
-[
-    AC_MSG_RESULT(no)
-])
-
-AC_LANG_RESTORE
-
-AC_MSG_CHECKING([for streambuf header])
-SKSTREAM_STREAMBUF_HEADER="#include <streambuf>"
-AC_LANG_SAVE
-AC_LANG_CPLUSPLUS
-AC_CACHE_VAL(ac_cv_streambuf_header,
-[
-    AC_TRY_COMPILE([#include <streambuf>],,
-    [
-        ac_cv_streambuf_header="#include <streambuf>"
-        SKSTREAM_STREAMBUF_HEADER=$ac_cv_streambuf_header
-    ],
-    [
-        ac_cv_streambuf_header="#include <streambuf.h>"
-        SKSTREAM_STREAMBUF_HEADER=$ac_cv_streambuf_header
-    ])
-])
-AC_MSG_RESULT($ac_cv_streambuf_header)
-AC_SUBST(SKSTREAM_STREAMBUF_HEADER)
-
-AC_LANG_RESTORE
-
-AC_MSG_CHECKING([for timeval header])
-SKSTREAM_TIMEVAL_HEADER="#include <sys/time.h>"
-SKSTREAM_UNIX_HEADER_FLAG=0
-SKSTREAM_BEOS_HEADER_FLAG=0
-SKSTREAM_WINDOWS_HEADER_FLAG=0
-AC_LANG_SAVE
-AC_LANG_CPLUSPLUS
-AC_CACHE_VAL(ac_cv_timeval_header,
-[
-    AC_TRY_COMPILE([#include <winsock.h>],
-    [
-        timeval foo;
-    ],
-    [
-        ac_cv_timeval_header="#include <winsock.h>"
-        SKSTREAM_TIMEVAL_HEADER=$ac_cv_timeval_header
-        SKSTREAM_WINDOWS_HEADER_FLAG=1
-    ],
-    [
-        AC_TRY_COMPILE([#include <sys/time.h>],
-        [
-            timeval foo;
-        ],
-        [
-            ac_cv_timeval_header="#include <sys/time.h>"
-            SKSTREAM_TIMEVAL_HEADER=$ac_cv_timeval_header
-            SKSTREAM_UNIX_HEADER_FLAG=1
-        ],
-        [
-            AC_TRY_COMPILE([#include <net/socket.h>],
-            [
-                timeval foo;
-            ],
-            [
-                ac_cv_timeval_header="#include <net/socket.h>"
-                SKSTREAM_TIMEVAL_HEADER=$ac_cv_timeval_header
-                SKSTREAM_BEOS_HEADER_FLAG=1
-            ],
-            [
-                AC_MSG_ERROR(Unable to find header for timeval type)
-            ])
-    
-        ])
-    ])
-])
-AC_MSG_RESULT($ac_cv_timeval_header)
-AC_SUBST(SKSTREAM_TIMEVAL_HEADER)
-AC_SUBST(SKSTREAM_UNIX_HEADER_FLAG)
-AC_SUBST(SKSTREAM_BEOS_HEADER_FLAG)
-AC_SUBST(SKSTREAM_WINDOWS_HEADER_FLAG)
-
-AC_LANG_RESTORE
-
 dnl Test for Libraries
 
 AC_LANG_SAVE
@@ -329,7 +183,7 @@ dnl test for support programs
 AC_CHECK_PROG(SK_ZIP, zip, zip, no)
 AM_CONDITIONAL(HAVE_PROG_ZIP, test x$ac_cv_prog_SK_ZIP = xzip)
 
-SKSTREAM_LIBS="-lskstream-0.3"
+SKSTREAM_LIBS="-lskstream-0.2"
 # There might be a better way to do this.
 AC_MSG_CHECKING(for mingw32)
 AC_TRY_COMPILE(,[
@@ -357,7 +211,7 @@ AC_OUTPUT([
 	Makefile
 	skstream/Makefile
 	test/Makefile
+	skstream-config
 	skstream.spec
-	skstream-0.3.pc
-	skstream/sksystem.h
+	skstream-0.2.pc
 ])

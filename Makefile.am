@@ -1,5 +1,13 @@
+m4datadir = $(datadir)/aclocal
+m4data_DATA = skstream.m4
+
+manpagedir = $(mandir)/man1
+manpage_DATA = skstream-config.1
+
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = skstream-0.3.pc
+pkgconfig_DATA = skstream-0.2.pc
+
+bin_SCRIPTS = skstream-config
 
 if HAVE_PROG_ZIP
 MSVC_SUPPORT = VisualC.zip
@@ -9,7 +17,7 @@ MSVC_SUPPORT =
 MSVC_INSTALL_DIST = /bin/true
 endif
 
-EXTRA_DIST = autogen.sh skstream-0.3.pc.in
+EXTRA_DIST = skstream.m4 skstream-config.in autogen.sh skstream-config.1
 
 dist-hook: $(MSVC_SUPPORT)
 	$(MSVC_INSTALL_DIST) $(MSVC_SUPPORT) $(distdir)/$(MSVC_SUPPORT)   
