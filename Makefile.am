@@ -25,7 +25,7 @@ MSVC_SUPPORT =
 MSVC_INSTALL_DIST = /bin/true
 endif
 
-EXTRA_DIST = skstream.m4 skstream-config.in autogen.sh skstream-config.1
+EXTRA_DIST = skstream.m4 skstream-config.in autogen.sh sksystem.h.in skstream-config.1
 
 dist-hook: $(MSVC_SUPPORT)
 	$(MSVC_INSTALL_DIST) $(MSVC_SUPPORT) $(distdir)/$(MSVC_SUPPORT)   

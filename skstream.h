@@ -23,7 +23,11 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.26  2003-03-14 19:33:11  alriddoch
+ * Revision 1.27  2003-03-17 23:37:04  alriddoch
+ *  2003-03-17 Al Riddoch <alriddoch@zepler.org>,
+ *     - Start handling portability with configure checks.
+ *
+ * Revision 1.26  2003/03/14 19:33:11  alriddoch
  *  2003-03-14 Al Riddoch <alriddoch@zepler.org>,
  *     - skstream.h, skstream.cpp: Re-work sockbuf class so it is
  *       not specific to any one type of socket. Remove inet
@@ -229,6 +233,9 @@
 #include <string>
 #include <stdexcept>
 
+#if 1
+#include "sksystem.h"
+#else
 #if defined( _WIN32 ) || defined( __CYGWIN32__ )
   #ifdef _MSC_VER
     #include <streambuf>
@@ -396,6 +403,7 @@
 
 #ifndef SOCKLEN
   #error "no support for target os"
+#endif
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
