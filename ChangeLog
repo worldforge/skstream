@@ -1,3 +1,15 @@
+ 2003-07-23 Al Riddoch <alriddoch@zepler.org>
+    - skstream/skstreamconfig.h.pbx, skstream/skstreamconfig.h.in,
+      skstream/skstreamconfig.h.windows: Removed some defines which
+      are the same on all platforms, and put them in the main header.
+      Avoid streambuf header as it varies on some systems, and rely
+      on iostream instead.
+    - Remove the streambuf header test.
+    - skstream/skstream.h: Remove the old platform specific code,
+      take on some changes from the skstreamconfig header, and clean
+      up some comments.
+    - skstream/skstream.cpp: Re-write the resolver code for platforms
+      without getaddrinfo() so it is cleaner, and covers more cases.
  2003-07-03 Al Riddoch <alriddoch@zepler.org>
     - Update rpm spec to be cleaner, and make the technical sections
       more generic.

@@ -23,7 +23,21 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.31  2003-05-06 21:53:11  alriddoch
+ * Revision 1.32  2003-07-23 17:00:29  alriddoch
+ *  2003-07-23 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skstreamconfig.h.pbx, skstream/skstreamconfig.h.in,
+ *       skstream/skstreamconfig.h.windows: Removed some defines which
+ *       are the same on all platforms, and put them in the main header.
+ *       Avoid streambuf header as it varies on some systems, and rely
+ *       on iostream instead.
+ *     - Remove the streambuf header test.
+ *     - skstream/skstream.h: Remove the old platform specific code,
+ *       take on some changes from the skstreamconfig header, and clean
+ *       up some comments.
+ *     - skstream/skstream.cpp: Re-write the resolver code for platforms
+ *       without getaddrinfo() so it is cleaner, and covers more cases.
+ *
+ * Revision 1.31  2003/05/06 21:53:11  alriddoch
  *  2003-05-06 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skstream.h, skstream/skstream.cpp, skstream_unix.h:
  *       Re-work basic_socket_stream so it can have either stream or datagram
@@ -261,179 +275,17 @@
 #include <iomanip>
 #include <string>
 #include <stdexcept>
+#include <iostream>
 
-#if 1
 #include <skstream/skstreamconfig.h>
-#else
-#if defined( _WIN32 ) || defined( __CYGWIN32__ )
-  #ifdef _MSC_VER
-    #include <streambuf>
-  #else
-    #include <streambuf.h>
-  #endif
 
-  #include <winsock.h>
+static const SOCKET_TYPE INVALID_SOCKET = (SOCKET_TYPE)~0;
+static const int SOCKET_ERROR = -1;
 
-//SOCKET_TYPE is used to define the socket in each of the different OSes 
-//that skstream supports.  This is because it is not guaranteed how any
-//will handle the socket.  Currently, they all use an integer file descriptor
-//type thing, but windows is not to be trusted.  SOCKET_TYPE does *NOT* stand
-//for the various 'types' of socket connections (SOCK_STREAM, SOCK_DGRAM, etc)
-  typedef SOCKET SOCKET_TYPE;
-
-  #define SOCKLEN int 
-
-#endif
-
-#ifdef __linux__
-  #if defined(__GNUC__) && __GNUC__ < 3
-    #include <streambuf.h>
-  #else
-    #include <streambuf>
-  #endif
-
-  #include <sys/time.h>
-  #include <sys/types.h>
-  #include <sys/socket.h>
-  #include <netinet/in.h>
-  #include <arpa/inet.h>
-  #include <unistd.h>
-  #include <netdb.h>
-  #include <errno.h>
-
-  #define INVALID_SOCKET (SOCKET_TYPE)(~0)
-  #define SOCKET_ERROR   -1
-
-  #define SOCKLEN socklen_t
-
-  #define IPPORT_RESERVED 1024
-
-  #define closesocket(x) close(x)
-
-//SOCKET_TYPE is used to define the socket in each of the different OSes 
-//that skstream supports.  This is because it is not guaranteed how any
-//will handle the socket.  Currently, they all use an integer file descriptor
-//type thing, but windows is not to be trusted.  SOCKET_TYPE does *NOT* stand
-//for the various 'types' of socket connections (SOCK_STREAM, SOCK_DGRAM, etc)
-  typedef int SOCKET_TYPE;
-#endif
-
-#ifdef __BEOS__
-  #include <net/socket.h>
-  #include <net/netdb.h>
-  #include <errno.h>
-
-  #define INVALID_SOCKET (SOCKET_TYPE)(~0)
-  #define SOCKET_ERROR   -1
-
-  #define SOCKLEN socklen_t
-
-  #define IPPORT_RESERVED 1024
-  #define INADDR_NONE	  0xFFFFFF
-
-//SOCKET_TYPE is used to define the socket in each of the different OSes 
-//that skstream supports.  This is because it is not guaranteed how any
-//will handle the socket.  Currently, they all use an integer file descriptor
-//type thing, but windows is not to be trusted.  SOCKET_TYPE does *NOT* stand
-//for the various 'types' of socket connections (SOCK_STREAM, SOCK_DGRAM, etc)
-  typedef int SOCKET_TYPE;
-#endif
-
-#ifdef __sun__
-  #include <sys/socket.h>
-  #include <netdb.h>
-  #include <arpa/inet.h>
-  #include <errno.h>
-  #include <unistd.h>
-
-  #define INVALID_SOCKET (SOCKET_TYPE)(~0)
-  #define SOCKET_ERROR   -1
-
-  #define SOCKLEN int
-
-  #define IPPORT_RESERVED 1024
-  #define INADDR_NONE	  0xFFFFFFFF
-
-  #define closesocket(x) close(x)
-  
-//SOCKET_TYPE is used to define the socket in each of the different OSes 
-//that skstream supports.  This is because it is not guaranteed how any
-//will handle the socket.  Currently, they all use an integer file descriptor
-//type thing, but windows is not to be trusted.  SOCKET_TYPE does *NOT* stand
-//for the various 'types' of socket connections (SOCK_STREAM, SOCK_DGRAM, etc)
-  typedef int SOCKET_TYPE;
-#endif
-
-#if defined(__FreeBSD__)
-  #include <sys/types.h>
-  #include <sys/socket.h>
-  #include <sys/time.h>
-  #include <unistd.h>
-  #include <netinet/in.h>
-  #include <arpa/inet.h>
-  #include <netdb.h>
-  #include <errno.h>
-
-  #define INVALID_SOCKET (SOCKET_TYPE)(~0)
-  #define SOCKET_ERROR   -1
-
-  #define SOCKLEN socklen_t
-
-  #define IPPORT_RESERVED 1024
-
-  #define closesocket(x) close(x)
-
-  typedef int SOCKET_TYPE;
-#endif
-
-#if defined(__APPLE__)
-  #include <sys/types.h>
-  #include <sys/socket.h>
-  #include <sys/time.h>
-  #include <unistd.h>
-  #include <netinet/in.h>
-  #include <arpa/inet.h>
-  #include <netdb.h>
-  #include <errno.h>
-
-  #define INVALID_SOCKET (SOCKET_TYPE)(~0)
-  #define SOCKET_ERROR   -1
-
-  #define SOCKLEN int
-
-  #define IPPORT_RESERVED 1024
-
-  #define closesocket(x) close(x)
-
-  typedef int SOCKET_TYPE;
-#endif
-
-#ifdef __GNU__
-#ifndef __linux__
-  #include <sys/types.h>
-  #include <sys/socket.h>
-  #include <arpa/inet.h>
-  #include <netdb.h>
-  #include <unistd.h>
-  #include <errno.h>
-
-  #define SOCKLEN socklen_t
-
-  #define INVALID_SOCKET (SOCKET_TYPE)(~0)
-  #define SOCKET_ERROR -1
-
-  #define IPPORT_RESERVED 1024
-
-  #define closesocket(x) close(x)
- 
-  typedef int SOCKET_TYPE;
-#endif // __linux__
-#endif // __GNU__
-
-#ifndef SOCKLEN
-  #error "no support for target os"
-#endif
-#endif
+#ifndef INADDR_NONE
+ #warning System headers do not define INADDR_NONE
+ #define INADDR_NONE   0xFFFFFFFF
+#endif // INADDR_NONE
 
 /////////////////////////////////////////////////////////////////////////////
 // class socketbuf
@@ -451,7 +303,9 @@ protected:
   SOCKLEN out_p_size, in_p_size;
 
 private:
+  /// Not implemented. Copying a socket buffer is not permited.
   socketbuf(const socketbuf&);
+  /// Not implemented. Copying a socket buffer is not permited.
   socketbuf& operator=(const socketbuf&);
 
 protected:
@@ -498,8 +352,7 @@ public:
   }
 
   /** Set up a timeout value after which an error flag is set if the socket
-   *  is not ready for a read or write. THING
-   *  ejrogejrgo boei rgseogpeorigseporigeposrigseporigjseorg erg esrg oiserg epr g
+   *  is not ready for a read or write.
    */
   void setTimeout(unsigned sec, unsigned usec=0) {
     _timeout.tv_sec  = sec;

@@ -22,7 +22,6 @@
 #define RGJ_FREE_SOCKET_CONFIG_H_
 
 #include <unistd.h>
-#include <streambuf>
 #include <sys/time.h>
 
 typedef int SOCKLEN;
@@ -45,18 +44,6 @@ typedef int SOCKET_TYPE;
   #include <net/netdb.h>
   #include <errno.h>
 #endif
-
-#ifndef INVALID_SOCKET
-#define INVALID_SOCKET (SOCKET_TYPE)(~0)
-#endif // INVALID_SOCKET
-
-#ifndef SOCKET_ERROR
-#define SOCKET_ERROR   -1
-#endif // SOCKET_ERROR
-
-#ifndef INADDR_NONE
-#define INADDR_NONE   0xFFFFFFFF
-#endif // INADDR_NONE
 
 #define SOCKET_BLOCK_ERROR EINPROGRESS
 

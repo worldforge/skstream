@@ -239,27 +239,6 @@ AC_LANG_RESTORE
 AC_SUBST(SKSTREAM_UNIX_PC)
 AC_SUBST(SKSTREAM_UNIX_PC_IN)
 
-AC_MSG_CHECKING([for streambuf header])
-SKSTREAM_STREAMBUF_HEADER="#include <streambuf>"
-AC_LANG_SAVE
-AC_LANG_CPLUSPLUS
-AC_CACHE_VAL(ac_cv_streambuf_header,
-[
-    AC_TRY_COMPILE([#include <streambuf>],,
-    [
-        ac_cv_streambuf_header="#include <streambuf>"
-        SKSTREAM_STREAMBUF_HEADER=$ac_cv_streambuf_header
-    ],
-    [
-        ac_cv_streambuf_header="#include <streambuf.h>"
-        SKSTREAM_STREAMBUF_HEADER=$ac_cv_streambuf_header
-    ])
-])
-AC_MSG_RESULT($ac_cv_streambuf_header)
-AC_SUBST(SKSTREAM_STREAMBUF_HEADER)
-
-AC_LANG_RESTORE
-
 AC_MSG_CHECKING([for timeval header])
 SKSTREAM_TIMEVAL_HEADER="#include <sys/time.h>"
 SKSTREAM_UNIX_HEADER_FLAG=0
@@ -379,7 +358,7 @@ dnl Test for C library functions
 
 AC_LANG_SAVE
 AC_LANG_CPLUSPLUS
-AC_CHECK_FUNCS([getaddrinfo closesocket])
+AC_CHECK_FUNCS([getaddrinfo inet_aton closesocket])
 
 AC_LANG_RESTORE
 

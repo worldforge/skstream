@@ -23,7 +23,21 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.25  2003-05-06 21:53:11  alriddoch
+ * Revision 1.26  2003-07-23 17:00:29  alriddoch
+ *  2003-07-23 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skstreamconfig.h.pbx, skstream/skstreamconfig.h.in,
+ *       skstream/skstreamconfig.h.windows: Removed some defines which
+ *       are the same on all platforms, and put them in the main header.
+ *       Avoid streambuf header as it varies on some systems, and rely
+ *       on iostream instead.
+ *     - Remove the streambuf header test.
+ *     - skstream/skstream.h: Remove the old platform specific code,
+ *       take on some changes from the skstreamconfig header, and clean
+ *       up some comments.
+ *     - skstream/skstream.cpp: Re-write the resolver code for platforms
+ *       without getaddrinfo() so it is cleaner, and covers more cases.
+ *
+ * Revision 1.25  2003/05/06 21:53:11  alriddoch
  *  2003-05-06 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skstream.h, skstream/skstream.cpp, skstream_unix.h:
  *       Re-work basic_socket_stream so it can have either stream or datagram
@@ -455,32 +469,67 @@ bool dgram_socketbuf::setTarget(const std::string& address, unsigned port)
   out_p_size = ans->ai_addrlen;
   ::freeaddrinfo(ans);
 
-#ifndef HAVE_IPV6
+ #ifndef HAVE_IPV6
   ((sockaddr_in &)out_peer).sin_port = htons(port);
-#else // HAVE_IPV6
+ #else // HAVE_IPV6
   if (out_peer.ss_family == AF_INET6) {
     ((sockaddr_in6 &)out_peer).sin6_port = htons(port);
   } else {
     ((sockaddr_in &)out_peer).sin_port = htons(port);
   }
-#endif // HAVE_IPV6
+ #endif // HAVE_IPV6
   return true;
 #else // HAVE_GETADDRINFO
-  unsigned long iaddr;
-  hostent *he = ::gethostbyname(address.c_str());
-  if(he!=NULL) {
-    iaddr = *(unsigned long *)(he->h_addr_list[0]);
+  hostent * he = ::gethostbyname(address.c_str());
+  if (he != 0) {
+    // If gethostbyname succeeded, we now have an address which
+    // may be in either IPv4 or IPv6 form, depending on how
+    // good gethostbyname is.
+
+    out_peer.ss_family = he->h_addrtype;
+ #ifndef HAVE_IPV6
+    memcpy(&((sockaddr_in&)out_peer).sin_addr, he->h_addr_list[0],
+                                               he->h_length);
+    out_p_size = sizeof(sockaddr_in);
+    ((sockaddr_in &)out_peer).sin_port = htons(port);
+ #else // HAVE_IPV6
+    if (out_peer.ss_family == AF_INET6) {
+      memcpy(&((sockaddr_in6&)out_peer).sin6_addr, he->h_addr_list[0],
+                                                   he->h_length);
+      out_p_size = sizeof(sockaddr_in6);
+      ((sockaddr_in6 &)out_peer).sin6_port = htons(port);
+    } else {
+      memcpy(&((sockaddr_in&)out_peer).sin_addr, he->h_addr_list[0],
+                                                 he->h_length);
+      out_p_size = sizeof(sockaddr_in);
+      ((sockaddr_in &)out_peer).sin_port = htons(port);
+    }
+ #endif // HAVE_IPV6
   } else {
+    // If gethostbyname failed then our last chance is to assume
+    // the string contains an IPv4 address in dotted quad form.
+    // inet_aton is the cleaner way of reading this, but may
+    // not be present on all systems.
+
+    sockaddr_in & out_peer_in = (sockaddr_in &)out_peer;
+ #ifdef HAVE_INET_ATON
+    struct in_addr in_address;
+    if (::inet_aton(address.c_str(), &in_address) == 0) {
+      return false;
+    }
+    memcpy(&out_peer_in.sin_addr, &in_address, sizeof(in_address));
+ #else // HAVE_INET_ATON
+    in_addr_t iaddr;
     iaddr = ::inet_addr(address.c_str());
+    if (iaddr == INADDR_NONE) {
+      return false;
+    }
+    out_peer_in.sin_addr.s_addr = iaddr;
+ #endif // HAVE_INET_ATON
+    out_peer_in.sin_family = AF_INET;
+    out_peer_in.sin_port = htons(port);
+    out_p_size = sizeof(sockaddr_in);
   }
-  if(iaddr == INADDR_NONE)
-    return false;
-  // Fill host information
-  sockaddr_in & out_peer_in = (sockaddr_in &)out_peer;
-  out_peer_in.sin_family = AF_INET;
-  out_peer_in.sin_addr.s_addr = iaddr;
-  out_peer_in.sin_port = htons(port);
-  out_p_size = sizeof(sockaddr_in);
   return true;
 #endif // HAVE_GETADDRINFO
 }
@@ -707,13 +756,13 @@ void tcp_socket_stream::open(const std::string& address, int service, bool nonbl
   }
 
   if(nonblock) {
-#ifndef _WIN32
+ #ifndef _WIN32
     int err_val = fcntl(_socket, F_SETFL, O_NONBLOCK);
-#else // _WIN32
+ #else // _WIN32
     u_long nonblocking = 1;  // This flag may be set elsewhere,
                              // in a header ?
     int err_val = ioctlsocket(_socket, FIONBIO, &nonblocking);
-#endif // _WIN32
+ #endif // _WIN32
     if(err_val == -1) {
       setLastError();
       ::closesocket(_socket);
@@ -728,15 +777,15 @@ void tcp_socket_stream::open(const std::string& address, int service, bool nonbl
   SOCKLEN iaddrlen = ans->ai_addrlen;
   ::freeaddrinfo(ans);
 
-#ifndef HAVE_IPV6
+ #ifndef HAVE_IPV6
   ((sockaddr_in &)iaddr).sin_port = htons(service);
-#else // HAVE_IPV6
+ #else // HAVE_IPV6
   if (iaddr.ss_family == AF_INET6) {
       ((sockaddr_in6 &)iaddr).sin6_port = htons(service);
   } else {
       ((sockaddr_in &)iaddr).sin_port = htons(service);
   }
-#endif // HAVE_IPV6
+ #endif // HAVE_IPV6
 
   if(::connect(_socket, (sockaddr *)&iaddr, iaddrlen) < 0) {
     if(nonblock && getSystemError() == SOCKET_BLOCK_ERROR) {
@@ -759,13 +808,12 @@ void tcp_socket_stream::open(const std::string& address, int service, bool nonbl
   }
 
   if(nonblock) {
-#ifndef _WIN32
+ #ifndef _WIN32
     int err_val = fcntl(_socket, F_SETFL, O_NONBLOCK);
-#else // _WIN32
-    u_long nonblocking = 1;  // This flag may be set elsewhere,
-                             // in a header ?
+ #else // _WIN32
+    u_long nonblocking = 1;  // This flag may be set elsewhere, in a header ?
     int err_val = ioctlsocket(_socket, FIONBIO, &nonblocking);
-#endif // _WIN32
+ #endif // _WIN32
     if(err_val == -1) {
       setLastError();
       ::closesocket(_socket);
@@ -775,32 +823,66 @@ void tcp_socket_stream::open(const std::string& address, int service, bool nonbl
     }
   }
 
-  // find host name
-  unsigned long iaddr;
-  // try to resolve DNS for host
-  hostent *he = ::gethostbyname(address.c_str());
-  if(he!=NULL) {
-    iaddr = *(unsigned long *)(he->h_addr_list[0]);
-  } 
-  else {
-    // if it could not resolve DNS, host name can be in dot address already
+  sockaddr_storage sa;
+  SOCKLEN sa_size;
+  hostent * he = ::gethostbyname(address.c_str());
+  if (he != 0) {
+    // If gethostbyname succeeded, we now have an address which
+    // may be in either IPv4 or IPv6 form, depending on how
+    // good gethostbyname is.
+
+    sa.ss_family = he->h_addrtype;
+ #ifndef HAVE_IPV6
+    memcpy(&((sockaddr_in&)sa).sin_addr, he->h_addr_list[0],
+                                               he->h_length);
+    sa_size = sizeof(sockaddr_in);
+    ((sockaddr_in &)sa).sin_port = htons(service);
+ #else // HAVE_IPV6
+    if (sa.ss_family == AF_INET6) {
+      memcpy(&((sockaddr_in6&)sa).sin6_addr, he->h_addr_list[0],
+                                                   he->h_length);
+      sa_size = sizeof(sockaddr_in6);
+      ((sockaddr_in6 &)sa).sin6_port = htons(service);
+    } else {
+      memcpy(&((sockaddr_in&)sa).sin_addr, he->h_addr_list[0],
+                                                 he->h_length);
+      sa_size = sizeof(sockaddr_in);
+      ((sockaddr_in &)sa).sin_port = htons(service);
+    }
+ #endif // HAVE_IPV6
+  } else {
+    // If gethostbyname failed then our last chance is to assume
+    // the string contains an IPv4 address in dotted quad form.
+    // inet_aton is the cleaner way of reading this, but may
+    // not be present on all systems.
+
+    sockaddr_in & sa_in = (sockaddr_in &)sa;
+ #ifdef HAVE_INET_ATON
+    struct in_addr in_address;
+    if (::inet_aton(address.c_str(), &in_address) == 0) {
+      fail();
+      ::closesocket(_socket);
+      return;
+    }
+    memcpy(&sa_in.sin_addr, &in_address, sizeof(in_address));
+ #else // HAVE_INET_ATON
+    in_addr_t iaddr;
     iaddr = ::inet_addr(address.c_str());
+    if (iaddr == INADDR_NONE) {
+      fail();
+      ::closesocket(_socket);
+      return;
+    }
+    sa_in.sin_addr.s_addr = iaddr;
+ #endif // HAVE_INET_ATON
+    sa_in.sin_family = AF_INET;
+    sa_in.sin_port = htons(service);
+    sa_size = sizeof(sockaddr_in);
   }
 
-  if(iaddr == INADDR_NONE) {
-    fail();
-    ::closesocket(_socket);
-    return;
-  }
-
-  // Fill host information
-  sockaddr_in sa;
-  sa.sin_family = AF_INET;
-  sa.sin_addr.s_addr = iaddr;
-  sa.sin_port = htons(service);
   // Connect to host
 
-  if(::connect(_socket,(sockaddr*)&sa, sizeof(sa)) == SOCKET_ERROR) {
+  if(::connect(_socket,(sockaddr*)&sa, sa_size) == SOCKET_ERROR) {
     if(nonblock && getSystemError() == SOCKET_BLOCK_ERROR) {
       _connecting_socket = _socket;
       return;

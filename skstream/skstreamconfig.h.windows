@@ -27,25 +27,7 @@
 typedef socklen_t SOCKLEN;
 typedef int SOCKET_TYPE;
 
-#ifdef _MSC_VER
-#include <streambuf>
-#else
-#include <streambuf.h>
-#endif
-
 #include <winsock.h>
-
-#ifndef INVALID_SOCKET
-#define INVALID_SOCKET (SOCKET_TYPE)(~0)
-#endif // INVALID_SOCKET
-
-#ifndef SOCKET_ERROR
-#define SOCKET_ERROR   -1
-#endif // SOCKET_ERROR
-
-#ifndef INADDR_NONE
-#define INADDR_NONE   0xFFFFFFFF
-#endif // INADDR_NONE
 
 #define SOCKET_BLOCK_ERROR WSAEWOULDBLOCK
 
