@@ -23,7 +23,11 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.4  2002-06-22 15:16:14  alriddoch
+ * Revision 1.5  2003-04-16 14:02:35  alriddoch
+ *  2003-04-16 Al Riddoch <alriddoch@zepler.org>,
+ *     - Fix up includes so they work properlly
+ *
+ * Revision 1.4  2002/06/22 15:16:14  alriddoch
  *  06/22/2002 Al Riddoch <alriddoch@zepler.org>,
  *     -Removed "using namespace std" from header.
  *
@@ -72,11 +76,11 @@
 #ifndef RGJ_FREE_SOCKETS_PROTOCOL_H_
 #define RGJ_FREE_SOCKETS_PROTOCOL_H_
 
+#include <skstream/skstream.h> // FreeSockets classes are needed
+#include <skstream/freethrd.h> // FreeThreads is needed for multithreading support
+
 #include <string>
 #include <iostream>
-
-#include "skstream.h" // FreeSockets classes are needed
-#include "freethrd.h" // FreeThreads is needed for multithreading support
 
 class basic_protocol : public basic_thread {
 private:

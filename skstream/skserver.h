@@ -23,7 +23,11 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.5  2002-12-09 22:13:21  rsteinke
+ * Revision 1.6  2003-04-16 14:02:35  alriddoch
+ *  2003-04-16 Al Riddoch <alriddoch@zepler.org>,
+ *     - Fix up includes so they work properlly
+ *
+ * Revision 1.5  2002/12/09 22:13:21  rsteinke
  *     - created basic_socket, a virtual base class
  *       for basic_socket_stream and basic_socket_server,
  *       so that the polling code has a common base
@@ -110,9 +114,9 @@
 #ifndef RGJ_FREE_THREADS_SERVER_H_
 #define RGJ_FREE_THREADS_SERVER_H_
 
-#include <string>
+#include <skstream/skstream.h> // FreeSockets are needed
 
-#include "skstream.h" // FreeSockets are needed
+#include <string>
 
 /////////////////////////////////////////////////////////////////////////////
 // class basic_socket_server

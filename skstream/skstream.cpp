@@ -23,7 +23,11 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.20  2003-03-18 22:46:45  alriddoch
+ * Revision 1.21  2003-04-16 14:02:35  alriddoch
+ *  2003-04-16 Al Riddoch <alriddoch@zepler.org>,
+ *     - Fix up includes so they work properlly
+ *
+ * Revision 1.20  2003/03/18 22:46:45  alriddoch
  *  2003-03-18 Al Riddoch <alriddoch@zepler.org>,
  *     - Improve safety of some constructors, and move IP (host and port)
  *       related functions into apropriate classes.
@@ -193,7 +197,7 @@
 #include "config.h"
 #endif // HAVE_CONFIG_H
 
-#include "skstream.h"
+#include <skstream/skstream.h>
 
 #ifndef _WIN32
 #include <unistd.h>

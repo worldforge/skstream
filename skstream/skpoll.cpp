@@ -23,7 +23,11 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.2  2002-12-11 20:41:25  rsteinke
+ * Revision 1.3  2003-04-16 14:02:35  alriddoch
+ *  2003-04-16 Al Riddoch <alriddoch@zepler.org>,
+ *     - Fix up includes so they work properlly
+ *
+ * Revision 1.2  2002/12/11 20:41:25  rsteinke
  * Removed default function parameters from .cpp file. Oops!
  *
  * Revision 1.1  2002/12/09 22:13:21  rsteinke
@@ -38,7 +42,11 @@
  *
  */
 
-#include "skpoll.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif // HAVE_CONFIG_H
+
+#include <skstream/skpoll.h>
 
 basic_socket_poll::basic_socket_poll() : maxfd_(0)
 {

@@ -1,4 +1,6 @@
  2003-04-16 Al Riddoch <alriddoch@zepler.org>,
+    - Fix up includes so they work properlly
+ 2003-04-16 Al Riddoch <alriddoch@zepler.org>,
     - Move source into subdir for portability
  2003-04-09 Al Riddoch <alriddoch@zepler.org>,
     - Fix problem caused by ending variable name with _HEADERS.

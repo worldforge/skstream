@@ -23,7 +23,11 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.28  2003-03-18 22:46:45  alriddoch
+ * Revision 1.29  2003-04-16 14:02:35  alriddoch
+ *  2003-04-16 Al Riddoch <alriddoch@zepler.org>,
+ *     - Fix up includes so they work properlly
+ *
+ * Revision 1.28  2003/03/18 22:46:45  alriddoch
  *  2003-03-18 Al Riddoch <alriddoch@zepler.org>,
  *     - Improve safety of some constructors, and move IP (host and port)
  *       related functions into apropriate classes.
@@ -240,7 +244,7 @@
 #include <stdexcept>
 
 #if 1
-#include "sksystem.h"
+#include <skstream/sksystem.h>
 #else
 #if defined( _WIN32 ) || defined( __CYGWIN32__ )
   #ifdef _MSC_VER

@@ -23,7 +23,11 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.5  2002-04-08 20:02:00  xmp
+ * Revision 1.6  2003-04-16 14:02:35  alriddoch
+ *  2003-04-16 Al Riddoch <alriddoch@zepler.org>,
+ *     - Fix up includes so they work properlly
+ *
+ * Revision 1.5  2002/04/08 20:02:00  xmp
  * Just a few fixes to MSVC support, removing a few unnessesary std::'s and shifting a default argument to a header.
  *
  * Revision 1.4  2002/03/01 14:00:09  grimicus
@@ -105,7 +109,12 @@
  * Note there are some API changes and new features in this version, so I 
  * didn't just commit over the older one.
  */
-#include "skserver.h"
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif // HAVE_CONFIG_H
+
+#include <skstream/skserver.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // class basic_socket_server implementation

@@ -20,7 +20,7 @@
 #ifndef SKSTREAM_UNIX_H_
 #define SKSTREAM_UNIX_H_
 
-#include "skstream.h"
+#include <skstream/skstream.h>
 
 #include <sys/un.h>
 

@@ -23,7 +23,11 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.2  2002-12-09 23:18:44  rsteinke
+ * Revision 1.3  2003-04-16 14:02:35  alriddoch
+ *  2003-04-16 Al Riddoch <alriddoch@zepler.org>,
+ *     - Fix up includes so they work properlly
+ *
+ * Revision 1.2  2002/12/09 23:18:44  rsteinke
  *     Added a 'const' in the definition of basic_socket_poll::socket_map
  *
  * Revision 1.1  2002/12/09 22:13:21  rsteinke
@@ -40,7 +44,8 @@
 #ifndef RGJ_FREE_SOCKET_POLL_H_
 #define RGJ_FREE_SOCKET_POLL_H_
 
-#include "skstream.h"
+#include <skstream/skstream.h>
+
 #include <map>
 
 class basic_socket_poll
