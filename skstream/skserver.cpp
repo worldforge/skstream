@@ -23,7 +23,13 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.16  2003-09-26 14:38:43  alriddoch
+ * Revision 1.17  2003-12-08 18:27:06  alriddoch
+ *  2003-12-08 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skserver.cpp: Correctly use SOCKET_ERROR instead of
+ *       INVALID_SOCKET when checking return value of syscalls.
+ *     - Add AC_CANONICAL_SYSTEM macro.
+ *
+ * Revision 1.16  2003/09/26 14:38:43  alriddoch
  *  2003-09-26 Al Riddoch <alriddoch@zepler.org>
  *     - Write some tests to pick up the socket and name resolver libs on
  *       System V.
@@ -269,7 +275,7 @@ SOCKET_TYPE basic_socket_server::getSocket() const
 //   The shutdown is a little rude... -  RGJ
 void basic_socket_server::close() {
   if(is_open()) {
-    if(::shutdown(_socket,0) == INVALID_SOCKET) {
+    if(::shutdown(_socket,0) == SOCKET_ERROR) {
       setLastError();
       //not necessarily a returning offense because there could be a socket
       //open that has never connected to anything and hence, does not need
@@ -277,7 +283,7 @@ void basic_socket_server::close() {
       //return;
     }
 
-    if(::closesocket(_socket) == INVALID_SOCKET) {
+    if(::closesocket(_socket) == SOCKET_ERROR) {
       setLastError();
       return;
     }

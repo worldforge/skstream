@@ -2,6 +2,10 @@ dnl Initialise autoconf
 
 AC_INIT(skstream/skstream.cpp)
 
+dnl Detect the canonical host and target environment
+
+AC_CANONICAL_SYSTEM
+
 dnl Initialise automake
 
 SKSTREAM_MAJOR=0
