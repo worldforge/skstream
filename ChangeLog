@@ -1,3 +1,8 @@
+ 2003-09-24 Al Riddoch <alriddoch@zepler.org>
+    - skstream/skstream.h, skstream/skstream.cpp: Re-write connecting
+      code for IP datagram and stream sockets so they try each of the
+      results from getaddrinfo in turn. Needs work on non-blocking
+      sockets.
  2003-09-23 Al Riddoch <alriddoch@zepler.org>
     - skstream/skserver.cpp: Modify bind code that uses getaddrinfo
       so it tries each of the results in turn until one works, instead

@@ -23,7 +23,14 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.33  2003-08-25 17:18:27  alriddoch
+ * Revision 1.34  2003-09-24 01:05:46  alriddoch
+ *  2003-09-24 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skstream.h, skstream/skstream.cpp: Re-write connecting
+ *       code for IP datagram and stream sockets so they try each of the
+ *       results from getaddrinfo in turn. Needs work on non-blocking
+ *       sockets.
+ *
+ * Revision 1.33  2003/08/25 17:18:27  alriddoch
  *  2003-08-23 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skstream.h, skstream/skstream.cpp: Add extra argument
  *       to dgram_streambuf::setTarget() so protocol can be passed in.
@@ -564,21 +571,23 @@ bool dgram_socketbuf::setTarget(const std::string& address, unsigned port,
     return false;
   }
 
-  SOCKET_TYPE newSock = ::socket(ans->ai_family,
-                                 ans->ai_socktype,
-                                 ans->ai_protocol);
-  if(newSock == INVALID_SOCKET) {
-    ::freeaddrinfo(ans);
-    return false;
+  bool success = false;
+
+  for(struct addrinfo * i = ans; success == false && i != 0; i = i->ai_next) {
+
+    _socket = ::socket(i->ai_family, i->ai_socktype, i->ai_protocol);
+
+    if (_socket != INVALID_SOCKET) {
+      memcpy(&out_peer, i->ai_addr, i->ai_addrlen);
+      out_p_size = i->ai_addrlen;
+      success = true;
+    }
+
   }
 
-  _socket = newSock;
-
-  memcpy(&out_peer, ans->ai_addr, ans->ai_addrlen);
-  out_p_size = ans->ai_addrlen;
   ::freeaddrinfo(ans);
 
-  return true;
+  return success;
 #else // HAVE_GETADDRINFO
 
 #warning Using deprecated resolver code because getaddrinfo() is not available
@@ -865,6 +874,9 @@ tcp_socket_stream::~tcp_socket_stream() {
   shutdown(); 
   if(_connecting_socket != INVALID_SOCKET) {
     ::closesocket(_connecting_socket);
+#ifdef HAVE_GETADDRINFO
+    ::freeaddrinfo(_connecting_addrlist);
+#endif // HAVE_GETADDRINFO
   }
 }
 
@@ -876,6 +888,11 @@ void tcp_socket_stream::open(const std::string & address,
   }
 
 #ifdef HAVE_GETADDRINFO
+  if (_connecting_addrlist != 0) {
+    ::freeaddrinfo(_connecting_addrlist);
+    _connecting_addrlist = 0;
+  }
+
   struct addrinfo req, *ans;
   char serviceName[32];
 
@@ -896,44 +913,54 @@ void tcp_socket_stream::open(const std::string & address,
     return;
   }
 
-  SOCKET_TYPE _socket = ::socket(ans->ai_family,
-                                 ans->ai_socktype,
-                                 ans->ai_protocol);
-  if(_socket == INVALID_SOCKET) {
-    fail();
-    return;
-  }
+  bool success = false;
+  SOCKET_TYPE _socket = INVALID_SOCKET;
 
-  if(nonblock) {
- #ifndef _WIN32
-    int err_val = fcntl(_socket, F_SETFL, O_NONBLOCK);
- #else // _WIN32
-    u_long nonblocking = 1;  // This flag may be set elsewhere,
-                             // in a header ?
-    int err_val = ioctlsocket(_socket, FIONBIO, &nonblocking);
- #endif // _WIN32
-    if(err_val == -1) {
+  for(struct addrinfo * i = ans; success == false && i != 0; i = i->ai_next) {
+
+    _socket = ::socket(i->ai_family, i->ai_socktype, i->ai_protocol);
+    if(_socket == INVALID_SOCKET) {
+      continue;
+    }
+
+    if(nonblock) {
+   #ifndef _WIN32
+      int err_val = fcntl(_socket, F_SETFL, O_NONBLOCK);
+   #else // _WIN32
+      u_long nonblocking = 1;  // This flag may be set elsewhere,
+                               // in a header ?
+      int err_val = ioctlsocket(_socket, FIONBIO, &nonblocking);
+   #endif // _WIN32
+      if(err_val == -1) {
+        setLastError();
+        ::closesocket(_socket);
+        continue;
+      }
+    }
+
+    sockaddr_storage iaddr;
+    memcpy(&iaddr, i->ai_addr, i->ai_addrlen);
+    SOCKLEN iaddrlen = i->ai_addrlen;
+
+    if(::connect(_socket, (sockaddr *)&iaddr, iaddrlen) < 0) {
+      if(nonblock && getSystemError() == SOCKET_BLOCK_ERROR) {
+        _connecting_socket = _socket;
+        _connecting_address = i;
+        _connecting_addrlist = ans;
+        return;
+      }
       setLastError();
       ::closesocket(_socket);
-      _socket = INVALID_SOCKET;
-      fail();
-      return;
+    } else {
+      success = true;
     }
+
   }
 
-  sockaddr_storage iaddr;
-  memcpy(&iaddr, ans->ai_addr, ans->ai_addrlen);
-  SOCKLEN iaddrlen = ans->ai_addrlen;
   ::freeaddrinfo(ans);
 
-  if(::connect(_socket, (sockaddr *)&iaddr, iaddrlen) < 0) {
-    if(nonblock && getSystemError() == SOCKET_BLOCK_ERROR) {
-      _connecting_socket = _socket;
-      return;
-    }
-    setLastError();
+  if (!success) {
     fail();
-    ::closesocket(_socket);
     return;
   }
 
@@ -1112,6 +1139,16 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
   getsockopt(_socket, SOL_SOCKET, SO_ERROR, (LPSTR)&errnum, &errsize); 
 #endif // _WIN32
 
+  // FIXME Need to check for failure, and if it has occured, we need to
+  // revisit the address list we got from getaddrinfo. For now we just
+  // free the list of addresses.
+#ifdef HAVE_GETADDRINFO
+  if (_connecting_addrlist != 0) {
+    ::freeaddrinfo(_connecting_addrlist);
+    _connecting_addrlist = 0;
+  }
+#endif // HAVE_GETADDRINFO
+
   if(errnum != 0) {
     // Can't use setLastError(), since errno doesn't have the error
     LastError = errnum;
@@ -1136,7 +1173,7 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
   }
 
   // set socket for underlying socketbuf
-    _sockbuf.setSocket(_socket);
+  _sockbuf.setSocket(_socket);
 
   return true;
 }

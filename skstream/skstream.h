@@ -23,7 +23,14 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.38  2003-09-08 17:05:36  xmp
+ * Revision 1.39  2003-09-24 01:05:46  alriddoch
+ *  2003-09-24 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skstream.h, skstream/skstream.cpp: Re-write connecting
+ *       code for IP datagram and stream sockets so they try each of the
+ *       results from getaddrinfo in turn. Needs work on non-blocking
+ *       sockets.
+ *
+ * Revision 1.38  2003/09/08 17:05:36  xmp
  *  2003-09-06 Martin Pollard <circlemaster@blueyonder.co.uk>
  *     - configure.in: changed win32 code to use winsock2.h instead of winsock.h.
  *     - skstream/skstream.h: added a guard #ifndef SOCKET_ERROR to it's definition
@@ -598,6 +605,9 @@ public:
 /////////////////////////////////////////////////////////////////////////////
 // class tcp_socket_stream
 /////////////////////////////////////////////////////////////////////////////
+
+struct addrinfo;
+
 class tcp_socket_stream : public basic_socket_stream {
 private:
   tcp_socket_stream(const tcp_socket_stream&);
@@ -605,17 +615,24 @@ private:
   tcp_socket_stream& operator=(const tcp_socket_stream& socket);
 
   SOCKET_TYPE _connecting_socket;
+  struct addrinfo * _connecting_address;
+  struct addrinfo * _connecting_addrlist;
+
   stream_socketbuf stream_sockbuf;
 
 public:
   tcp_socket_stream() : basic_socket_stream(stream_sockbuf),
                         _connecting_socket(INVALID_SOCKET),
+                        _connecting_address(0),
+                        _connecting_addrlist(0),
                         stream_sockbuf(INVALID_SOCKET) {
     protocol = FreeSockets::proto_TCP;
   }
 
   tcp_socket_stream(SOCKET_TYPE socket) : basic_socket_stream(stream_sockbuf),
                                           _connecting_socket(INVALID_SOCKET),
+                                          _connecting_address(0),
+                                          _connecting_addrlist(0),
                                           stream_sockbuf(socket) {
     protocol = FreeSockets::proto_TCP;
   }
@@ -623,6 +640,8 @@ public:
   tcp_socket_stream(const std::string& address, int service,
                     bool nonblock = false):basic_socket_stream(stream_sockbuf),
                                            _connecting_socket(INVALID_SOCKET),
+                                           _connecting_address(0),
+                                           _connecting_addrlist(0),
                                            stream_sockbuf(INVALID_SOCKET) {
     protocol = FreeSockets::proto_TCP;
     open(address, service, nonblock);
@@ -631,6 +650,8 @@ public:
   tcp_socket_stream(const std::string& address, int service,
               unsigned int milliseconds) : basic_socket_stream(stream_sockbuf),
                                            _connecting_socket(INVALID_SOCKET),
+                                           _connecting_address(0),
+                                           _connecting_addrlist(0),
                                            stream_sockbuf(INVALID_SOCKET) {
     protocol = FreeSockets::proto_TCP;
     open(address, service, milliseconds);
