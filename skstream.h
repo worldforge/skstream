@@ -23,7 +23,11 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.8  2002-03-18 07:31:50  malcolm
+ * Revision 1.9  2002-03-18 07:36:25  malcolm
+ * Add superclass constructor code to *_socket_stream classes
+ * (Necessary for compilation with gcc3)
+ *
+ * Revision 1.8  2002/03/18 07:31:50  malcolm
  * Code necessary for mingw32 compilation.
  *
  * Revision 1.7  2002/02/26 20:33:55  grimicus
@@ -347,7 +351,7 @@ protected:
 public:
   // Constructors
   basic_socket_stream()
-      : _sockbuf(INVALID_SOCKET), protocol(FreeSockets::proto_IP), LastError(0)
+      : std::iostream(&_sockbuf), _sockbuf(INVALID_SOCKET), protocol(FreeSockets::proto_IP), LastError(0)
   {
     startup();
     init(&_sockbuf); // initialize underlying streambuf
@@ -355,7 +359,7 @@ public:
 
   basic_socket_stream(unsigned insize,unsigned outsize,
                       int proto=FreeSockets::proto_IP)
-      : _sockbuf(INVALID_SOCKET,insize,outsize),
+      : std::iostream(&_sockbuf), _sockbuf(INVALID_SOCKET,insize,outsize),
         protocol(proto), LastError(0)
   {
     startup();
@@ -363,14 +367,14 @@ public:
   }
 
   basic_socket_stream(SOCKET_TYPE sock)
-      : _sockbuf(sock), protocol(FreeSockets::proto_IP), LastError(0) {
+      : std::iostream(&_sockbuf), _sockbuf(sock), protocol(FreeSockets::proto_IP), LastError(0) {
     startup();
     init(&_sockbuf); // initialize underlying streambuf
   }
 
   basic_socket_stream(SOCKET_TYPE sock,
                       unsigned insize,unsigned outsize)
-      : _sockbuf(sock,insize,outsize),
+      : std::iostream(&_sockbuf), _sockbuf(sock,insize,outsize),
         protocol(FreeSockets::proto_IP), LastError(0) {
     startup();
     init(&_sockbuf); // initialize underlying streambuf
