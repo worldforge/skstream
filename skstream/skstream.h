@@ -23,7 +23,13 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.33  2003-07-23 22:55:43  alriddoch
+ * Revision 1.34  2003-07-30 23:17:55  alriddoch
+ *  2003-07-30 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skserver.cpp, skstream/skserver.h, skstream/skstream.cpp,
+ *       skstream/skstream.h, skstream/skstream_unix.h: Move virtual
+ *       function implementations into .cpp files.
+ *
+ * Revision 1.33  2003/07/23 22:55:43  alriddoch
  *  2003-07-23 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skstream.h: Fix header for windows build.
  *
@@ -380,29 +386,12 @@ protected:
   virtual int underflow() = 0;
 
   /// Flush the output buffer.
-  virtual int sync() {
-    if(overflow() == EOF) // traits::eof()
-      return EOF;	// ios will set the fail bit // traits::eof()
-    else {
-//      // empty put and get areas
-//      setp(pbase(), epptr());
-//      setg(eback(), egptr(), egptr());
-//
-      return 0; // traits::not_eof(0);
-    }
-  }
+  virtual int sync();
 
   /** Set the buffer area this stream buffer uses. Only works if not already
    *  set.
    */
-  virtual std::streambuf* setbuf(char* buf, long len) {
-    if((buf != NULL) && (len > 0)) {
-      _buffer = buf;
-      setp(_buffer, _buffer+(len >> 1));
-      setg(_buffer+(len >> 1), _buffer+len, _buffer+len);
-    }
-    return this;
-  }
+  virtual std::streambuf* setbuf(char* buf, long len);
 };
 
 class stream_socketbuf : public socketbuf {
@@ -521,19 +510,15 @@ public:
   basic_socket_stream(socketbuf & buffer, int proto = FreeSockets::proto_IP);
 
   // Destructor
-  virtual ~basic_socket_stream() {
-    shutdown();
-  }
+  virtual ~basic_socket_stream();
 
   virtual bool fail();
 
-  virtual bool operator!() { 
-    return fail(); 
-  }
+  virtual bool operator!();
 
-  virtual bool timeout() const {
-    return _sockbuf.timeout();
-  }
+  // FIXME Why is this virtual?
+  // If its not virtual, it should be inlined.
+  virtual bool timeout() const;
 
   bool setOutpeer(const sockaddr_storage& peer) { 
     /*%NOTE(Grimicus, skstream2, FYI)
@@ -559,9 +544,7 @@ public:
     _sockbuf.setSocket(sock); 
   }
 
-  virtual SOCKET_TYPE getSocket() const { 
-    return _sockbuf.getSocket(); 
-  }
+  virtual SOCKET_TYPE getSocket() const;
 
   int getLastError() const { 
     return LastError; 
@@ -634,8 +617,7 @@ public:
   }
 
   virtual void close();
-  virtual SOCKET_TYPE getSocket() const { return (_connecting_socket == INVALID_SOCKET)
-    ? basic_socket_stream::getSocket() : _connecting_socket;}
+  virtual SOCKET_TYPE getSocket() const;
 
   std::string getRemoteHost() const {
     return std::string(::inet_ntoa(((const sockaddr_in&)getInpeer()).sin_addr));
@@ -670,9 +652,7 @@ public:
     _sockbuf.setSocket(_socket);
   }
 
-  virtual ~udp_socket_stream() {
-    shutdown(); 
-  }
+  virtual ~udp_socket_stream();
 
   bool setTarget(const std::string& address, unsigned port) { 
     return dgram_sockbuf.setTarget(address,port); 
@@ -710,9 +690,7 @@ public:
     _sockbuf.setSocket(_socket);
   }
 
-  virtual ~raw_socket_stream() {
-      shutdown(); 
-  }
+  virtual ~raw_socket_stream();
 
   void setProtocol(FreeSockets::IP_Protocol proto);
 

@@ -23,7 +23,13 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.7  2003-05-04 00:34:29  alriddoch
+ * Revision 1.8  2003-07-30 23:17:55  alriddoch
+ *  2003-07-30 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skserver.cpp, skstream/skserver.h, skstream/skstream.cpp,
+ *       skstream/skstream.h, skstream/skstream_unix.h: Move virtual
+ *       function implementations into .cpp files.
+ *
+ * Revision 1.7  2003/05/04 00:34:29  alriddoch
  *  2003-05-04 Al Riddoch <alriddoch@zepler.org>,
  *     - Add a second pkgconfig file for apps that need unix socket support.
  *     - Rename sksystem.h as skstreamconfig.h, and put it in an architecture
@@ -173,6 +179,17 @@ void basic_socket_server::setLastError() {
     LastError = getSystemError();
 }
 
+basic_socket_server::~basic_socket_server()
+{
+    close();
+    shutdown();
+}
+
+SOCKET_TYPE basic_socket_server::getSocket() const
+{
+    return _socket;
+}
+
 // close server's underlying socket
 //   The shutdown is a little rude... -  RGJ
 void basic_socket_server::close() {
@@ -196,6 +213,12 @@ void basic_socket_server::close() {
 /////////////////////////////////////////////////////////////////////////////
 // class tcp_socket_server implementation
 /////////////////////////////////////////////////////////////////////////////
+
+tcp_socket_server::~tcp_socket_server()
+{
+    close();
+}
+
 // handles tcp connections request
 SOCKET_TYPE tcp_socket_server::accept() {
   if(_socket==INVALID_SOCKET) return INVALID_SOCKET;
@@ -265,6 +288,17 @@ void tcp_socket_server::open(int service) {
 /////////////////////////////////////////////////////////////////////////////
 // class udp_socket_server implementation
 /////////////////////////////////////////////////////////////////////////////
+
+udp_socket_server::~udp_socket_server()
+{
+    close();
+}
+
+SOCKET_TYPE udp_socket_server::accept()
+{
+    return _socket;
+}
+
 // create a UDP socket binded to a given port
 void udp_socket_server::open(int service) {
   if(is_open()) close();

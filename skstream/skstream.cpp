@@ -23,7 +23,13 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.26  2003-07-23 17:00:29  alriddoch
+ * Revision 1.27  2003-07-30 23:17:55  alriddoch
+ *  2003-07-30 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skserver.cpp, skstream/skserver.h, skstream/skstream.cpp,
+ *       skstream/skstream.h, skstream/skstream_unix.h: Move virtual
+ *       function implementations into .cpp files.
+ *
+ * Revision 1.26  2003/07/23 17:00:29  alriddoch
  *  2003-07-23 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skstreamconfig.h.pbx, skstream/skstreamconfig.h.in,
  *       skstream/skstreamconfig.h.windows: Removed some defines which
@@ -313,6 +319,30 @@ socketbuf::socketbuf(SOCKET_TYPE sock, char* buf, int length)
 socketbuf::~socketbuf(){
   delete [] _buffer;
   _buffer = NULL;
+}
+
+int socketbuf::sync()
+{
+    if(overflow() == EOF) // traits::eof()
+      return EOF;	// ios will set the fail bit // traits::eof()
+    else {
+// This appeared to be causing the stream to lose data.
+//      // empty put and get areas
+//      setp(pbase(), epptr());
+//      setg(eback(), egptr(), egptr());
+//
+      return 0; // traits::not_eof(0);
+    }
+}
+
+std::streambuf* socketbuf::setbuf(char* buf, long len)
+{
+    if((buf != NULL) && (len > 0)) {
+      _buffer = buf;
+      setp(_buffer, _buffer+(len >> 1));
+      setg(_buffer+(len >> 1), _buffer+len, _buffer+len);
+    }
+    return this;
 }
 
 stream_socketbuf::stream_socketbuf(SOCKET_TYPE sock,
@@ -657,6 +687,26 @@ basic_socket_stream::basic_socket_stream(socketbuf & buffer,
   init(&_sockbuf); // initialize underlying streambuf
 }
 
+basic_socket_stream::~basic_socket_stream()
+{
+    shutdown();
+}
+
+bool basic_socket_stream::operator!()
+{
+    return fail();
+}
+
+bool basic_socket_stream::timeout() const
+{
+    return _sockbuf.timeout();
+}
+
+SOCKET_TYPE basic_socket_stream::getSocket() const
+{
+    return _sockbuf.getSocket();
+}
+
 // System dependant initialization
 bool basic_socket_stream::startup() {
   #ifdef _WIN32
@@ -925,6 +975,12 @@ void tcp_socket_stream::close()
   basic_socket_stream::close();
 }
 
+SOCKET_TYPE tcp_socket_stream::getSocket() const
+{
+    return (_connecting_socket == INVALID_SOCKET)
+            ? basic_socket_stream::getSocket() : _connecting_socket;
+}
+
 bool tcp_socket_stream::isReady(unsigned int milliseconds)
 {
   if(_connecting_socket == INVALID_SOCKET) {
@@ -986,6 +1042,11 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
   return true;
 }
 
+udp_socket_stream::~udp_socket_stream()
+{
+    shutdown();
+}
+
 #ifdef SKSTREAM_UNIX_SOCKETS
 
 #include "skstream_unix.h"
@@ -993,6 +1054,15 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
 /////////////////////////////////////////////////////////////////////////////
 // class unix_socket_stream implementation
 /////////////////////////////////////////////////////////////////////////////
+
+unix_socket_stream::~unix_socket_stream() { 
+    shutdown(); 
+    if (_connecting_socket != INVALID_SOCKET) {
+        ::close(_connecting_socket);
+    }
+}
+
+
 void unix_socket_stream::open(const std::string& address, bool nonblock) {
   if (address.size() >  107) {
     return;
@@ -1071,6 +1141,12 @@ void unix_socket_stream::close()
   basic_socket_stream::close();
 }
 
+SOCKET_TYPE unix_socket_stream::getSocket() const
+{
+    return (_connecting_socket == INVALID_SOCKET)
+            ? basic_socket_stream::getSocket() : _connecting_socket;
+}
+
 bool unix_socket_stream::isReady(unsigned int milliseconds)
 {
   if(_connecting_socket == INVALID_SOCKET) {
@@ -1143,6 +1219,11 @@ void raw_socket_stream::setProtocol(FreeSockets::IP_Protocol proto) {
   protocol = proto;
   SOCKET_TYPE _socket = ::socket(AF_INET, SOCK_RAW, protocol);
   _sockbuf.setSocket(_socket);
+}
+
+raw_socket_stream::~raw_socket_stream()
+{
+    shutdown();
 }
 
 #endif

@@ -51,15 +51,7 @@ public:
     open(address, milliseconds);
   }
 
-  virtual ~unix_socket_stream() { 
-      shutdown(); 
-      if(_connecting_socket != INVALID_SOCKET)
-#ifndef _WIN32
-        ::close(_connecting_socket);
-#else
-        ::closesocket(_connecting_socket);
-#endif
-  }
+  virtual ~unix_socket_stream();
 
   void open(const std::string& address, bool nonblock = false);
   void open(const std::string& address, unsigned int milliseconds) {
@@ -71,8 +63,7 @@ public:
   }
 
   virtual void close();
-  virtual SOCKET_TYPE getSocket() const { return (_connecting_socket == INVALID_SOCKET)
-    ? basic_socket_stream::getSocket() : _connecting_socket;}
+  virtual SOCKET_TYPE getSocket() const;
 
   // is_ready() is deprecated in favor of isReady()
   bool is_ready(unsigned int milliseconds = 0) {return isReady(milliseconds);}

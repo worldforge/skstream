@@ -23,7 +23,13 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.6  2003-04-16 14:02:35  alriddoch
+ * Revision 1.7  2003-07-30 23:17:55  alriddoch
+ *  2003-07-30 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skserver.cpp, skstream/skserver.h, skstream/skstream.cpp,
+ *       skstream/skstream.h, skstream/skstream_unix.h: Move virtual
+ *       function implementations into .cpp files.
+ *
+ * Revision 1.6  2003/04/16 14:02:35  alriddoch
  *  2003-04-16 Al Riddoch <alriddoch@zepler.org>,
  *     - Fix up includes so they work properlly
  *
@@ -152,18 +158,13 @@ protected:
 
 public:
   // Destructor
-  virtual ~basic_socket_server() {
-      close();
-      shutdown();
-  }
+  virtual ~basic_socket_server();
 
   bool is_open() const { 
     return (_socket != INVALID_SOCKET); 
   }
 
-  virtual SOCKET_TYPE getSocket() const { 
-    return _socket; 
-  }
+  virtual SOCKET_TYPE getSocket() const;
 
   int getService() {
       return _service;
@@ -190,9 +191,7 @@ public:
   }
 
   // Destructor
-  virtual ~tcp_socket_server() { 
-    close(); 
-  }
+  virtual ~tcp_socket_server();
 
   virtual SOCKET_TYPE accept();
 
@@ -214,14 +213,10 @@ public:
   }
 
   // Destructor
-  virtual ~udp_socket_server() { 
-    close(); 
-  }
+  virtual ~udp_socket_server();
 
   // return the socket used to send/recv UDP packets
-  virtual SOCKET_TYPE accept() { 
-    return _socket; 
-  }
+  virtual SOCKET_TYPE accept();
 
   virtual void open(int service);
 };
