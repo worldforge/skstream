@@ -1,4 +1,6 @@
  2003-03-18 Al Riddoch <alriddoch@zepler.org>,
+    - Remove legacy skstream-config script to avoid clash with stable version.
+ 2003-03-18 Al Riddoch <alriddoch@zepler.org>,
     - Increment API to version 0.3, and reset interface version, so
       this version can co-exist with 0.2.x
  2003-03-16 Al Riddoch <alriddoch@zepler.org>,

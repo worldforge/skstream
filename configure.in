@@ -337,7 +337,6 @@ dnl Generate files
 AC_OUTPUT([
 	Makefile
 	test/Makefile
-	skstream-config
 	skstream.spec
 	skstream-0.3.pc
 	sksystem.h
