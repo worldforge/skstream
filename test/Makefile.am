@@ -11,5 +11,5 @@ skstreamtestrunner_SOURCES = skstreamtestrunner.cpp \
 
 skstreamtestrunner_LDADD= \
     @CPPUNIT_LIBS@ \
-    $(top_builddir)/libskstream.la
+    $(top_builddir)/libskstream-0.2.la
 
