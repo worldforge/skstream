@@ -23,7 +23,13 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.39  2003-09-25 16:39:50  alriddoch
+ * Revision 1.40  2003-09-25 17:05:49  alriddoch
+ *  2003-09-25 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skpoll.cpp, skstream/skserver.cpp, skstream/skstream.cpp:
+ *       Finish off fully qualifying all libc and system calls as being
+ *       explicitly in the global namespace.
+ *
+ * Revision 1.39  2003/09/25 16:39:50  alriddoch
  *  2003-09-25 Al Riddoch <alriddoch@zepler.org>
  *     - Remove messy attempt to handle IPv6 addresses without getaddrinfo
  *
@@ -587,7 +593,7 @@ bool dgram_socketbuf::setTarget(const std::string& address, unsigned port,
   struct addrinfo req, *ans;
   char portName[32];
 
-  sprintf(portName, "%d", port);
+  ::sprintf(portName, "%d", port);
 
   req.ai_flags = 0;
   req.ai_family = PF_UNSPEC;
@@ -911,7 +917,7 @@ void tcp_socket_stream::open(const std::string & address,
   struct addrinfo req, *ans;
   char serviceName[32];
 
-  sprintf(serviceName, "%d", service);
+  ::sprintf(serviceName, "%d", service);
 
   req.ai_flags = 0;
   req.ai_family = PF_UNSPEC;

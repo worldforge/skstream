@@ -1,4 +1,8 @@
  2003-09-25 Al Riddoch <alriddoch@zepler.org>
+    - skstream/skpoll.cpp, skstream/skserver.cpp, skstream/skstream.cpp:
+      Finish off fully qualifying all libc and system calls as being
+      explicitly in the global namespace.
+ 2003-09-25 Al Riddoch <alriddoch@zepler.org>
     - Remove messy attempt to handle IPv6 addresses without getaddrinfo
  2003-09-25 James Turner <james@worldforge.org>
     - skstream/skstream.cpp: Fully qualify all libc and system calls as

@@ -23,7 +23,13 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.14  2003-09-23 22:45:32  alriddoch
+ * Revision 1.15  2003-09-25 17:05:49  alriddoch
+ *  2003-09-25 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skpoll.cpp, skstream/skserver.cpp, skstream/skstream.cpp:
+ *       Finish off fully qualifying all libc and system calls as being
+ *       explicitly in the global namespace.
+ *
+ * Revision 1.14  2003/09/23 22:45:32  alriddoch
  *  2003-09-23 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skserver.cpp: Modify bind code that uses getaddrinfo
  *       so it tries each of the results in turn until one works, instead
@@ -300,7 +306,7 @@ bool ip_socket_server::bindToIpService(int service, int type, int protocol)
   struct addrinfo req, *ans;
   char serviceName[32];
 
-  sprintf(serviceName, "%d", service);
+  ::sprintf(serviceName, "%d", service);
 
   req.ai_flags = AI_PASSIVE;
   req.ai_family = PF_UNSPEC;
@@ -329,7 +335,7 @@ bool ip_socket_server::bindToIpService(int service, int type, int protocol)
     }
 
     sockaddr_storage iaddr;
-    memcpy(&iaddr, i->ai_addr, i->ai_addrlen);
+    ::memcpy(&iaddr, i->ai_addr, i->ai_addrlen);
     SOCKLEN iaddrlen = i->ai_addrlen;
 
     if (::bind(_socket, (sockaddr*)&iaddr, iaddrlen) == SOCKET_ERROR) {

@@ -23,7 +23,13 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.3  2003-04-16 14:02:35  alriddoch
+ * Revision 1.4  2003-09-25 17:05:49  alriddoch
+ *  2003-09-25 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skpoll.cpp, skstream/skserver.cpp, skstream/skstream.cpp:
+ *       Finish off fully qualifying all libc and system calls as being
+ *       explicitly in the global namespace.
+ *
+ * Revision 1.3  2003/04/16 14:02:35  alriddoch
  *  2003-04-16 Al Riddoch <alriddoch@zepler.org>,
  *     - Fix up includes so they work properlly
  *
@@ -80,7 +86,7 @@ int basic_socket_poll::poll(const socket_map& map, unsigned long timeout)
 
   struct timeval timeout_val = {timeout / 1000, timeout % 1000};
 
-  return select(maxfd_, &read_, &write_, &except_, &timeout_val);
+  return ::select(maxfd_, &read_, &write_, &except_, &timeout_val);
 }
 
 basic_socket_poll::poll_type basic_socket_poll::isReady(const basic_socket* soc,
