@@ -1,7 +1,6 @@
 .deps
 .libs
 Makefile
-Makefile.am
 Makefile.in
 libskstream-0.2.la
 skpoll.lo
