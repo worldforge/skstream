@@ -23,7 +23,12 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.20  2002-06-30 11:01:11  rsteinke
+ * Revision 1.21  2002-07-04 10:23:56  jmt
+ *  07/03/2002 James Turner <james@worldforge.org>
+ * 	-Added configuration case for Darwin / OS-X
+ * 	-Fixed Rsteinke's changes to use typedefs for socklen / errnum
+ *
+ * Revision 1.20  2002/06/30 11:01:11  rsteinke
  * Missing const in prototype to override virtual function
  *
  * Revision 1.19  2002/06/12 16:06:58  rsteinke
@@ -285,7 +290,7 @@
   typedef int SOCKET_TYPE;
 #endif
 
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__)
   #include <sys/types.h>
   #include <sys/socket.h>
   #include <sys/time.h>
@@ -299,6 +304,28 @@
   #define SOCKET_ERROR   -1
 
   #define SOCKLEN socklen_t
+
+  #define IPPORT_RESERVED 1024
+
+  #define closesocket(x) close(x)
+
+  typedef int SOCKET_TYPE;
+#endif
+
+#if defined(__APPLE__)
+  #include <sys/types.h>
+  #include <sys/socket.h>
+  #include <sys/time.h>
+  #include <unistd.h>
+  #include <netinet/in.h>
+  #include <arpa/inet.h>
+  #include <netdb.h>
+  #include <errno.h>
+
+  #define INVALID_SOCKET (SOCKET_TYPE)(~0)
+  #define SOCKET_ERROR   -1
+
+  #define SOCKLEN int
 
   #define IPPORT_RESERVED 1024
 

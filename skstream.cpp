@@ -23,7 +23,12 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.8  2002-06-12 01:21:47  rsteinke
+ * Revision 1.9  2002-07-04 10:23:56  jmt
+ *  07/03/2002 James Turner <james@worldforge.org>
+ * 	-Added configuration case for Darwin / OS-X
+ * 	-Fixed Rsteinke's changes to use typedefs for socklen / errnum
+ *
+ * Revision 1.8  2002/06/12 01:21:47  rsteinke
  *     -Added an optional "milliseconds" argument to
  *      tcp_socket_stream::is_ready(), to take advantage
  *      of the timeout in select()
@@ -553,7 +558,7 @@ bool tcp_socket_stream::is_ready(unsigned int milliseconds)
   _connecting_socket = INVALID_SOCKET;
 
   int errnum;
-  socklen_t errsize = sizeof(errnum);
+  SOCKLEN errsize = sizeof(errnum);
 #ifndef _WIN32
   getsockopt(_socket, SOL_SOCKET, SO_ERROR, &errnum, &errsize);
 #else

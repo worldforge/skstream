@@ -1,3 +1,6 @@
+ 07/03/2002 James Turner <james@worldforge.org>
+	-Added configuration case for Darwin / OS-X
+	-Fixed Rsteinke's changes to use typedefs for socklen / errnum
  06/26/2002 Michael Koch <konqueror@gmx.de>
     -Install headers into $(includedir)/skstream
     -Simplified installation of doc files
