@@ -22,7 +22,16 @@
 //  Created: 2002-02-19 by Dan Tomalesky
 //
 // $Log$
-// Revision 1.2  2002-02-20 05:04:07  grimicus
+// Revision 1.3  2002-02-21 05:11:15  grimicus
+// 2002-02-20 Dan Tomalesky <grim@xynesis.com>
+//     * Added a new test case header for basic_socket_streams
+//
+//     * Made a mod to basic_socket_stream::setOutpeer(sockaddr_in&)
+//       seemed to me it had an erroneous ! in the return
+//
+//     * Oh, and I reformatted skstream.h so its not so damn hard to look at
+//
+// Revision 1.2  2002/02/20 05:04:07  grimicus
 // 2002-02-19 Grimicus <grim@xynesis.com>
 //
 //     * updated socketbuf(SOCKET_TYPE, unsigned, unsigned) to have variable
@@ -54,12 +63,17 @@ class socketbuftest : public CppUnit::TestCase
     CPPUNIT_TEST(testConstructor_1);
     CPPUNIT_TEST(testConstructor_2);
     CPPUNIT_TEST(testSetOutpeer);
+    CPPUNIT_TEST(testGetInpeer);
+    CPPUNIT_TEST(testSetSocket);
     CPPUNIT_TEST_SUITE_END();
 
     private: 
         socketbuf *socketBuffer;
         std::string *hostname;
         unsigned port;
+
+        SOCKET_TYPE *socket_types; 
+        int st_length;
 
     public:
         socketbuftest(std::string name) : TestCase(name) { }
@@ -69,16 +83,16 @@ class socketbuftest : public CppUnit::TestCase
         {
             socketbuf *socketBuf;
 
-            for(int i = FreeSockets::proto_IP; i <= FreeSockets::proto_RAW; ++i)
+            for(int i = 0; i < st_length ; ++i)
             {
-                socketBuf = new socketbuf(i);
+                int value = socket_types[i];
+                socketBuf = new socketbuf(value);
 
                 CPPUNIT_ASSERT(socketBuf);
 
                 //always clean up...
                 delete socketBuf;
             }
-
 
             //what happens when you set the socketbuf(0, 0, 0);
             socketBuf = new socketbuf(0, 0, 0);
@@ -91,11 +105,12 @@ class socketbuftest : public CppUnit::TestCase
             socketbuf *socketBuf;
             char * ch; 
 
-            for(int i = FreeSockets::proto_IP; i <= FreeSockets::proto_RAW; ++i)
+            for(int i = 0; i < st_length ; ++i)
             {
+                int value = socket_types[i];
                 ch = new char [20];
                 int length = sizeof(ch);
-                socketBuf = new socketbuf(i, ch, length);
+                socketBuf = new socketbuf(value, ch, length);
 
                 CPPUNIT_ASSERT_MESSAGE("testing i", socketBuf);
 
@@ -106,13 +121,62 @@ class socketbuftest : public CppUnit::TestCase
         void testSetOutpeer()
         {
             CPPUNIT_ASSERT(socketBuffer->setOutpeer(*hostname, port));
+            sockaddr_in sain = socketBuffer->getOutpeer();
+
+            //check the port was set
+            CPPUNIT_ASSERT(sain.sin_port);
+
+            //check the address was set
+            CPPUNIT_ASSERT(sain.sin_addr.s_addr);
+        }
+
+        void testGetInpeer()
+        {
+            sockaddr_in sain = socketBuffer->getInpeer();
+
+            //these tests don't do anything it seems. hopefully some better
+            //ones will surface at some point.
+            
+            //check the address was set
+            //  CPPUNIT_ASSERT(sain.sin_addr.s_addr);
+
+            //check the port was set
+            //  CPPUNIT_ASSERT(sain.sin_port);
+
+        }
+
+        void testSetSocket()
+        {
+            for(int i = 0; i < st_length ; ++i)
+            {
+                int value = socket_types[i];
+                socketBuffer->setSocket(value);
+
+                CPPUNIT_ASSERT(socketBuffer->getSocket() == value);
+            }
         }
 
         void setUp()
         {
-            socketBuffer = new socketbuf(FreeSockets::proto_TCP);
+            socketBuffer = new socketbuf(SOCK_STREAM);
+            //not a perfect way to test, since this would fail for
+            //someone not connected to the network, but what can you
+            //really do to test a network lib? :-)
             hostname = new std::string("www.worldforge.org");
             port = 80;
+
+            //these are the potential values for SOCKET_TYPE
+            //it is assumed the sockets are using AF_INET, and
+            //hence SOCK_SEQPACKET should fail at least in a GNU 
+            //implementation of sockets...?
+            st_length = 6;
+            socket_types = new int [st_length];
+            socket_types[0] = SOCK_STREAM;
+            socket_types[1] = SOCK_DGRAM;
+            socket_types[2] = SOCK_RAW;
+            socket_types[3] = SOCK_RDM;
+            socket_types[4] = SOCK_SEQPACKET;
+            socket_types[5] = SOCK_PACKET;
         }
 
         void tearDown()
@@ -120,6 +184,9 @@ class socketbuftest : public CppUnit::TestCase
             delete socketBuffer;
             delete hostname;
             port = 0;
+
+            delete [] socket_types;
+            st_length = 0;
         }
 
 };

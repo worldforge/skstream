@@ -102,13 +102,19 @@ public:
   virtual ~socketbuf();
 
   bool setOutpeer(const std::string& address, unsigned port);
-  bool setOutpeer(const sockaddr_in& peer)
-    { out_peer = peer; return true; }
-  sockaddr_in getOutpeer() const
-    { return out_peer; }
 
-  sockaddr_in getInpeer() const
-    { return in_peer; }
+  bool setOutpeer(const sockaddr_in& peer) { 
+    out_peer = peer; 
+    return true; 
+  }
+
+  sockaddr_in getOutpeer() const {
+    return out_peer; 
+  }
+
+  sockaddr_in getInpeer() const { 
+    return in_peer; 
+  }
 
   void setSocket(SOCKET_TYPE sock) {
     _socket = sock;
@@ -214,6 +220,7 @@ public:
     startup();
     init(&_sockbuf); // initialize underlying streambuf
   }
+
   basic_socket_stream(unsigned insize,unsigned outsize,
                       int proto=FreeSockets::proto_IP)
       : _sockbuf(INVALID_SOCKET,insize,outsize),
@@ -222,11 +229,13 @@ public:
     startup();
     init(&_sockbuf); // initialize underlying streambuf
   }
+
   basic_socket_stream(SOCKET_TYPE sock)
       : _sockbuf(sock), protocol(FreeSockets::proto_IP), LastError(0) {
     startup();
     init(&_sockbuf); // initialize underlying streambuf
   }
+
   basic_socket_stream(SOCKET_TYPE sock,
                       unsigned insize,unsigned outsize)
       : _sockbuf(sock,insize,outsize),
@@ -234,14 +243,16 @@ public:
     startup();
     init(&_sockbuf); // initialize underlying streambuf
   }
+
   // Destructor
   virtual ~basic_socket_stream() {
     close();
     shutdown();
   }
 
-  virtual bool operator!()
-   { return fail(); }
+  virtual bool operator!() { 
+    return fail(); 
+  }
 
   virtual bool fail() {
     if(timeout()) {
@@ -259,24 +270,37 @@ public:
     return _sockbuf.timeout();
   }
 
-  bool setOutpeer(const std::string& address, unsigned port)
-    { return _sockbuf.setOutpeer(address,port); }
-  bool setOutpeer(const sockaddr_in& peer)
-    { return !_sockbuf.setOutpeer(peer); }
-  sockaddr_in getOutpeer() const
-    { return _sockbuf.getOutpeer(); }
+  bool setOutpeer(const std::string& address, unsigned port) { 
+    return _sockbuf.setOutpeer(address,port); 
+  }
 
-  sockaddr_in getInpeer() const
-    { return _sockbuf.getInpeer(); }
+  bool setOutpeer(const sockaddr_in& peer) { 
+    /*%NOTE(Grimicus, skstream2, FYI)
+     * removed a ! right before _socketbuf because it
+     *didn't seem to be consistent with the other setOutpeer()
+     */
+    return _sockbuf.setOutpeer(peer); 
+  }
 
-  bool is_open() const
-    { return ( getSocket() != INVALID_SOCKET); }
+  sockaddr_in getOutpeer() const { 
+    return _sockbuf.getOutpeer(); 
+  }
 
-  void setSocket(SOCKET_TYPE sock)
-    { _sockbuf.setSocket(sock); }
+  sockaddr_in getInpeer() const { 
+    return _sockbuf.getInpeer(); 
+  }
 
-  SOCKET_TYPE getSocket() const
-    { return _sockbuf.getSocket(); }
+  bool is_open() const { 
+    return ( getSocket() != INVALID_SOCKET); 
+  }
+
+  void setSocket(SOCKET_TYPE sock) { 
+    _sockbuf.setSocket(sock); 
+  }
+
+  SOCKET_TYPE getSocket() const { 
+    return _sockbuf.getSocket(); 
+  }
 
   std::string getRemoteHost() const {
     return std::string(::inet_ntoa(getInpeer().sin_addr));
@@ -286,15 +310,19 @@ public:
     return ntohs(getInpeer().sin_port);
   }
 
-  int getLastError() const { return LastError; }
+  int getLastError() const { 
+    return LastError; 
+  }
 
   void close();
 
-  void setTimeout(unsigned sec, unsigned usec=0)
-    { _sockbuf.setTimeout(sec,usec); }
+  void setTimeout(unsigned sec, unsigned usec=0) { 
+    _sockbuf.setTimeout(sec,usec); 
+  }
 
-  int getProtocol() const
-    { return protocol; }
+  int getProtocol() const { 
+    return protocol; 
+  }
 
   bool setBroadcast(bool opt=false) {
     int ok = opt?1:0;

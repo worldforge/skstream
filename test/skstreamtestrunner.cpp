@@ -22,7 +22,16 @@
 //  Created: 2000-10-03 by Bryce
 //
 // $Log$
-// Revision 1.2  2002-02-20 05:04:07  grimicus
+// Revision 1.3  2002-02-21 05:11:15  grimicus
+// 2002-02-20 Dan Tomalesky <grim@xynesis.com>
+//     * Added a new test case header for basic_socket_streams
+//
+//     * Made a mod to basic_socket_stream::setOutpeer(sockaddr_in&)
+//       seemed to me it had an erroneous ! in the return
+//
+//     * Oh, and I reformatted skstream.h so its not so damn hard to look at
+//
+// Revision 1.2  2002/02/20 05:04:07  grimicus
 // 2002-02-19 Grimicus <grim@xynesis.com>
 //
 //     * updated socketbuf(SOCKET_TYPE, unsigned, unsigned) to have variable
@@ -42,8 +51,10 @@
 #include <cppunit/TextTestRunner.h>
 
 #include "socketbuftest.h"
+#include "basicskstreamtest.h"
 
 CPPUNIT_TEST_SUITE_REGISTRATION(socketbuftest);
+CPPUNIT_TEST_SUITE_REGISTRATION(basicskstreamtest);
 
 int main(int argc, char **argv)
 {

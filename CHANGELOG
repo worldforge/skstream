@@ -46,6 +46,11 @@ Future Work:
   - A multi-threaded TCP server class.
 
 Change Log:
+ 02/20/2002 Dan Tomalesky <grim@xynesis.com>
+    -did I mention I hate this change log.
+    -added a new test case header for basic_socket_streams
+    -made a mod to basic_socket_stream::setOutpeer(sockaddr_in&)
+     seemed to me it had an erroneous ! in the statement
  02/19/2002 Dan Tomalesky <grim@xynesis.com>
     -changed socketbuf(int, unsigned, unsigned) to have variable names
      so it is easier to read in the declaration.
