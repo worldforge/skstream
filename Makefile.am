@@ -1,6 +1,6 @@
 lib_LTLIBRARIES = libskstream.la
 
-libskstream_la_SOURCES = skstream.cpp skstream.h skserver.cpp skserver.h sasproto.h
+libskstream_la_SOURCES = skstream.cpp skserver.cpp
 
 libskstreamincludedir = $(includedir)
 libskstreaminclude_HEADERS = skstream.h skserver.h sasproto.h
@@ -10,6 +10,6 @@ m4data_DATA = skstream.m4
 
 bin_SCRIPTS = skstream-config
 
-EXTRA_DIST = AUTHORS README
+EXTRA_DIST = skstream.m4 skstream-config.in autogen.sh
 
 SUBDIRS = . test

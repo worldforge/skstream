@@ -1,4 +1,9 @@
  03/02/2002 Dan Tomalesky <grim@xynesis.com>
+    -Updated Makefile.am to have the various EXTRA_DIST stuff needed in the
+     tar ball.
+    -Fixed the includes for the tests so that they aren't installed when doing
+     make install, but are in the dist file.
+    -Adding TODO so that make dist is happy (nothing in it though)
     -Added acinclude.m4 with the cppunit m4 in it so that people without
      cppunit can still autogen/configure (I see your point now James :-)
     -Adding ChangeLog, NEWS, and README which are requirements for doing
