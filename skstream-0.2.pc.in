@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: skstream
+Description: An iostream socket library.
+Version: @VERSION@
+Libs: -L${libdir} -lskstream-0.2
+Cflags: -I${includedir}/skstream-0.2
