@@ -23,7 +23,19 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.27  2003-07-30 23:17:55  alriddoch
+ * Revision 1.28  2003-08-08 23:56:26  alriddoch
+ *  2003-08-08 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skstream.cpp, skstream/skstream_unix.h: Include skstream
+ *       header with its fully qualified name for compatability, and move
+ *       the unix system header out of the header into the cpp file.
+ *     - skstream/skserver.cpp, skstream/skserver.h: Add new base class for ip
+ *       socket types, and put in the ip address related functionality into it,
+ *       so basic class can be used as a base for unix socket class.  Move
+ *       can_accept() into the base class as it applies to any listen socket.
+ *     - skstream/skserver_unix.h, skstream/skserver.cpp: Add a class for
+ *       unix listen sockets.
+ *
+ * Revision 1.27  2003/07/30 23:17:55  alriddoch
  *  2003-07-30 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skserver.cpp, skstream/skserver.h, skstream/skstream.cpp,
  *       skstream/skstream.h, skstream/skstream_unix.h: Move virtual
@@ -1049,7 +1061,9 @@ udp_socket_stream::~udp_socket_stream()
 
 #ifdef SKSTREAM_UNIX_SOCKETS
 
-#include "skstream_unix.h"
+#include <skstream/skstream_unix.h>
+
+#include <sys/un.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // class unix_socket_stream implementation
@@ -1226,4 +1240,4 @@ raw_socket_stream::~raw_socket_stream()
     shutdown();
 }
 
-#endif
+#endif // SOCK_RAW

@@ -23,7 +23,19 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.8  2003-07-30 23:17:55  alriddoch
+ * Revision 1.9  2003-08-08 23:56:26  alriddoch
+ *  2003-08-08 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skstream.cpp, skstream/skstream_unix.h: Include skstream
+ *       header with its fully qualified name for compatability, and move
+ *       the unix system header out of the header into the cpp file.
+ *     - skstream/skserver.cpp, skstream/skserver.h: Add new base class for ip
+ *       socket types, and put in the ip address related functionality into it,
+ *       so basic class can be used as a base for unix socket class.  Move
+ *       can_accept() into the base class as it applies to any listen socket.
+ *     - skstream/skserver_unix.h, skstream/skserver.cpp: Add a class for
+ *       unix listen sockets.
+ *
+ * Revision 1.8  2003/07/30 23:17:55  alriddoch
  *  2003-07-30 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skserver.cpp, skstream/skserver.h, skstream/skstream.cpp,
  *       skstream/skstream.h, skstream/skstream_unix.h: Move virtual
@@ -210,28 +222,7 @@ void basic_socket_server::close() {
   }
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// class tcp_socket_server implementation
-/////////////////////////////////////////////////////////////////////////////
-
-tcp_socket_server::~tcp_socket_server()
-{
-    close();
-}
-
-// handles tcp connections request
-SOCKET_TYPE tcp_socket_server::accept() {
-  if(_socket==INVALID_SOCKET) return INVALID_SOCKET;
-  SOCKET_TYPE commsock = ::accept(_socket, NULL, NULL);
-  if(commsock == INVALID_SOCKET) {
-    setLastError();
-    close();
-    return INVALID_SOCKET;
-  }
-  return commsock;
-}
-
-bool tcp_socket_server::can_accept() {
+bool basic_socket_server::can_accept() {
   if(_socket == INVALID_SOCKET) return false;
 
   fd_set sock_fds;
@@ -253,6 +244,34 @@ bool tcp_socket_server::can_accept() {
   }
 
   return false;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// class tcp_socket_server implementation
+/////////////////////////////////////////////////////////////////////////////
+
+ip_socket_server::~ip_socket_server()
+{
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// class tcp_socket_server implementation
+/////////////////////////////////////////////////////////////////////////////
+
+tcp_socket_server::~tcp_socket_server()
+{
+}
+
+// handles tcp connections request
+SOCKET_TYPE tcp_socket_server::accept() {
+  if(_socket==INVALID_SOCKET) return INVALID_SOCKET;
+  SOCKET_TYPE commsock = ::accept(_socket, NULL, NULL);
+  if(commsock == INVALID_SOCKET) {
+    setLastError();
+    close();
+    return INVALID_SOCKET;
+  }
+  return commsock;
 }
 
 // start tcp server and put it in listen state
@@ -291,7 +310,6 @@ void tcp_socket_server::open(int service) {
 
 udp_socket_server::~udp_socket_server()
 {
-    close();
 }
 
 SOCKET_TYPE udp_socket_server::accept()
@@ -322,3 +340,64 @@ void udp_socket_server::open(int service) {
   }
 }
 
+#ifdef SKSTREAM_UNIX_SOCKETS
+
+#include <skstream/skserver_unix.h>
+
+#include <sys/un.h>
+
+/////////////////////////////////////////////////////////////////////////////
+// class unix_socket_server implementation
+/////////////////////////////////////////////////////////////////////////////
+
+unix_socket_server::~unix_socket_server()
+{
+}
+
+// handles unix connections request
+SOCKET_TYPE unix_socket_server::accept() {
+  if(_socket==INVALID_SOCKET) return INVALID_SOCKET;
+  SOCKET_TYPE commsock = ::accept(_socket, NULL, NULL);
+  if(commsock == INVALID_SOCKET) {
+    setLastError();
+    close();
+    return INVALID_SOCKET;
+  }
+  return commsock;
+}
+
+// start unix server and put it in listen state
+void unix_socket_server::open(const std::string & service) {
+  if(is_open()) close();
+
+  if (service.size() > 107) {
+    return;
+  }
+
+  // create socket
+  _socket = ::socket(AF_UNIX, SOCK_STREAM, 0);
+  if(_socket == INVALID_SOCKET) {
+    setLastError();
+    return;
+  }
+
+  // Bind Socket
+  sockaddr_un sa;
+  sa.sun_family = AF_UNIX;
+  strncpy(sa.sun_path, service.c_str(), 108);
+  if(::bind(_socket, (sockaddr*)&sa, sizeof(sa)) == SOCKET_ERROR) {
+    setLastError();
+    close();
+    return;
+  }
+
+  // Listen
+  if(::listen(_socket, 5) == SOCKET_ERROR) { // max backlog
+    setLastError();
+    close();
+    return;
+  }
+}
+
+
+#endif // SKSTREAM_UNIX_SOCKETS

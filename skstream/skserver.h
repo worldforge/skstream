@@ -23,7 +23,19 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.7  2003-07-30 23:17:55  alriddoch
+ * Revision 1.8  2003-08-08 23:56:26  alriddoch
+ *  2003-08-08 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skstream.cpp, skstream/skstream_unix.h: Include skstream
+ *       header with its fully qualified name for compatability, and move
+ *       the unix system header out of the header into the cpp file.
+ *     - skstream/skserver.cpp, skstream/skserver.h: Add new base class for ip
+ *       socket types, and put in the ip address related functionality into it,
+ *       so basic class can be used as a base for unix socket class.  Move
+ *       can_accept() into the base class as it applies to any listen socket.
+ *     - skstream/skserver_unix.h, skstream/skserver.cpp: Add a class for
+ *       unix listen sockets.
+ *
+ * Revision 1.7  2003/07/30 23:17:55  alriddoch
  *  2003-07-30 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skserver.cpp, skstream/skserver.h, skstream/skstream.cpp,
  *       skstream/skstream.h, skstream/skstream_unix.h: Move virtual
@@ -130,18 +142,9 @@
 class basic_socket_server : public basic_socket {
 protected:
   SOCKET_TYPE _socket;
-  int _service;
   int LastError;
 
   void setLastError();
-
-  void setService(unsigned service) {
-    if(is_open())
-      close();
-
-    _service = service;
-    open(_service);
-  }
 
 private:
   basic_socket_server(const basic_socket_server&);
@@ -152,7 +155,7 @@ private:
 
 protected:
   basic_socket_server(SOCKET_TYPE _sock = INVALID_SOCKET)
-     : _socket(_sock), _service(0), LastError(0) { 
+     : _socket(_sock), LastError(0) { 
     startup(); 
   }
 
@@ -166,10 +169,6 @@ public:
 
   virtual SOCKET_TYPE getSocket() const;
 
-  int getService() {
-      return _service;
-  }
-
   int getLastError() { 
     setLastError(); 
     return LastError; 
@@ -177,16 +176,48 @@ public:
 
   void close();
 
+  /**
+   * See if accept() can be called without blocking on it.
+   */
+  bool can_accept();
+
   virtual SOCKET_TYPE accept() = 0;
+};
+
+/////////////////////////////////////////////////////////////////////////////
+// class ip_socket_server
+/////////////////////////////////////////////////////////////////////////////
+class ip_socket_server : public basic_socket_server {
+protected:
+  int _service;
+
+  void setService(unsigned service) {
+    if(is_open())
+      close();
+
+    _service = service;
+    open(_service);
+  }
+
+  ip_socket_server(SOCKET_TYPE _sock = INVALID_SOCKET) :
+             basic_socket_server(_sock), _service(0) {
+  }
+public:
+  virtual ~ip_socket_server();
+
+  int getService() {
+      return _service;
+  }
+
   virtual void open(int service) = 0;
 };
 
 /////////////////////////////////////////////////////////////////////////////
 // class tcp_socket_server
 /////////////////////////////////////////////////////////////////////////////
-class tcp_socket_server : public basic_socket_server {
+class tcp_socket_server : public ip_socket_server {
 public:
-  tcp_socket_server(int service) : basic_socket_server() { 
+  tcp_socket_server(int service) : ip_socket_server() { 
     setService(service); 
   }
 
@@ -195,20 +226,15 @@ public:
 
   virtual SOCKET_TYPE accept();
 
-  /**
-   * See if accept() can be called without blocking on it.
-   */
-  bool can_accept();
-
   virtual void open(int service);
 };
 
 /////////////////////////////////////////////////////////////////////////////
 // class udp_socket_server
 /////////////////////////////////////////////////////////////////////////////
-class udp_socket_server : public basic_socket_server {
+class udp_socket_server : public ip_socket_server {
 public:
-  udp_socket_server(int service) : basic_socket_server() { 
+  udp_socket_server(int service) : ip_socket_server() { 
     setService(service); 
   }
 
