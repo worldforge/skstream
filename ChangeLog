@@ -1,4 +1,6 @@
  2003-09-29 Al Riddoch <alriddoch@zepler.org>
+    - Release version 0.3.0
+ 2003-09-29 Al Riddoch <alriddoch@zepler.org>
     - Add arch dependent header to rpm spec.
  2003-09-29 Al Riddoch <alriddoch@zepler.org>
     - Add libws2_32 which is required for getaddrinfo and friends under
