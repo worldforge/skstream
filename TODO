@@ -1,22 +1,9 @@
-Use gethostinfo() to convert IP addresses to presentation format.
-Doesn't help that we don't appear to store the remote hosts address anyway.
-Mostly done, except for getRemotePort()
-
 Reformat all the code according to the standard WF style.
-
-Check in files other that skstream.cpp that they use :: in front of
-library and system calls.
-
-It may well be pointless to attempt IPv6 support without using
-getaddrinfo. Probably cleaner just to remove the IPv6 stuff from the
-non- getaddrinfo case.
 
 tcp_socket_stream is passing a reference up to the next class to be
 constructed before the stream buffer object referred to has been constructed.
 This results in a "Conditional jump or move depends on uninitialised value"
 error from valgrind.
-
-- convert the linux detection code in skstream.h to use configure tests
 
 Use a -DHAVESKSTREAMCONFIG_H to tell the code to include the genereated header, else
 include a pre-defined one.
