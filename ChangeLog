@@ -1,4 +1,8 @@
  06/11/2002 Ron Steinke <rsteinke@w-link.net>,
+    -Added a timeout version of the tcp_socket_stream
+     constructor, which wraps the timeout version
+     of open()
+ 06/11/2002 Ron Steinke <rsteinke@w-link.net>,
     -Added an optional "milliseconds" argument to
      tcp_socket_stream::is_ready(), to take advantage
      of the timeout in select()

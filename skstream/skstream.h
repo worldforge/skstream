@@ -23,7 +23,12 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.18  2002-06-12 01:21:47  rsteinke
+ * Revision 1.19  2002-06-12 16:06:58  rsteinke
+ *     -Added a timeout version of the tcp_socket_stream
+ *      constructor, which wraps the timeout version
+ *      of open()
+ *
+ * Revision 1.18  2002/06/12 01:21:47  rsteinke
  *     -Added an optional "milliseconds" argument to
  *      tcp_socket_stream::is_ready(), to take advantage
  *      of the timeout in select()
@@ -579,6 +584,12 @@ public:
     open(address, service, nonblock);
   }
 
+  tcp_socket_stream(const std::string& address, int service, unsigned int milliseconds) : 
+      basic_socket_stream(), _connecting_socket(INVALID_SOCKET) {
+    protocol = FreeSockets::proto_TCP;
+    open(address, service, milliseconds);
+  }
+
   virtual ~tcp_socket_stream() { 
       shutdown(); 
       if(_connecting_socket != INVALID_SOCKET)
@@ -590,8 +601,14 @@ public:
   }
 
   void open(const std::string& address, int service, bool nonblock = false);
-  void open(const std::string& address, int service, unsigned int milliseconds)
-    {open(address, service, true); if(!is_ready(milliseconds)) close();}
+  void open(const std::string& address, int service, unsigned int milliseconds) {
+    open(address, service, true);
+    if(!is_ready(milliseconds)) {
+      close();
+      fail();
+    }
+  }
+
   virtual void close();
   virtual SOCKET_TYPE getSocket() {return (_connecting_socket == INVALID_SOCKET)
     ? basic_socket_stream::getSocket() : _connecting_socket;}
