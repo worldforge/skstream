@@ -22,7 +22,12 @@
 //  Created: 2002-02-23 by Dan Tomalesky
 //
 // $Log$
-// Revision 1.1  2002-02-24 03:15:41  grimicus
+// Revision 1.2  2002-05-21 07:29:37  malcolm
+// Added rsteinke's nonblocking connect patch.  Works on linux; does not break API
+// (I bumped version to 0.2.3 anyway).  May not work on win32, though I did test it
+// and socket communication does happen.
+//
+// Revision 1.1  2002/02/24 03:15:41  grimicus
 // 02/23/2002 Dan Tomalesky <grim@xynesis.com>
 //
 //     * Added in CVS logging variable so that changes show up in modified files
@@ -72,6 +77,7 @@ class tcpskstreamtest : public CppUnit::TestCase
     CPPUNIT_TEST(testConstructor_1);
     CPPUNIT_TEST(testConstructor_2);
     CPPUNIT_TEST(testOpen);
+    CPPUNIT_TEST(testOpenNonblock);
     CPPUNIT_TEST_SUITE_END();
 
     private: 
@@ -116,6 +122,31 @@ class tcpskstreamtest : public CppUnit::TestCase
             }
                     
         }
+
+	void testOpenNonblock()
+	{
+	    skstream->open(*hostname, port, true);
+
+	    int waitcount = 0;
+	    while(!skstream->is_ready()) // wait
+		++waitcount;
+
+	    // FIXME print waitcount somehow, to verify we're not connecting
+	    // immediately
+         
+            if(!skstream->is_open())
+            {
+                if(skstream->getLastError() == ECONNREFUSED)
+                {
+                    CPPUNIT_ASSERT_MESSAGE("Check that echo service is running on local machine", skstream->is_open());
+                }
+                else
+                {
+                    CPPUNIT_ASSERT(skstream->is_open());
+                }
+            }
+   
+	}
 
         void setUp()
         {

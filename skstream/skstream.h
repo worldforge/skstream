@@ -23,7 +23,12 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.13  2002-05-16 18:10:54  SpeedBump
+ * Revision 1.14  2002-05-21 07:29:36  malcolm
+ * Added rsteinke's nonblocking connect patch.  Works on linux; does not break API
+ * (I bumped version to 0.2.3 anyway).  May not work on win32, though I did test it
+ * and socket communication does happen.
+ *
+ * Revision 1.13  2002/05/16 18:10:54  SpeedBump
  * added detection code for Solaris.  tested with 2.6.  needs testing on further
  * platforms.
  * also added TODO item to use configure tests instead of preprocessor tests in
@@ -468,7 +473,9 @@ public:
     return LastError; 
   }
 
-  void close();
+  // Needs to be virtual to handle in-progress connect()'s for
+  // tcp sockets
+  virtual void close();
 
   void setTimeout(unsigned sec, unsigned usec=0) { 
     _sockbuf.setTimeout(sec,usec); 
@@ -519,22 +526,33 @@ private:
 
   tcp_socket_stream& operator=(const tcp_socket_stream& socket);
 
+  SOCKET_TYPE _connecting_socket;
+
 public:
-  tcp_socket_stream() : basic_socket_stream() {
+  tcp_socket_stream() : basic_socket_stream(), _connecting_socket(0) {
     protocol = FreeSockets::proto_TCP;
   }
 
-  tcp_socket_stream(const std::string& address, int service) : 
+  tcp_socket_stream(const std::string& address, int service, bool nonblock = false) : 
       basic_socket_stream() {
     protocol = FreeSockets::proto_TCP;
-    open(address, service);
+    open(address, service, nonblock);
   }
 
   virtual ~tcp_socket_stream() { 
       shutdown(); 
+      if(_connecting_socket)
+#ifndef _WIN32
+        ::close(_connecting_socket);
+#else
+        ::closesocket(_connecting_socket);
+#endif
   }
 
-  void open(const std::string& address, int service);
+  void open(const std::string& address, int service, bool nonblock = false);
+  virtual void close();
+
+  bool is_ready();
 };
 
 /////////////////////////////////////////////////////////////////////////////

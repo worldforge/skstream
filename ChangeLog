@@ -1,3 +1,7 @@
+ 05/20/2002 Ron Steinke <rsteinke@w-link.net>,
+            Malcolm Walker <malcolm@worldforge.org>
+    -Add code to support noblocking connect for TCP socket streams.
+     Bumped version to 0.2.3.
  04/08/2002 Malcolm Walker <malcolm@worldforge.org>, 
             Martin Pollard <xmp@blueyonder.co.uk>
     -Moved code out of skstream.h and into skstream.cpp for
