@@ -23,7 +23,10 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.28  2003-08-08 23:56:26  alriddoch
+ * Revision 1.29  2003-08-23 00:37:38  alriddoch
+ * *** empty log message ***
+ *
+ * Revision 1.28  2003/08/08 23:56:26  alriddoch
  *  2003-08-08 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skstream.cpp, skstream/skstream_unix.h: Include skstream
  *       header with its fully qualified name for compatability, and move
@@ -792,8 +795,12 @@ tcp_socket_stream::~tcp_socket_stream() {
   }
 }
 
-void tcp_socket_stream::open(const std::string& address, int service, bool nonblock) {
-  if(is_open() || _connecting_socket != INVALID_SOCKET) close();
+void tcp_socket_stream::open(const std::string & address,
+                             int service, bool nonblock)
+{
+  if (is_open() || _connecting_socket != INVALID_SOCKET) {
+    close();
+  }
 
 #ifdef HAVE_GETADDRINFO
   struct addrinfo req, *ans;
