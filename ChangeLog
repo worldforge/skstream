@@ -1,7 +1,10 @@
+ 2003-09-25 James Turner <james@worldforge.org>
+    - skstream/skstream.cpp: Fully qualify all libc and system calls as
+      being explicitly in the global namespace.
  2003-09-24 James Turner <james@worldforge.org>
-  	- skstream/skstreamconfig.h.pbx: define HAVE_GETADDRINFO and HAVE_IN_ADDR_T
-  	  for ProjectBuilder (framework) builds on OS-X, since OS-X supports
-  	  these features.
+    - skstream/skstreamconfig.h.pbx: define HAVE_GETADDRINFO and HAVE_IN_ADDR_T
+      for ProjectBuilder (framework) builds on OS-X, since OS-X supports
+      these features.
  2003-09-24 Al Riddoch <alriddoch@zepler.org>
     - skstream/skstream.cpp: Implement non-blocking connect with addrinfo list.
  2003-09-24 Al Riddoch <alriddoch@zepler.org>

@@ -23,7 +23,12 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.37  2003-09-24 21:02:11  alriddoch
+ * Revision 1.38  2003-09-25 01:17:10  alriddoch
+ *  2003-09-25 James Turner <james@worldforge.org>
+ *     - skstream/skstream.cpp: Fully qualify all libc and system calls as
+ *       being explicitly in the global namespace.
+ *
+ * Revision 1.37  2003/09/24 21:02:11  alriddoch
  *  2003-09-24 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skstream.cpp: Implement non-blocking connect with addrinfo list.
  *
@@ -361,7 +366,7 @@ socketbuf::socketbuf(SOCKET_TYPE sock, unsigned insize, unsigned outsize)
   const int bufsize = insize+outsize;
   // Allocate a new buffer
   char* buffer = new char[bufsize];
-  memset(buffer,0,bufsize);
+  ::memset(buffer,0,bufsize);
   // Setup the buffer
   if(this != setbuf(buffer, bufsize)) {
     _buffer = NULL;
@@ -480,7 +485,7 @@ int stream_socketbuf::overflow(int nCh) { // traits::eof()
         fd_set socks;
         FD_ZERO(&socks); // zero fd_set
         FD_SET(_socket,&socks); // add buffer socket to fd_set
-        sr = select(_socket+1,NULL,&socks,NULL,&_tv);
+        sr = ::select(_socket+1,NULL,&socks,NULL,&_tv);
         if(/*(sr == 0) || */ !FD_ISSET(_socket,&socks)){
           Timeout = true;
           return EOF; // a timeout error should be set here! - RGJ
@@ -491,7 +496,7 @@ int stream_socketbuf::overflow(int nCh) { // traits::eof()
   #endif
 
   // send pending data or return EOF on error
-  size=send(_socket, pbase(),pptr()-pbase(),0);
+  size=::send(_socket, pbase(),pptr()-pbase(),0);
 
   if(size < 0) {
     return EOF; // Socket Could not send // traits::eof()
@@ -539,7 +544,7 @@ int stream_socketbuf::underflow() {
       fd_set socks;
       FD_ZERO(&socks); // zero fd_set
       FD_SET(_socket,&socks); // add buffer socket to fd_set
-      sr = select(_socket+1,&socks,NULL,NULL,&_tv);
+      sr = ::select(_socket+1,&socks,NULL,NULL,&_tv);
       if((sr == 0) || !FD_ISSET(_socket,&socks)){
         Timeout = true;
         return EOF; // a timeout error should be set here! - RGJ
@@ -601,7 +606,7 @@ bool dgram_socketbuf::setTarget(const std::string& address, unsigned port,
     _socket = ::socket(i->ai_family, i->ai_socktype, i->ai_protocol);
 
     if (_socket != INVALID_SOCKET) {
-      memcpy(&out_peer, i->ai_addr, i->ai_addrlen);
+      ::memcpy(&out_peer, i->ai_addr, i->ai_addrlen);
       out_p_size = i->ai_addrlen;
       success = true;
     }
@@ -623,18 +628,18 @@ bool dgram_socketbuf::setTarget(const std::string& address, unsigned port,
 
     out_peer.ss_family = he->h_addrtype;
  #ifndef HAVE_IPV6
-    memcpy(&((sockaddr_in&)out_peer).sin_addr, he->h_addr_list[0],
+    ::memcpy(&((sockaddr_in&)out_peer).sin_addr, he->h_addr_list[0],
                                                he->h_length);
     out_p_size = sizeof(sockaddr_in);
     ((sockaddr_in &)out_peer).sin_port = htons(port);
  #else // HAVE_IPV6
     if (out_peer.ss_family == AF_INET6) {
-      memcpy(&((sockaddr_in6&)out_peer).sin6_addr, he->h_addr_list[0],
+      ::memcpy(&((sockaddr_in6&)out_peer).sin6_addr, he->h_addr_list[0],
                                                    he->h_length);
       out_p_size = sizeof(sockaddr_in6);
       ((sockaddr_in6 &)out_peer).sin6_port = htons(port);
     } else {
-      memcpy(&((sockaddr_in&)out_peer).sin_addr, he->h_addr_list[0],
+      ::memcpy(&((sockaddr_in&)out_peer).sin_addr, he->h_addr_list[0],
                                                  he->h_length);
       out_p_size = sizeof(sockaddr_in);
       ((sockaddr_in &)out_peer).sin_port = htons(port);
@@ -652,7 +657,7 @@ bool dgram_socketbuf::setTarget(const std::string& address, unsigned port,
     if (::inet_aton(address.c_str(), &in_address) == 0) {
       return false;
     }
-    memcpy(&out_peer_in.sin_addr, &in_address, sizeof(in_address));
+    ::memcpy(&out_peer_in.sin_addr, &in_address, sizeof(in_address));
  #else // HAVE_INET_ATON
     in_addr_t iaddr;
     iaddr = ::inet_addr(address.c_str());
@@ -697,7 +702,7 @@ int dgram_socketbuf::overflow(int nCh) { // traits::eof()
         fd_set socks;
         FD_ZERO(&socks); // zero fd_set
         FD_SET(_socket,&socks); // add buffer socket to fd_set
-        sr = select(_socket+1,NULL,&socks,NULL,&_tv);
+        sr = ::select(_socket+1,NULL,&socks,NULL,&_tv);
         if(/*(sr == 0) || */ !FD_ISSET(_socket,&socks)){
           Timeout = true;
           return EOF; // a timeout error should be set here! - RGJ
@@ -708,7 +713,7 @@ int dgram_socketbuf::overflow(int nCh) { // traits::eof()
   #endif
 
   // send pending data or return EOF on error
-  size=sendto(_socket, pbase(),pptr()-pbase(),0,(sockaddr*)&out_peer,out_p_size);
+  size=::sendto(_socket, pbase(),pptr()-pbase(),0,(sockaddr*)&out_peer,out_p_size);
 
   if(size < 0) {
     return EOF; // Socket Could not send // traits::eof()
@@ -756,7 +761,7 @@ int dgram_socketbuf::underflow() {
       fd_set socks;
       FD_ZERO(&socks); // zero fd_set
       FD_SET(_socket,&socks); // add buffer socket to fd_set
-      sr = select(_socket+1,&socks,NULL,NULL,&_tv);
+      sr = ::select(_socket+1,&socks,NULL,NULL,&_tv);
       if((sr == 0) || !FD_ISSET(_socket,&socks)){
         Timeout = true;
         return EOF; // a timeout error should be set here! - RGJ
@@ -882,7 +887,7 @@ bool basic_socket_stream::fail() {
 bool basic_socket_stream::setBroadcast(bool opt)
 {
   int ok = opt?1:0;
-  ok = setsockopt(_sockbuf.getSocket(),
+  ok = ::setsockopt(_sockbuf.getSocket(),
                   SOL_SOCKET,SO_BROADCAST,(char*)&ok,sizeof(ok));
   bool ret = (ok != SOCKET_ERROR);
   if(!ret) setLastError();
@@ -948,11 +953,11 @@ void tcp_socket_stream::open(const std::string & address,
 
     if(nonblock) {
    #ifndef _WIN32
-      int err_val = fcntl(_socket, F_SETFL, O_NONBLOCK);
+      int err_val = ::fcntl(_socket, F_SETFL, O_NONBLOCK);
    #else // _WIN32
       u_long nonblocking = 1;  // This flag may be set elsewhere,
                                // in a header ?
-      int err_val = ioctlsocket(_socket, FIONBIO, &nonblocking);
+      int err_val = ::ioctlsocket(_socket, FIONBIO, &nonblocking);
    #endif // _WIN32
       if(err_val == -1) {
         setLastError();
@@ -962,7 +967,7 @@ void tcp_socket_stream::open(const std::string & address,
     }
 
     sockaddr_storage iaddr;
-    memcpy(&iaddr, i->ai_addr, i->ai_addrlen);
+    ::memcpy(&iaddr, i->ai_addr, i->ai_addrlen);
     SOCKLEN iaddrlen = i->ai_addrlen;
 
     if(::connect(_socket, (sockaddr *)&iaddr, iaddrlen) < 0) {
@@ -1000,10 +1005,10 @@ void tcp_socket_stream::open(const std::string & address,
 
   if(nonblock) {
  #ifndef _WIN32
-    int err_val = fcntl(_socket, F_SETFL, O_NONBLOCK);
+    int err_val = ::fcntl(_socket, F_SETFL, O_NONBLOCK);
  #else // _WIN32
     u_long nonblocking = 1;  // This flag may be set elsewhere, in a header ?
-    int err_val = ioctlsocket(_socket, FIONBIO, &nonblocking);
+    int err_val = ::ioctlsocket(_socket, FIONBIO, &nonblocking);
  #endif // _WIN32
     if(err_val == -1) {
       setLastError();
@@ -1024,18 +1029,18 @@ void tcp_socket_stream::open(const std::string & address,
 
     sa.ss_family = he->h_addrtype;
  #ifndef HAVE_IPV6
-    memcpy(&((sockaddr_in&)sa).sin_addr, he->h_addr_list[0],
+    ::memcpy(&((sockaddr_in&)sa).sin_addr, he->h_addr_list[0],
                                                he->h_length);
     sa_size = sizeof(sockaddr_in);
     ((sockaddr_in &)sa).sin_port = htons(service);
  #else // HAVE_IPV6
     if (sa.ss_family == AF_INET6) {
-      memcpy(&((sockaddr_in6&)sa).sin6_addr, he->h_addr_list[0],
+      ::memcpy(&((sockaddr_in6&)sa).sin6_addr, he->h_addr_list[0],
                                                    he->h_length);
       sa_size = sizeof(sockaddr_in6);
       ((sockaddr_in6 &)sa).sin6_port = htons(service);
     } else {
-      memcpy(&((sockaddr_in&)sa).sin_addr, he->h_addr_list[0],
+      ::memcpy(&((sockaddr_in&)sa).sin_addr, he->h_addr_list[0],
                                                  he->h_length);
       sa_size = sizeof(sockaddr_in);
       ((sockaddr_in &)sa).sin_port = htons(service);
@@ -1055,7 +1060,7 @@ void tcp_socket_stream::open(const std::string & address,
       ::closesocket(_socket);
       return;
     }
-    memcpy(&sa_in.sin_addr, &in_address, sizeof(in_address));
+    ::memcpy(&sa_in.sin_addr, &in_address, sizeof(in_address));
  #else // HAVE_INET_ATON
     in_addr_t iaddr;
     iaddr = ::inet_addr(address.c_str());
@@ -1088,10 +1093,10 @@ void tcp_socket_stream::open(const std::string & address,
   // set the socket blocking again for io
   if(nonblock) {
 #ifndef _WIN32
-    int err_val = fcntl(_socket, F_SETFL, 0);
+    int err_val = ::fcntl(_socket, F_SETFL, 0);
 #else // _WIN32
     u_long blocking = 0;
-    int err_val = ioctlsocket(_socket, FIONBIO, &blocking);
+    int err_val = ::ioctlsocket(_socket, FIONBIO, &blocking);
 #endif // _WIN32
     if(err_val == -1) {
       setLastError();
@@ -1142,7 +1147,7 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
   FD_ZERO(&fds);
   FD_SET(_connecting_socket, &fds);
 
-  if (select(_connecting_socket + 1, 0, &fds, 0, &wait_time) != 1
+  if (::select(_connecting_socket + 1, 0, &fds, 0, &wait_time) != 1
       || !FD_ISSET(_connecting_socket, &fds)) {
     return false;
   }
@@ -1156,10 +1161,10 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
   int errnum;
   SOCKLEN errsize = sizeof(errnum);
 #ifndef _WIN32
-  getsockopt(_socket, SOL_SOCKET, SO_ERROR, &errnum, &errsize);
+  ::getsockopt(_socket, SOL_SOCKET, SO_ERROR, &errnum, &errsize);
 #else // _WIN32
   Sleep(0);
-  getsockopt(_socket, SOL_SOCKET, SO_ERROR, (LPSTR)&errnum, &errsize); 
+  ::getsockopt(_socket, SOL_SOCKET, SO_ERROR, (LPSTR)&errnum, &errsize); 
 #endif // _WIN32
 
 #ifdef HAVE_GETADDRINFO
@@ -1180,11 +1185,11 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
         continue;
       }
    #ifndef _WIN32
-      int err_val = fcntl(_socket, F_SETFL, O_NONBLOCK);
+      int err_val = ::fcntl(_socket, F_SETFL, O_NONBLOCK);
    #else // _WIN32
       u_long nonblocking = 1;  // This flag may be set elsewhere,
                                // in a header ?
-      int err_val = ioctlsocket(_socket, FIONBIO, &nonblocking);
+      int err_val = ::ioctlsocket(_socket, FIONBIO, &nonblocking);
    #endif // _WIN32
       if(err_val == -1) {
         setLastError();
@@ -1193,7 +1198,7 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
       }
 
       sockaddr_storage iaddr;
-      memcpy(&iaddr, i->ai_addr, i->ai_addrlen);
+      ::memcpy(&iaddr, i->ai_addr, i->ai_addrlen);
       SOCKLEN iaddrlen = i->ai_addrlen;
 
       if(::connect(_socket, (sockaddr *)&iaddr, iaddrlen) < 0) {
@@ -1226,10 +1231,10 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
 
   // set the socket blocking again for io
 #ifndef _WIN32
-  int err_val = fcntl(_socket, F_SETFL, 0);
+  int err_val = ::fcntl(_socket, F_SETFL, 0);
 #else // _WIN32
   u_long blocking = 0;
-  int err_val = ioctlsocket(_socket, FIONBIO, &blocking);
+  int err_val = ::ioctlsocket(_socket, FIONBIO, &blocking);
 #endif // _WIN32
   if(err_val == -1) {
     setLastError();
@@ -1294,11 +1299,11 @@ void unix_socket_stream::open(const std::string& address, bool nonblock) {
 
   if(nonblock) {
 #ifndef _WIN32
-    int err_val = fcntl(_socket, F_SETFL, O_NONBLOCK);
+    int err_val = ::fcntl(_socket, F_SETFL, O_NONBLOCK);
 #else // _WIN32
     u_long nonblocking = 1;  // This flag may be set elsewhere,
                              // in a header ?
-    int err_val = ioctlsocket(_socket, FIONBIO, &nonblocking);
+    int err_val = ::ioctlsocket(_socket, FIONBIO, &nonblocking);
 #endif // _WIN32
     if(err_val == -1) {
       setLastError();
@@ -1328,10 +1333,10 @@ void unix_socket_stream::open(const std::string& address, bool nonblock) {
   // set the socket blocking again for io
   if(nonblock) {
 #ifndef _WIN32
-    int err_val = fcntl(_socket, F_SETFL, 0);
+    int err_val = ::fcntl(_socket, F_SETFL, 0);
 #else // _WIN32
     u_long blocking = 0;
-    int err_val = ioctlsocket(_socket, FIONBIO, &blocking);
+    int err_val = ::ioctlsocket(_socket, FIONBIO, &blocking);
 #endif // _WIN32
     if(err_val == -1) {
       setLastError();
@@ -1374,7 +1379,7 @@ bool unix_socket_stream::isReady(unsigned int milliseconds)
   FD_ZERO(&fds);
   FD_SET(_connecting_socket, &fds);
 
-  if (select(_connecting_socket + 1, 0, &fds, 0, &wait_time) != 1
+  if (::select(_connecting_socket + 1, 0, &fds, 0, &wait_time) != 1
       || !FD_ISSET(_connecting_socket, &fds)) {
     return false;
   }
@@ -1404,10 +1409,10 @@ bool unix_socket_stream::isReady(unsigned int milliseconds)
 
   // set the socket blocking again for io
 #ifndef _WIN32
-  int err_val = fcntl(_socket, F_SETFL, 0);
+  int err_val = ::fcntl(_socket, F_SETFL, 0);
 #else // _WIN32
   u_long blocking = 0;
-  int err_val = ioctlsocket(_socket, FIONBIO, &blocking);
+  int err_val = ::ioctlsocket(_socket, FIONBIO, &blocking);
 #endif // _WIN32
   if(err_val == -1) {
     setLastError();
