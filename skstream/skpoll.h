@@ -23,7 +23,10 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.1  2002-12-09 22:13:21  rsteinke
+ * Revision 1.2  2002-12-09 23:18:44  rsteinke
+ *     Added a 'const' in the definition of basic_socket_poll::socket_map
+ *
+ * Revision 1.1  2002/12/09 22:13:21  rsteinke
  *     - created basic_socket, a virtual base class
  *       for basic_socket_stream and basic_socket_server,
  *       so that the polling code has a common base
@@ -51,7 +54,7 @@ public:
     EXCEPT = 1 << 2,
     MASK = (1 << 3) - 1
   };
-  typedef std::map<basic_socket*,poll_type> socket_map;
+  typedef std::map<const basic_socket*,poll_type> socket_map;
 
   int poll(const socket_map& sockets, unsigned long timeout = 0);
 
