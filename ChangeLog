@@ -1,3 +1,7 @@
+ 2003-05-04 James Turner <james@worldforge.org>
+    - Updated OS-X projectbuilder files, including adding an
+      skstreamconfig.h.pbx config file, which is copied to
+      the framework prior to the build (by a ShellScript build phase).
  2003-05-04 Al Riddoch <alriddoch@zepler.org>
     - Sort out nasty hard tabs from address checks.
     - Start work on updating the checks.
