@@ -397,7 +397,8 @@ dnl test for support programs
 AC_CHECK_PROG(SK_ZIP, zip, zip, no)
 AM_CONDITIONAL(HAVE_PROG_ZIP, test x$ac_cv_prog_SK_ZIP = xzip)
 
-SKSTREAM_LIBS="-lskstream-0.3"
+SKSTREAM_LIB_SUFFIX="-0.3"
+SKSTREAM_LIBS="-lskstream$SKSTREAM_LIB_SUFFIX"
 # There might be a better way to do this.
 AC_MSG_CHECKING(for mingw32)
 AC_TRY_COMPILE(,[
@@ -409,6 +410,7 @@ AC_MSG_RESULT(no),[
 AC_MSG_RESULT(yes)
 SKSTREAM_LIBS="$SKSTREAM_LIBS -lwsock32"
 ])
+AC_SUBST(SKSTREAM_LIB_SUFFIX)
 AC_SUBST(SKSTREAM_LIBS)
 
 SKSTREAM_CFLAGS=""

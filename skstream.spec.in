@@ -1,55 +1,57 @@
-%define name       skstream
-%define version	   @SKSTREAM_VERSION@
-%define release    1
-%define serial     1
-%define prefix     /usr
-%define sysconfdir /etc
+%define name @PACKAGE@
+%define version @VERSION@
+%define release 1
+%define serial 1
+%define libsuffix @SKSTREAM_LIB_SUFFIX@
 
-Summary:           An iostream socket library.
-Name:              %{name} 
-Version:           %{version} 
-Release:           %{release}
-Copyright:         LGPL
-Group:             System Environment/Libraries
-Source:            %{name}-%{version}.tar.gz
-BuildRoot:         /var/tmp/%{name}-%{version}-buildroot
-Requires:          libstdc++
-BuildRequires:     libstdc++-devel >= 2.95.2
+Summary: An iostream socket library.
+Name: %{name}
+Version: %{version}
+Release: %{release}
+Serial: %{serial}
+Copyright: LGPL
+Group: System Environment/Libraries
+Source: %{name}-%{version}.tar.gz
+Requires: libstdc++
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+BuildRequires: libstdc++-devel >= 2.95.2
 
 %description
-@SKSTREAM_PACKAGE@ is an iostream based socket library in C++. It is based on the Freesockets library, and has been packaged for use by WorldForge.
+@SKSTREAM_PACKAGE@ is an iostream based socket library in C++. It is based on
+the Freesockets library, and has been packaged for use by WorldForge.
 
 %package devel
-Summary:           An iostream socket library headers and static libs.
-Group:             Development/Libraries
-Requires:          %{name} = %{version}
+Summary: An iostream socket library headers and static libs.
+Group: Development/Libraries
+Requires: %{name} = %{version}
 
 %description devel
-@SKSTREAM_PACKAGE@ is an iostream based socket library in C++. It is based on the Freesockets library, and has been packaged for use by WorldForge.
+@SKSTREAM_PACKAGE@ is an iostream based socket library in C++. It is based on
+the Freesockets library, and has been packaged for use by WorldForge.
 
 %prep
-%setup
+%setup -q
 
 %build
-CXXFLAGS=$RPM_OPT_FLAGS ./configure --enable-static --prefix=%{prefix}
+%configure --enable-static
 make
 
 %install
 rm -rf $RPM_BUILD_ROOT
-make prefix=$RPM_BUILD_ROOT%{prefix} install
+%makeinstall
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
-%{prefix}/lib/libskstream.so.@SKSTREAM_CURRENT@
-%{prefix}/lib/libskstream.so.@SKSTREAM_VERSION_NO@
-%doc README COPYING AUTHORS NEWS
+%{_libdir}/lib*.so.*
+%doc README COPYING AUTHORS NEWS ChangeLog
 
 %files devel
 %defattr(-,root,root)
-%{prefix}/include/skstream-0.3/skstream
-%{prefix}/lib/libskstream-0.3.a
-%{prefix}/lib/libskstream-0.3.so
-%{prefix}/lib/pkgconfig/skstream-0.3.pc
+%{_libdir}/lib*.so
+%{_libdir}/lib*.la
+%{_libdir}/lib*.a
+%{_libdir}/pkgconfig/*
+%{_includedir}/%{name}%{libsuffix}
