@@ -23,7 +23,11 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.29  2003-08-23 00:37:38  alriddoch
+ * Revision 1.30  2003-08-23 01:14:44  alriddoch
+ *  2003-08-23 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skstream.cpp: Use getaddrinfo to handle the port number.
+ *
+ * Revision 1.29  2003/08/23 00:37:38  alriddoch
  * *** empty log message ***
  *
  * Revision 1.28  2003/08/08 23:56:26  alriddoch
@@ -499,14 +503,21 @@ bool dgram_socketbuf::setTarget(const std::string& address, unsigned port)
 {
 #ifdef HAVE_GETADDRINFO
   struct addrinfo req, *ans;
+  char portName[32];
+
+  sprintf(portName, "%d", port);
 
   req.ai_flags = 0;
   req.ai_family = PF_UNSPEC;
   req.ai_socktype = SOCK_DGRAM;
   req.ai_protocol = 0;
+  req.ai_addrlen = 0;
+  req.ai_addr = 0;
+  req.ai_canonname = 0;
+  req.ai_next = 0;
 
   int ret;
-  if ((ret = ::getaddrinfo(address.c_str(), NULL, &req, &ans)) != 0) {
+  if ((ret = ::getaddrinfo(address.c_str(), portName, &req, &ans)) != 0) {
     return false;
   }
 
@@ -514,15 +525,6 @@ bool dgram_socketbuf::setTarget(const std::string& address, unsigned port)
   out_p_size = ans->ai_addrlen;
   ::freeaddrinfo(ans);
 
- #ifndef HAVE_IPV6
-  ((sockaddr_in &)out_peer).sin_port = htons(port);
- #else // HAVE_IPV6
-  if (out_peer.ss_family == AF_INET6) {
-    ((sockaddr_in6 &)out_peer).sin6_port = htons(port);
-  } else {
-    ((sockaddr_in &)out_peer).sin_port = htons(port);
-  }
- #endif // HAVE_IPV6
   return true;
 #else // HAVE_GETADDRINFO
   hostent * he = ::gethostbyname(address.c_str());
@@ -804,14 +806,21 @@ void tcp_socket_stream::open(const std::string & address,
 
 #ifdef HAVE_GETADDRINFO
   struct addrinfo req, *ans;
+  char serviceName[32];
+
+  sprintf(serviceName, "%d", service);
 
   req.ai_flags = 0;
   req.ai_family = PF_UNSPEC;
   req.ai_socktype = SOCK_STREAM;
   req.ai_protocol = 0;
+  req.ai_addrlen = 0;
+  req.ai_addr = 0;
+  req.ai_canonname = 0;
+  req.ai_next = 0;
 
   int ret;
-  if ((ret = ::getaddrinfo(address.c_str(), NULL, &req, &ans)) != 0) {
+  if ((ret = ::getaddrinfo(address.c_str(), serviceName, &req, &ans)) != 0) {
     fail();
     return;
   }
@@ -845,16 +854,6 @@ void tcp_socket_stream::open(const std::string & address,
   memcpy(&iaddr, ans->ai_addr, ans->ai_addrlen);
   SOCKLEN iaddrlen = ans->ai_addrlen;
   ::freeaddrinfo(ans);
-
- #ifndef HAVE_IPV6
-  ((sockaddr_in &)iaddr).sin_port = htons(service);
- #else // HAVE_IPV6
-  if (iaddr.ss_family == AF_INET6) {
-      ((sockaddr_in6 &)iaddr).sin6_port = htons(service);
-  } else {
-      ((sockaddr_in &)iaddr).sin_port = htons(service);
-  }
- #endif // HAVE_IPV6
 
   if(::connect(_socket, (sockaddr *)&iaddr, iaddrlen) < 0) {
     if(nonblock && getSystemError() == SOCKET_BLOCK_ERROR) {
