@@ -50,9 +50,7 @@ rm -rf $RPM_BUILD_ROOT
 %files devel
 %defattr(-,root,root)
 %{prefix}/bin/skstream-config
-%{prefix}/include/skstream.h
-%{prefix}/include/skserver.h
-%{prefix}/include/sasproto.h
+%{prefix}/include/skstream
 %{prefix}/lib/libskstream.a
 %{prefix}/lib/libskstream.so
 %{prefix}/share/aclocal/skstream.m4
