@@ -23,7 +23,16 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.17  2002-12-09 22:13:21  rsteinke
+ * Revision 1.18  2003-03-14 19:33:11  alriddoch
+ *  2003-03-14 Al Riddoch <alriddoch@zepler.org>,
+ *     - skstream.h, skstream.cpp: Re-work sockbuf class so it is
+ *       not specific to any one type of socket. Remove inet
+ *       functionality from base classes. Derive new buffer
+ *       classes for stream and datagram sockets, and use
+ *       stream version in current socket classes. This should
+ *       be considered work in progress. Do not port your code.
+ *
+ * Revision 1.17  2002/12/09 22:13:21  rsteinke
  *     - created basic_socket, a virtual base class
  *       for basic_socket_stream and basic_socket_server,
  *       so that the polling code has a common base
@@ -189,7 +198,10 @@ using namespace std;
 /////////////////////////////////////////////////////////////////////////////
 // Constructor
 socketbuf::socketbuf(SOCKET_TYPE sock, unsigned insize, unsigned outsize)
-    : streambuf(), _socket(sock), Timeout(false) {
+    : streambuf(), _socket(sock),
+      out_p_size(sizeof(out_peer)), in_p_size(sizeof(in_peer)),
+      Timeout(false)
+{
   _buffer = NULL;
   // allocate 16k buffer each for input and output
   const int bufsize = insize+outsize;
@@ -203,14 +215,16 @@ socketbuf::socketbuf(SOCKET_TYPE sock, unsigned insize, unsigned outsize)
   _timeout.tv_sec  = 0;
   _timeout.tv_usec = 0;
 
-  int size = sizeof(sockaddr_in);
-  ::getpeername(sock,(sockaddr*)&out_peer,(SOCKLEN*)&size);
+  ::getpeername(sock,(sockaddr*)&out_peer, &out_p_size);
   in_peer = out_peer;
+  in_p_size = out_p_size;
 }
 
 // Constructor
 socketbuf::socketbuf(SOCKET_TYPE sock, char* buf, int length)
-    : streambuf(), _socket(sock), Timeout(false)
+    : streambuf(), _socket(sock),
+      out_p_size(sizeof(out_peer)), in_p_size(sizeof(in_peer)),
+      Timeout(false)
 {
   _buffer = NULL;
   if(this != setbuf(buf,length)) {
@@ -219,9 +233,9 @@ socketbuf::socketbuf(SOCKET_TYPE sock, char* buf, int length)
   _timeout.tv_sec  = 0;
   _timeout.tv_usec = 0;
 
-  int size = sizeof(sockaddr_in);
-  getpeername(sock,(sockaddr*)&out_peer,(SOCKLEN*)&size);
+  ::getpeername(sock,(sockaddr*)&out_peer, &out_p_size);
   in_peer = out_peer;
+  in_p_size = out_p_size;
 }
 
 // Destructor
@@ -231,7 +245,32 @@ socketbuf::~socketbuf(){
   _buffer = NULL;
 }
 
+stream_socketbuf::stream_socketbuf(SOCKET_TYPE sock,
+                                   unsigned insize,
+                                   unsigned outsize)
+    : socketbuf(sock, insize, outsize) { }
+
+stream_socketbuf::stream_socketbuf(SOCKET_TYPE sock, char* buf, int length)
+    : socketbuf(sock, buf, length) { }
+
+stream_socketbuf::~stream_socketbuf() { }
+
+dgram_socketbuf::dgram_socketbuf(SOCKET_TYPE sock,
+                                 unsigned insize,
+                                 unsigned outsize)
+    : socketbuf(sock, insize, outsize) { }
+
+dgram_socketbuf::dgram_socketbuf(SOCKET_TYPE sock, char* buf, int length)
+    : socketbuf(sock, buf, length) { }
+
+dgram_socketbuf::~dgram_socketbuf() { }
+
+// FIXME - AJR 20030314
+// This is inapropriate here. It is meaningless in the context of
+// stream based sockets, and assumes that an inet address is
+// required.
 // set the other side host
+#if 0
 bool socketbuf::setOutpeer(const string& address, unsigned port) {
   unsigned long iaddr;
   hostent *he = ::gethostbyname(address.c_str());
@@ -248,11 +287,12 @@ bool socketbuf::setOutpeer(const string& address, unsigned port) {
   out_peer.sin_port = htons(port);
   return true;
 }
+#endif
 
 // The next function are those who do the dirt work
 
 // overflow() - handles output to a connected socket.
-int socketbuf::overflow(int nCh) { // traits::eof()
+int stream_socketbuf::overflow(int nCh) { // traits::eof()
   // in case of error, user finds out by testing fail()
   if(_socket==INVALID_SOCKET)
     return EOF; // Invalid socket // traits::eof()
@@ -283,8 +323,7 @@ int socketbuf::overflow(int nCh) { // traits::eof()
   #endif
 
   // send pending data or return EOF on error
-  int insize = sizeof(sockaddr_in);
-  size=sendto(_socket, pbase(),pptr()-pbase(),0,(sockaddr*)&out_peer,insize);
+  size=send(_socket, pbase(),pptr()-pbase(),0);
 
   if(size < 0) {
     return EOF; // Socket Could not send // traits::eof()
@@ -313,7 +352,7 @@ int socketbuf::overflow(int nCh) { // traits::eof()
 }
 
 // underflow() - handles input from a connected socket.
-int socketbuf::underflow() {
+int stream_socketbuf::underflow() {
   if(_socket == INVALID_SOCKET)
     return EOF; // Invalid socket! // traits::eof()
 
@@ -342,9 +381,115 @@ int socketbuf::underflow() {
   #endif
 
   // receive data or return EOF on error
-  int insize = sizeof(sockaddr_in);
+  size = ::recv(_socket, eback(), egptr()-eback(), 0);
+
+  if(size <= 0)
+    return EOF; // remote site has closed connection or (TCP) Receive error
+     // traits::eof()
+
+  // move receivd data from eback() .. eback()+size to egptr()-size .. egptr()
+  const int delta = egptr()-(eback()+size);
+  for(char *p=eback()+size-1; p >= eback(); p--)
+    *(p+delta) = *p;
+
+  setg(eback(), egptr()-size, egptr());
+
+  return (int)(unsigned char)(*gptr()); // traits::not_eof(...)
+}
+
+// overflow() - handles output to a connected socket.
+int dgram_socketbuf::overflow(int nCh) { // traits::eof()
+  // in case of error, user finds out by testing fail()
+  if(_socket==INVALID_SOCKET)
+    return EOF; // Invalid socket // traits::eof()
+
+  if(pptr()-pbase() <= 0)
+    return 0; // nothing to send
+
+  int size;
+
+  // prepare structure for detecting timeout
+  #ifndef __BEOS__
+    // if a timeout was specified, wait for it.
+    {
+      timeval _tv = _timeout;
+      if((_tv.tv_sec+_tv.tv_usec) > 0) {
+        int sr;
+        fd_set socks;
+        FD_ZERO(&socks); // zero fd_set
+        FD_SET(_socket,&socks); // add buffer socket to fd_set
+        sr = select(_socket+1,NULL,&socks,NULL,&_tv);
+        if(/*(sr == 0) || */ !FD_ISSET(_socket,&socks)){
+          Timeout = true;
+          return EOF; // a timeout error should be set here! - RGJ
+         } else if(sr < 0) return EOF; // error on select() // traits::eof()
+      }
+      Timeout = false;
+    }
+  #endif
+
+  // send pending data or return EOF on error
+  size=sendto(_socket, pbase(),pptr()-pbase(),0,(sockaddr*)&out_peer,out_p_size);
+
+  if(size < 0) {
+    return EOF; // Socket Could not send // traits::eof()
+  }
+
+  if(size == 0)
+    return EOF; // remote site has closed this connection // traits::eof()
+
+  if(nCh != EOF) { // traits::eof()
+    // size >= 1 at this point
+    size--;
+    *(pbase()+size)=nCh;
+  }
+
+  // move remaining pbase()+size .. pptr()-1 => pbase() .. pptr()-size-1
+  for(char *p=pbase()+size; p<pptr(); p++)
+    *(p-size)=*p;
+
+  const int newlen=(pptr()-pbase())-size;
+
+  setp(pbase(),epptr());
+
+  pbump(newlen);
+
+  return 0; // traits::not_eof(ch)
+}
+
+// underflow() - handles input from a connected socket.
+int dgram_socketbuf::underflow() {
+  if(_socket == INVALID_SOCKET)
+    return EOF; // Invalid socket! // traits::eof()
+
+  if((gptr()) && (egptr()-gptr() > 0))
+    return (int)(unsigned char)(*gptr());
+
+  // fill up from eback to egptr
+  int size;
+
+  // prepare structure for detecting timeout
+  #ifndef _BEOS
+    // if a timeout was specified, wait for it.
+    if((_timeout.tv_sec+_timeout.tv_usec) > 0) {
+      int sr;
+      timeval _tv = _timeout;
+      fd_set socks;
+      FD_ZERO(&socks); // zero fd_set
+      FD_SET(_socket,&socks); // add buffer socket to fd_set
+      sr = select(_socket+1,&socks,NULL,NULL,&_tv);
+      if((sr == 0) || !FD_ISSET(_socket,&socks)){
+        Timeout = true;
+        return EOF; // a timeout error should be set here! - RGJ
+      } else if(sr < 0) return EOF;  // error on select()
+    }
+    Timeout = false;
+  #endif
+
+  // receive data or return EOF on error
+  in_p_size = sizeof(in_peer);
   size = ::recvfrom(_socket, eback(), egptr()-eback(), 0,
-                    (sockaddr*)&in_peer,(SOCKLEN*)&insize);
+                    (sockaddr*)&in_peer, &in_p_size);
 
   if(size <= 0)
     return EOF; // remote site has closed connection or (TCP) Receive error

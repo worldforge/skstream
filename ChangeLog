@@ -1,3 +1,10 @@
+ 2003-03-14 Al Riddoch <alriddoch@zepler.org>,
+    - skstream.h, skstream.cpp: Re-work sockbuf class so it is
+      not specific to any one type of socket. Remove inet
+      functionality from base classes. Derive new buffer
+      classes for stream and datagram sockets, and use
+      stream version in current socket classes. This should
+      be considered work in progress. Do not port your code.
  2003-01-31 Al Riddoch <alriddoch@zepler.org>,
     - Convert to using pkg-config
  12/09/2002 Ron Steinke <rsteinke@w-link.net>,

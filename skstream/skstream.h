@@ -23,7 +23,16 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.25  2002-12-09 22:13:21  rsteinke
+ * Revision 1.26  2003-03-14 19:33:11  alriddoch
+ *  2003-03-14 Al Riddoch <alriddoch@zepler.org>,
+ *     - skstream.h, skstream.cpp: Re-work sockbuf class so it is
+ *       not specific to any one type of socket. Remove inet
+ *       functionality from base classes. Derive new buffer
+ *       classes for stream and datagram sockets, and use
+ *       stream version in current socket classes. This should
+ *       be considered work in progress. Do not port your code.
+ *
+ * Revision 1.25  2002/12/09 22:13:21  rsteinke
  *     - created basic_socket, a virtual base class
  *       for basic_socket_stream and basic_socket_server,
  *       so that the polling code has a common base
@@ -396,15 +405,19 @@ class socketbuf : public std::streambuf {
 private:
   char *_buffer;
 
+protected:
   SOCKET_TYPE _socket;
 
   timeval _timeout;
 
-  sockaddr_in out_peer, in_peer;
+  sockaddr_storage out_peer, in_peer;
+  SOCKLEN out_p_size, in_p_size;
 
+private:
   socketbuf(const socketbuf&);
   socketbuf& operator=(const socketbuf&);
 
+protected:
   bool Timeout;
 
 public:
@@ -420,27 +433,27 @@ public:
   /// Destroy the socket buffer.
   virtual ~socketbuf();
 
-  ///
-  bool setOutpeer(const std::string& address, unsigned port);
+  /// FIXME Meaningless in the address neutral base class
+  // bool setOutpeer(const std::string& address, unsigned port);
 
-  bool setOutpeer(const sockaddr_in& peer) { 
+  bool setOutpeer(const sockaddr_storage & peer) { 
     out_peer = peer; 
     return true; 
   }
 
-  sockaddr_in getOutpeer() const {
+  const sockaddr_storage & getOutpeer() const {
     return out_peer; 
   }
 
-  sockaddr_in getInpeer() const { 
+  const sockaddr_storage & getInpeer() const { 
     return in_peer; 
   }
 
   /// Set the existing socket that this buffer should use.
   void setSocket(SOCKET_TYPE sock) {
     _socket = sock;
-    int size = sizeof(sockaddr);
-    ::getpeername(sock,(sockaddr*)&out_peer,(SOCKLEN*)&size);
+    SOCKLEN size = sizeof(sockaddr);
+    ::getpeername(sock,(sockaddr*)&out_peer,&size);
     in_peer = out_peer;
   }
 
@@ -465,9 +478,9 @@ public:
 
 protected:
   /// Handle writing data from the buffer to the socket.
-  virtual int overflow(int nCh=EOF);
+  virtual int overflow(int nCh=EOF) = 0;
   /// Handle reading data from the socket to the buffer.
-  virtual int underflow();
+  virtual int underflow() = 0;
 
   /// Flush the output buffer.
   virtual int sync() {
@@ -495,6 +508,49 @@ protected:
   }
 };
 
+class stream_socketbuf : public socketbuf {
+public:
+  /** Make a new socket buffer from an existing socket, with optional
+   *  buffer sizes.
+   */
+  stream_socketbuf(SOCKET_TYPE sock, unsigned insize=0x8000, unsigned outsize=0x8000);
+  /** Make a new socket buffer from an existing socket, with an existing
+   *  buffer.
+   */
+  stream_socketbuf(SOCKET_TYPE sock, char* buf, int length);
+
+  /// Destroy the socket buffer.
+  virtual ~stream_socketbuf();
+
+protected:
+  /// Handle writing data from the buffer to the socket.
+  virtual int overflow(int nCh=EOF);
+  /// Handle reading data from the socket to the buffer.
+  virtual int underflow();
+
+};
+
+class dgram_socketbuf : public socketbuf {
+public:
+  /** Make a new socket buffer from an existing socket, with optional
+   *  buffer sizes.
+   */
+  dgram_socketbuf(SOCKET_TYPE sock, unsigned insize=0x8000, unsigned outsize=0x8000);
+  /** Make a new socket buffer from an existing socket, with an existing
+   *  buffer.
+   */
+  dgram_socketbuf(SOCKET_TYPE sock, char* buf, int length);
+
+  /// Destroy the socket buffer.
+  virtual ~dgram_socketbuf();
+
+protected:
+  /// Handle writing data from the buffer to the socket.
+  virtual int overflow(int nCh=EOF);
+  /// Handle reading data from the socket to the buffer.
+  virtual int underflow();
+
+};
 
 /////////////////////////////////////////////////////////////////////////////
 // Enumerations
@@ -549,7 +605,7 @@ public:
 /////////////////////////////////////////////////////////////////////////////
 class basic_socket_stream : public basic_socket, public std::iostream {
 protected:
-  socketbuf _sockbuf;
+  stream_socketbuf _sockbuf;
   int protocol;
 
   mutable int LastError;
@@ -564,12 +620,11 @@ public:
   basic_socket_stream();
   /// Make a socket stream with a buffer with specified sizes.
   basic_socket_stream(unsigned insize,unsigned outsize,
-                      int proto=FreeSockets::proto_IP);
+                      int proto = FreeSockets::proto_IP);
   /// Make a socket stream using an existing socket.
   basic_socket_stream(SOCKET_TYPE sock);
   /// Make a socket stream with a buffer with specified sizes using an existing socket.
-  basic_socket_stream(SOCKET_TYPE sock,
-		  unsigned insize,unsigned outsize);
+  basic_socket_stream(SOCKET_TYPE sock, unsigned insize,unsigned outsize);
 
   // Destructor
   virtual ~basic_socket_stream() {
@@ -586,11 +641,13 @@ public:
     return _sockbuf.timeout();
   }
 
+#if 0
   bool setOutpeer(const std::string& address, unsigned port) { 
     return _sockbuf.setOutpeer(address,port); 
   }
+#endif
 
-  bool setOutpeer(const sockaddr_in& peer) { 
+  bool setOutpeer(const sockaddr_storage& peer) { 
     /*%NOTE(Grimicus, skstream2, FYI)
      * removed a ! right before _socketbuf because it
      *didn't seem to be consistent with the other setOutpeer()
@@ -598,11 +655,11 @@ public:
     return _sockbuf.setOutpeer(peer); 
   }
 
-  sockaddr_in getOutpeer() const { 
+  const sockaddr_storage & getOutpeer() const { 
     return _sockbuf.getOutpeer(); 
   }
 
-  sockaddr_in getInpeer() const { 
+  const sockaddr_storage & getInpeer() const { 
     return _sockbuf.getInpeer(); 
   }
 
@@ -618,6 +675,8 @@ public:
     return _sockbuf.getSocket(); 
   }
 
+#if 0
+  // FIXME AJR 20030314 These are wrong here
   std::string getRemoteHost() const {
     return std::string(::inet_ntoa(getInpeer().sin_addr));
   }
@@ -625,6 +684,7 @@ public:
   unsigned short getRemotePort() const {
     return ntohs(getInpeer().sin_port);
   }
+#endif
 
   int getLastError() const { 
     return LastError; 
@@ -666,12 +726,15 @@ public:
     basic_socket_stream& operator<<(basic_socket_stream&, const remote_host&);
 };
 
+#if 0
+// FIXME AJR 20030314 Meaningless for base socket class
 inline
 basic_socket_stream& operator<<(basic_socket_stream& out,const remote_host& host)
 {
   out.setOutpeer(host._host,host._port);
   return out;
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // class tcp_socket_stream
@@ -766,7 +829,7 @@ private:
   raw_socket_stream& operator=(const raw_socket_stream& socket);
 
 protected:
-  sockaddr_in local_host;
+  sockaddr_storage local_host;
 
 public:
   raw_socket_stream(FreeSockets::IP_Protocol proto=FreeSockets::proto_RAW) 
@@ -790,7 +853,7 @@ public:
 
   void setProtocol(FreeSockets::IP_Protocol proto);
 
-  sockaddr_in getLocalHost() const { 
+  sockaddr_storage getLocalHost() const { 
     return local_host; 
   }
 };
