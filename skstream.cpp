@@ -23,7 +23,11 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.10  2002-07-15 21:21:17  alriddoch
+ * Revision 1.11  2002-07-16 01:12:19  malcolm
+ * Fixed call for win32 cases with is_ready() - it was failing before with
+ * WSAEFAULT - bad pointer.  Works now.  Tested with uclient; all is good.
+ *
+ * Revision 1.10  2002/07/15 21:21:17  alriddoch
  *  07/15/2002 Al Riddoch <alriddoch@zepler.org>,
  *     - skstream.cpp: Handle nonblocking connect in win32
  *     - skstream.h: Include correct streambuf header on Linux.
@@ -547,8 +551,9 @@ void tcp_socket_stream::close()
 
 bool tcp_socket_stream::is_ready(unsigned int milliseconds)
 {
-  if(_connecting_socket == INVALID_SOCKET)
+  if(_connecting_socket == INVALID_SOCKET) {
     return true;
+  }
 
   fd_set fds;
   struct timeval wait_time = {milliseconds / 1000, (milliseconds % 1000) * 1000};
@@ -556,9 +561,10 @@ bool tcp_socket_stream::is_ready(unsigned int milliseconds)
   FD_ZERO(&fds);
   FD_SET(_connecting_socket, &fds);
 
-  if(select(_connecting_socket + 1, 0, &fds, 0, &wait_time) != 1
-    || !FD_ISSET(_connecting_socket, &fds))
+  if (select(_connecting_socket + 1, 0, &fds, 0, &wait_time) |= 1 
+      || !FD_ISSET(_connecting_socket, &fds)) {
     return false;
+  }
 
   // It's done connecting, check for error
 
@@ -571,7 +577,7 @@ bool tcp_socket_stream::is_ready(unsigned int milliseconds)
 #ifndef _WIN32
   getsockopt(_socket, SOL_SOCKET, SO_ERROR, &errnum, &errsize);
 #else
-  getsockopt(_socket, SOL_SOCKET, SO_ERROR, (char *)&errnum, &errsize); 
+  getsockopt(_socket, SOL_SOCKET, SO_ERROR, (LPSTR)&errnum, &errsize); 
 #endif
 
   if(errnum != 0) {
@@ -597,8 +603,9 @@ bool tcp_socket_stream::is_ready(unsigned int milliseconds)
     return true;
   }
 #else
-  int err_val = ioctlsocket(_socket, FIONBIO, 0);
-  if(err_val == -1) {
+	u_long blocking = 0;
+  int err_val = ioctlsocket(_socket, FIONBIO, &blocking);
+  if(err_val == SOCKET_ERROR) {
     setLastError();
     ::closesocket(_socket);
     _socket = INVALID_SOCKET;
