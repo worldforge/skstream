@@ -23,7 +23,12 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.40  2003-09-26 01:29:41  alriddoch
+ * Revision 1.41  2003-09-26 10:49:03  alriddoch
+ *  2003-09-26 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skstream.cpp: Add code that handles converting service to
+ *       presentation format in a protocol independant way.
+ *
+ * Revision 1.40  2003/09/26 01:29:41  alriddoch
  *  2003-09-26 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skstream.h: Add accessors for address size members.
  *     - ping/ping.cpp: Clean up use of libc and system calls.
@@ -689,8 +694,8 @@ public:
   virtual void close();
   virtual SOCKET_TYPE getSocket() const;
 
-  std::string getRemoteHost() const;
-  unsigned short getRemotePort() const;
+  const std::string getRemoteHost() const;
+  const std::string getRemoteService() const;
   bool isReady(unsigned int milliseconds = 0);
 };
 

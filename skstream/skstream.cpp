@@ -23,7 +23,12 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.41  2003-09-26 01:29:41  alriddoch
+ * Revision 1.42  2003-09-26 10:49:03  alriddoch
+ *  2003-09-26 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skstream.cpp: Add code that handles converting service to
+ *       presentation format in a protocol independant way.
+ *
+ * Revision 1.41  2003/09/26 01:29:41  alriddoch
  *  2003-09-26 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skstream.h: Add accessors for address size members.
  *     - ping/ping.cpp: Clean up use of libc and system calls.
@@ -1114,7 +1119,7 @@ SOCKET_TYPE tcp_socket_stream::getSocket() const
             ? basic_socket_stream::getSocket() : _connecting_socket;
 }
 
-std::string tcp_socket_stream::getRemoteHost() const
+const std::string tcp_socket_stream::getRemoteHost() const
 {
 #ifdef HAVE_GETADDRINFO
   char hbuf[NI_MAXHOST];
@@ -1130,10 +1135,23 @@ std::string tcp_socket_stream::getRemoteHost() const
 #endif // HAVE_GETADDRINFO
 }
 
-unsigned short tcp_socket_stream::getRemotePort() const
+const std::string tcp_socket_stream::getRemoteService() const
 {
-  // FIXME - not protocol independant
-  return ntohs(((const sockaddr_in&)getInpeer()).sin_port);
+  char sbuf[NI_MAXSERV];
+#ifdef HAVE_GETADDRINFO
+
+  if (::getnameinfo((const sockaddr*)&getInpeer(),
+                    stream_sockbuf.getInpeerSize(),
+                    0, 0, sbuf, sizeof(sbuf), NI_NUMERICSERV) == 0) {
+    return std::string(sbuf);
+  }
+  return "[unknown]";
+#else // HAVE_GETADDRINFO
+
+  unsigned short port = ntohs(((const sockaddr_in&)getInpeer()).sin_port);
+  sprintf(sbuf, "%d", port);
+  return std::string(sbuf);
+#endif // HAVE_GETADDRINFO
 }
 
 bool tcp_socket_stream::isReady(unsigned int milliseconds)

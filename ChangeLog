@@ -1,4 +1,7 @@
  2003-09-26 Al Riddoch <alriddoch@zepler.org>
+    - skstream/skstream.cpp: Add code that handles converting service to
+      presentation format in a protocol independant way.
+ 2003-09-26 Al Riddoch <alriddoch@zepler.org>
     - skstream/skstream.h: Add accessors for address size members.
     - ping/ping.cpp: Clean up use of libc and system calls.
     - skstream/skstream.cpp: Clean up handling socket address sizes
