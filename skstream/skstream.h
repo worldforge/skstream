@@ -23,7 +23,10 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.7  2002-02-26 20:33:55  grimicus
+ * Revision 1.8  2002-03-18 07:31:50  malcolm
+ * Code necessary for mingw32 compilation.
+ *
+ * Revision 1.7  2002/02/26 20:33:55  grimicus
  * 02/26/2002 Dan Tomalesky <grim@xynesis.com>
  *     * Added test cases for skserver and friends
  *
@@ -134,7 +137,7 @@
 #include <stdexcept>
 
 #ifdef _WIN32
-  #include <streambuf>
+  #include <streambuf.h>
 
   #include <winsock.h>
 
@@ -294,7 +297,11 @@ namespace FreeSockets {
   enum IP_Protocol {
     proto_IP   = IPPROTO_IP,
     proto_ICMP = IPPROTO_ICMP,
-    proto_IGMP = IPPROTO_IGMP,
+#ifndef _WIN32 
+    proto_IGMP = IPPROTO_IGMP, 
+#else 
+    proto_IGMP = IPPROTO_GGP, 
+#endif 
     proto_TCP  = IPPROTO_TCP,
     proto_PUP  = IPPROTO_PUP,
     proto_UDP  = IPPROTO_UDP,
