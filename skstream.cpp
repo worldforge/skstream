@@ -23,7 +23,12 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.12  2002-07-16 18:14:25  grimicus
+ * Revision 1.13  2002-07-16 21:10:06  malcolm
+ * Had to add another tiny tweak for win32 nonblocking stuff.  ioctlsocket()
+ * explicitly requires a pointer to an unsigned long, not just a 0 (NULL),
+ * for the third argument, in windows.  Sheesh.
+ *
+ * Revision 1.12  2002/07/16 18:14:25  grimicus
  * 2002-07-16 Dan Tomalesky <grim@xynesis.com>
  *     * skstream.cpp: added a small fix to a bug with is_ready.  wasn't
  *       compiling on linux and seems code was wrong in the select because it was
@@ -454,8 +459,8 @@ void tcp_socket_stream::open(const std::string& address, int service, bool nonbl
       return;
     }
 #else
-    unsigned long nonblocking = 1;  // This flag may be set elsewhere,
-                                    // in a header ?
+    u_long nonblocking = 1;  // This flag may be set elsewhere,
+                             // in a header ?
     int err_val = ioctlsocket(_socket, FIONBIO, &nonblocking);
     if(err_val == -1) {
       setLastError();
@@ -527,7 +532,8 @@ void tcp_socket_stream::open(const std::string& address, int service, bool nonbl
       return;
     }
 #else
-    int err_val = ioctlsocket(_socket, FIONBIO, 0);
+    u_long blocking = 0;
+    int err_val = ioctlsocket(_socket, FIONBIO, &blocking);
     if(err_val == -1) {
       setLastError();
       ::closesocket(_socket);
@@ -610,7 +616,7 @@ bool tcp_socket_stream::is_ready(unsigned int milliseconds)
     return true;
   }
 #else
-	u_long blocking = 0;
+  u_long blocking = 0;
   int err_val = ioctlsocket(_socket, FIONBIO, &blocking);
   if(err_val == SOCKET_ERROR) {
     setLastError();
