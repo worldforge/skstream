@@ -23,7 +23,11 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.32  2003-07-23 17:00:29  alriddoch
+ * Revision 1.33  2003-07-23 22:55:43  alriddoch
+ *  2003-07-23 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skstream.h: Fix header for windows build.
+ *
+ * Revision 1.32  2003/07/23 17:00:29  alriddoch
  *  2003-07-23 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skstreamconfig.h.pbx, skstream/skstreamconfig.h.in,
  *       skstream/skstreamconfig.h.windows: Removed some defines which
@@ -279,9 +283,14 @@
 
 #include <skstream/skstreamconfig.h>
 
-static const SOCKET_TYPE INVALID_SOCKET = (SOCKET_TYPE)~0;
 static const int SOCKET_ERROR = -1;
 
+// This constant is defined in windows, but not in most other systems
+#ifndef INVALID_SOCKET
+ #define INVALID_SOCKET   (SOCKET_TYPE)~0
+#endif // INVALID_SOCKET
+
+// All systems should define this, but it is here just in case
 #ifndef INADDR_NONE
  #warning System headers do not define INADDR_NONE
  #define INADDR_NONE   0xFFFFFFFF
