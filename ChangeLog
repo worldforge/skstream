@@ -1,3 +1,6 @@
+ 2003-04-22 Al Riddoch <alriddoch@zepler.org>,
+    - Add configure checks and support for protocol family independant
+      socket address functions, so we can support IPv6 as well as IPv4.
  2003-04-16 Al Riddoch <alriddoch@zepler.org>,
     - Fix up includes so they work properlly
  2003-04-16 Al Riddoch <alriddoch@zepler.org>,

@@ -23,7 +23,12 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.21  2003-04-16 14:02:35  alriddoch
+ * Revision 1.22  2003-04-22 15:14:59  alriddoch
+ *  2003-04-22 Al Riddoch <alriddoch@zepler.org>,
+ *     - Add configure checks and support for protocol family independant
+ *       socket address functions, so we can support IPv6 as well as IPv4.
+ *
+ * Revision 1.21  2003/04/16 14:02:35  alriddoch
  *  2003-04-16 Al Riddoch <alriddoch@zepler.org>,
  *     - Fix up includes so they work properlly
  *
@@ -211,14 +216,12 @@
 #endif
 #endif
 
-using namespace std;
-
 /////////////////////////////////////////////////////////////////////////////
 // class socketbuf implementation
 /////////////////////////////////////////////////////////////////////////////
 // Constructor
 socketbuf::socketbuf(SOCKET_TYPE sock, unsigned insize, unsigned outsize)
-    : streambuf(), _socket(sock),
+    : std::streambuf(), _socket(sock),
       out_p_size(sizeof(out_peer)), in_p_size(sizeof(in_peer)),
       Timeout(false)
 {
@@ -242,7 +245,7 @@ socketbuf::socketbuf(SOCKET_TYPE sock, unsigned insize, unsigned outsize)
 
 // Constructor
 socketbuf::socketbuf(SOCKET_TYPE sock, char* buf, int length)
-    : streambuf(), _socket(sock),
+    : std::streambuf(), _socket(sock),
       out_p_size(sizeof(out_peer)), in_p_size(sizeof(in_peer)),
       Timeout(false)
 {
@@ -535,7 +538,7 @@ int dgram_socketbuf::underflow() {
 /////////////////////////////////////////////////////////////////////////////
 // Constructors
   basic_socket_stream::basic_socket_stream()
-      : iostream(&_sockbuf), _sockbuf(INVALID_SOCKET), protocol(FreeSockets::proto_IP), LastError(0)
+      : std::iostream(&_sockbuf), _sockbuf(INVALID_SOCKET), protocol(FreeSockets::proto_IP), LastError(0)
   {
     startup();
     init(&_sockbuf); // initialize underlying streambuf
@@ -543,7 +546,7 @@ int dgram_socketbuf::underflow() {
 
   basic_socket_stream::basic_socket_stream(unsigned insize,unsigned outsize,
                       int proto)
-      : iostream(&_sockbuf), _sockbuf(INVALID_SOCKET,insize,outsize),
+      : std::iostream(&_sockbuf), _sockbuf(INVALID_SOCKET,insize,outsize),
         protocol(proto), LastError(0)
   {
     startup();
@@ -551,14 +554,14 @@ int dgram_socketbuf::underflow() {
   }
 
   basic_socket_stream::basic_socket_stream(SOCKET_TYPE sock)
-      : iostream(&_sockbuf), _sockbuf(sock), protocol(FreeSockets::proto_IP), LastError(0) {
+      : std::iostream(&_sockbuf), _sockbuf(sock), protocol(FreeSockets::proto_IP), LastError(0) {
     startup();
     init(&_sockbuf); // initialize underlying streambuf
   }
 
   basic_socket_stream::basic_socket_stream(SOCKET_TYPE sock,
                       unsigned insize,unsigned outsize)
-      : iostream(&_sockbuf), _sockbuf(sock,insize,outsize),
+      : std::iostream(&_sockbuf), _sockbuf(sock,insize,outsize),
         protocol(FreeSockets::proto_IP), LastError(0) {
     startup();
     init(&_sockbuf); // initialize underlying streambuf
@@ -621,7 +624,7 @@ void basic_socket_stream::close() {
       clear();
       return false;
     }
-    if(iostream::fail()) {
+    if(std::iostream::fail()) {
       setLastError();
       return true;
     }
@@ -635,6 +638,81 @@ void basic_socket_stream::close() {
 /////////////////////////////////////////////////////////////////////////////
 void tcp_socket_stream::open(const std::string& address, int service, bool nonblock) {
   if(is_open() || _connecting_socket != INVALID_SOCKET) close();
+
+#ifdef HAVE_GETADDRINFO
+  struct addrinfo req, *ans;
+
+  req.ai_flags = 0;
+  req.ai_family = PF_UNSPEC;
+  req.ai_socktype = SOCK_STREAM;
+  req.ai_protocol = 0;
+
+  int ret;
+  if ((ret = ::getaddrinfo(address.c_str(), NULL, &req, &ans)) != 0) {
+    fail();
+    return;
+  }
+
+  SOCKET_TYPE _socket = ::socket(ans->ai_family,
+                                 ans->ai_socktype,
+                                 ans->ai_protocol);
+  if(_socket == INVALID_SOCKET) {
+    fail();
+    return;
+  }
+
+  if(nonblock) {
+#ifndef _WIN32
+    int err_val = fcntl(_socket, F_SETFL, O_NONBLOCK);
+    if(err_val == -1) {
+      setLastError();
+      ::close(_socket);
+      _socket = INVALID_SOCKET;
+      fail();
+      return;
+    }
+#else
+    u_long nonblocking = 1;  // This flag may be set elsewhere,
+                             // in a header ?
+    int err_val = ioctlsocket(_socket, FIONBIO, &nonblocking);
+    if(err_val == -1) {
+      setLastError();
+      ::closesocket(_socket);
+      _socket = INVALID_SOCKET;
+      fail();
+      return;
+    }
+#endif
+  }
+
+  sockaddr_storage iaddr;
+  memcpy(&iaddr, ans->ai_addr, ans->ai_addrlen);
+  SOCKLEN iaddrlen = ans->ai_addrlen;
+  ::freeaddrinfo(ans);
+
+  ((sockaddr_in *)&iaddr)->sin_port = htons(service);
+
+  if(::connect(_socket, (sockaddr *)&iaddr, iaddrlen) < 0) {
+#ifndef _WIN32
+    if(nonblock && errno == EINPROGRESS) {
+#else
+    if(nonblock && WSAGetLastError() == WSAEWOULDBLOCK) {
+#endif
+      _connecting_socket = _socket;
+      return;
+    }
+    setLastError();
+    fail();
+#ifndef _WIN32
+    ::close(_socket);
+#else
+    ::closesocket(_socket);
+#endif
+    return;
+  }
+
+#else // HAVE_GETADDRINFO
+#warning Using legacy network address code
 
   // Create socket
   SOCKET_TYPE _socket = ::socket(AF_INET, SOCK_STREAM, protocol);
@@ -714,6 +792,7 @@ void tcp_socket_stream::open(const std::string& address, int service, bool nonbl
 #endif
     return;
   }
+#endif // HAVE_GETADDRINFO
 
   // set the socket blocking again for io
   if(nonblock) {
