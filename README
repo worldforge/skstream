@@ -20,7 +20,7 @@
 
 (This file was created from the original CHANGELOG's header.)
 
-Current Version: 0.3
+Latest Release Version: 0.2.2
 
 REMAINING BUGS:
   - Setting the size of the underlying buffer is not yet working.
@@ -46,3 +46,7 @@ Plataform Remarks:
 
 Future Work:
   - A multi-threaded TCP server class.
+
+Note on Testing:
+  - In order to run 'make check' you must have CppUnit 1.6.1 or later installed.
+
