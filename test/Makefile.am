@@ -1,3 +1,5 @@
+INCLUDES = -I$(top_srcdir)
+
 check_PROGRAMS = skstreamtestrunner
 
 skstreamtestrunner_SOURCES = skstreamtestrunner.cpp \

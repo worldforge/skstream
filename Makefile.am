@@ -12,10 +12,10 @@ endif
 EXTRA_DIST = autogen.sh skstream-0.3.pc.in @SKSTREAM_UNIX_PC_IN@
 
 dist-hook: $(MSVC_SUPPORT)
-	$(MSVC_INSTALL_DIST) $(MSVC_SUPPORT) $(distdir)/$(MSVC_SUPPORT)   
+	$(MSVC_INSTALL_DIST) $(srcdir)/$(MSVC_SUPPORT) $(distdir)/$(MSVC_SUPPORT)   
 
 VisualC.zip:
-	@SK_ZIP@ -r VisualC.zip VisualC/ -x '*CVS/*'
+	@SK_ZIP@ -r $(srcdir)/VisualC.zip $(srcdir)/VisualC/ -x '*CVS/*'
 
 SUBDIRS = skstream ping test
 

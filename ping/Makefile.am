@@ -1,3 +1,5 @@
+INCLUDES = -I$(top_srcdir)
+
 check_PROGRAMS = ping
 
 ping_SOURCES = ping.cpp ping.h
