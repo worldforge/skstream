@@ -378,7 +378,7 @@ AC_TRY_COMPILE([#include <sys/types.h>
     ],
     [
         AC_MSG_RESULT(yes)
-        AC_DEFINE(HAVE_IPV6, 1, true if we have in_addr_t)
+        AC_DEFINE(HAVE_IN_ADDR_T, 1, true if we have in_addr_t)
     ],
     [
         AC_MSG_RESULT(no)

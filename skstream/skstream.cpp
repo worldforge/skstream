@@ -23,7 +23,12 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.35  2003-09-24 14:47:06  alriddoch
+ * Revision 1.36  2003-09-24 16:20:03  alriddoch
+ *  2003-09-24 Al Riddoch <alriddoch@zepler.org>
+ *     - Typo in in_addr_t check fixed.
+ *     - skstream/skstream.cpp: Missed out typedef keyword fix.
+ *
+ * Revision 1.35  2003/09/24 14:47:06  alriddoch
  *  2003-09-24 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skstream.cpp: Add check, and fallback definition for
  *       in_addr_t.
@@ -333,7 +338,7 @@ static inline int closesocket(SOCKET_TYPE sock)
 // This may cause problems on L64 systems, if they don't have in_addr_t
 // but only windows does not have in_addr_t to my knowledge.
 // AJR 2003-09-24
-unsigned long in_addr_t;
+typedef unsigned long in_addr_t;
 #endif // HAVE_IN_ADDR_T
 
 /////////////////////////////////////////////////////////////////////////////
