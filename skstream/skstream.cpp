@@ -23,7 +23,12 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.43  2003-09-26 14:38:43  alriddoch
+ * Revision 1.44  2003-09-26 22:26:44  alriddoch
+ *  2003-09-26 Al Riddoch <alriddoch@zepler.org>
+ *     - Add option to get streams remote details as reverse lookup, rather
+ *       than just presentation form.
+ *
+ * Revision 1.43  2003/09/26 14:38:43  alriddoch
  *  2003-09-26 Al Riddoch <alriddoch@zepler.org>
  *     - Write some tests to pick up the socket and name resolver libs on
  *       System V.
@@ -1131,14 +1136,15 @@ SOCKET_TYPE tcp_socket_stream::getSocket() const
             ? basic_socket_stream::getSocket() : _connecting_socket;
 }
 
-const std::string tcp_socket_stream::getRemoteHost() const
+const std::string tcp_socket_stream::getRemoteHost(bool lookup) const
 {
 #ifdef HAVE_GETADDRINFO
   char hbuf[NI_MAXHOST];
+  const int flags = lookup ? 0 : NI_NUMERICHOST;
 
   if (::getnameinfo((const sockaddr*)&getInpeer(),
                     stream_sockbuf.getInpeerSize(),
-                    hbuf, sizeof(hbuf), 0, 0, NI_NUMERICHOST) == 0) {
+                    hbuf, sizeof(hbuf), 0, 0, flags) == 0) {
     return std::string(hbuf);
   }
   return "[unknown]";
@@ -1147,14 +1153,15 @@ const std::string tcp_socket_stream::getRemoteHost() const
 #endif // HAVE_GETADDRINFO
 }
 
-const std::string tcp_socket_stream::getRemoteService() const
+const std::string tcp_socket_stream::getRemoteService(bool lookup) const
 {
   char sbuf[NI_MAXSERV];
 #ifdef HAVE_GETADDRINFO
+  const int flags = lookup ? 0 : NI_NUMERICSERV;
 
   if (::getnameinfo((const sockaddr*)&getInpeer(),
                     stream_sockbuf.getInpeerSize(),
-                    0, 0, sbuf, sizeof(sbuf), NI_NUMERICSERV) == 0) {
+                    0, 0, sbuf, sizeof(sbuf), flags) == 0) {
     return std::string(sbuf);
   }
   return "[unknown]";

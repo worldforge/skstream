@@ -23,7 +23,12 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.41  2003-09-26 10:49:03  alriddoch
+ * Revision 1.42  2003-09-26 22:26:44  alriddoch
+ *  2003-09-26 Al Riddoch <alriddoch@zepler.org>
+ *     - Add option to get streams remote details as reverse lookup, rather
+ *       than just presentation form.
+ *
+ * Revision 1.41  2003/09/26 10:49:03  alriddoch
  *  2003-09-26 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skstream.cpp: Add code that handles converting service to
  *       presentation format in a protocol independant way.
@@ -694,8 +699,8 @@ public:
   virtual void close();
   virtual SOCKET_TYPE getSocket() const;
 
-  const std::string getRemoteHost() const;
-  const std::string getRemoteService() const;
+  const std::string getRemoteHost(bool lookup = false) const;
+  const std::string getRemoteService(bool lookup = false) const;
   bool isReady(unsigned int milliseconds = 0);
 };
 

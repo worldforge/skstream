@@ -1,4 +1,7 @@
  2003-09-26 Al Riddoch <alriddoch@zepler.org>
+    - Add option to get streams remote details as reverse lookup, rather
+      than just presentation form.
+ 2003-09-26 Al Riddoch <alriddoch@zepler.org>
     - Write elaborate tests to pick up socket calls when building for windows.
     - ping/ping.cpp: Remove unused variable.
  2003-09-26 Al Riddoch <alriddoch@zepler.org>
