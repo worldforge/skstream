@@ -23,7 +23,12 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.21  2002-07-04 10:23:56  jmt
+ * Revision 1.22  2002-07-15 21:21:17  alriddoch
+ *  07/15/2002 Al Riddoch <alriddoch@zepler.org>,
+ *     - skstream.cpp: Handle nonblocking connect in win32
+ *     - skstream.h: Include correct streambuf header on Linux.
+ *
+ * Revision 1.21  2002/07/04 10:23:56  jmt
  *  07/03/2002 James Turner <james@worldforge.org>
  * 	-Added configuration case for Darwin / OS-X
  * 	-Fixed Rsteinke's changes to use typedefs for socklen / errnum
@@ -216,7 +221,11 @@
 #endif
 
 #ifdef __linux__
-  #include <streambuf.h>
+  #if defined(__GNUC__) && __GNUC__ < 3
+    #include <streambuf.h>
+  #else
+    #include <streambuf>
+  #endif
 
   #include <sys/time.h>
   #include <sys/types.h>

@@ -23,7 +23,12 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.9  2002-07-04 10:23:56  jmt
+ * Revision 1.10  2002-07-15 21:21:17  alriddoch
+ *  07/15/2002 Al Riddoch <alriddoch@zepler.org>,
+ *     - skstream.cpp: Handle nonblocking connect in win32
+ *     - skstream.h: Include correct streambuf header on Linux.
+ *
+ * Revision 1.9  2002/07/04 10:23:56  jmt
  *  07/03/2002 James Turner <james@worldforge.org>
  * 	-Added configuration case for Darwin / OS-X
  * 	-Fixed Rsteinke's changes to use typedefs for socklen / errnum
@@ -481,7 +486,11 @@ void tcp_socket_stream::open(const std::string& address, int service, bool nonbl
   // Connect to host
 
   if(::connect(_socket,(sockaddr*)&sa, sizeof(sa)) == SOCKET_ERROR) {
+#ifndef _WIN32
     if(nonblock && errno == EINPROGRESS) {
+#else
+    if(nonblock && WSAGetLastError() == WSAEWOULDBLOCK) {
+#endif
       _connecting_socket = _socket;
       return;
     }

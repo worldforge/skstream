@@ -1,3 +1,6 @@
+ 07/15/2002 Al Riddoch <alriddoch@zepler.org>,
+    - skstream.cpp: Handle nonblocking connect in win32
+    - skstream.h: Include correct streambuf header on Linux.
  07/03/2002 James Turner <james@worldforge.org>
 	-Added configuration case for Darwin / OS-X
 	-Fixed Rsteinke's changes to use typedefs for socklen / errnum
