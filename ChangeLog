@@ -1,3 +1,5 @@
+ 10/14/2002 Malcolm Walker <malcolm@worldforge.org>
+    - Added call to Sleep(0) in win32 nonblocking connect
  07/22/2002 Ron Steinke <rsteinke@w-link.net>,
     - changed sizeof(sockaddr) to sizeof(sockaddr_in) in
       several locations, so that we pass the correct size
