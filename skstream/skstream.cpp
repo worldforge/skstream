@@ -23,7 +23,13 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.47  2004-11-29 22:47:30  alriddoch
+ * Revision 1.48  2004-12-06 01:24:18  alriddoch
+ * 2004-12-06  Al Riddoch  <alriddoch@zepler.org>
+ *
+ * 	* skstream/skstream.cpp: Fix an issue with shutdown arguments being
+ * 	  different in windows.
+ *
+ * Revision 1.47  2004/11/29 22:47:30  alriddoch
  * 2004-11-29  Al Riddoch  <alriddoch@zepler.org>
  *
  * 	* skstream/skstream.h, skstream/skstream.cpp: Inline operator!
@@ -402,6 +408,12 @@
 
 #include <cstdio>
 #include <cassert>
+
+#ifdef _WIN32
+#define SHUT_RD SD_RECEIVE
+#define SHUT_WR SD_SEND
+#define SHUT_RDWR SD_BOTH
+#endif
 
 static inline int getSystemError()
 {

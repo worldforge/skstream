@@ -1,3 +1,8 @@
+2004-12-06  Al Riddoch  <alriddoch@zepler.org>
+
+	* skstream/skstream.cpp: Fix an issue with shutdown arguments being
+	  different in windows.
+
 2004-11-30  Al Riddoch  <alriddoch@zepler.org>
 
 	* Release 0.3.3, interface version 1.0.0.
