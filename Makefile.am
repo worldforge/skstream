@@ -1,5 +1,5 @@
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = skstream-0.3.pc
+pkgconfig_DATA = skstream-0.3.pc @SKSTREAM_UNIX_PC@
 
 if HAVE_PROG_ZIP
 MSVC_SUPPORT = VisualC.zip
@@ -9,7 +9,7 @@ MSVC_SUPPORT =
 MSVC_INSTALL_DIST = /bin/true
 endif
 
-EXTRA_DIST = autogen.sh skstream-0.3.pc.in
+EXTRA_DIST = autogen.sh skstream-0.3.pc.in @SKSTREAM_UNIX_PC_IN@
 
 dist-hook: $(MSVC_SUPPORT)
 	$(MSVC_INSTALL_DIST) $(MSVC_SUPPORT) $(distdir)/$(MSVC_SUPPORT)   

@@ -11,12 +11,14 @@ config.log
 config.status
 config.sub
 configure
+doc
 install-sh
 libtool
 ltmain.sh
 missing
 mkinstalldirs
 skstream-0.3.pc
+skstream-unix-0.3.pc
 skstream.spec
 stamp-h
 stamp-h[0-9]*

@@ -1,3 +1,11 @@
+ 2003-05-04 Al Riddoch <alriddoch@zepler.org>,
+    - Add a second pkgconfig file for apps that need unix socket support.
+    - Rename sksystem.h as skstreamconfig.h, and put it in an architecture
+      dependent subdir. Modify pkgconfig files to handle this.
+    - Handle errors in a more general way to reduce the number
+      of places where pre-processor conditionals are required.
+    - Remove some redundant code for dealing with win32 that has
+      now been superceded.
  2003-04-22 Al Riddoch <alriddoch@zepler.org>,
     - Add configure checks and support for protocol family independant
       socket address functions, so we can support IPv6 as well as IPv4.

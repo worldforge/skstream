@@ -23,7 +23,17 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.29  2003-04-16 14:02:35  alriddoch
+ * Revision 1.30  2003-05-04 00:34:30  alriddoch
+ *  2003-05-04 Al Riddoch <alriddoch@zepler.org>,
+ *     - Add a second pkgconfig file for apps that need unix socket support.
+ *     - Rename sksystem.h as skstreamconfig.h, and put it in an architecture
+ *       dependent subdir. Modify pkgconfig files to handle this.
+ *     - Handle errors in a more general way to reduce the number
+ *       of places where pre-processor conditionals are required.
+ *     - Remove some redundant code for dealing with win32 that has
+ *       now been superceded.
+ *
+ * Revision 1.29  2003/04/16 14:02:35  alriddoch
  *  2003-04-16 Al Riddoch <alriddoch@zepler.org>,
  *     - Fix up includes so they work properlly
  *
@@ -244,7 +254,7 @@
 #include <stdexcept>
 
 #if 1
-#include <skstream/sksystem.h>
+#include <skstream/skstreamconfig.h>
 #else
 #if defined( _WIN32 ) || defined( __CYGWIN32__ )
   #ifdef _MSC_VER
@@ -775,15 +785,7 @@ public:
     open(address, service, milliseconds);
   }
 
-  virtual ~tcp_socket_stream() { 
-      shutdown(); 
-      if(_connecting_socket != INVALID_SOCKET)
-#ifndef _WIN32
-        ::close(_connecting_socket);
-#else
-        ::closesocket(_connecting_socket);
-#endif
-  }
+  virtual ~tcp_socket_stream();
 
   void open(const std::string& address, int service, bool nonblock = false);
   void open(const std::string& address, int service, unsigned int milliseconds) {

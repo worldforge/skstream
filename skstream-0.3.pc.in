@@ -7,4 +7,4 @@ Name: skstream
 Description: An iostream socket library.
 Version: @VERSION@
 Libs: -L${libdir} -lskstream-0.3
-Cflags: -I${includedir}/skstream-0.3
+Cflags: -I${includedir}/skstream-0.3 -I${libdir}/skstream-0.3/include

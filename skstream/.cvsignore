@@ -6,4 +6,4 @@ libskstream-0.3.la
 skpoll.lo
 skserver.lo
 skstream.lo
-sksystem.h
+skstreamconfig.h

@@ -23,7 +23,17 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.6  2003-04-16 14:02:35  alriddoch
+ * Revision 1.7  2003-05-04 00:34:29  alriddoch
+ *  2003-05-04 Al Riddoch <alriddoch@zepler.org>,
+ *     - Add a second pkgconfig file for apps that need unix socket support.
+ *     - Rename sksystem.h as skstreamconfig.h, and put it in an architecture
+ *       dependent subdir. Modify pkgconfig files to handle this.
+ *     - Handle errors in a more general way to reduce the number
+ *       of places where pre-processor conditionals are required.
+ *     - Remove some redundant code for dealing with win32 that has
+ *       now been superceded.
+ *
+ * Revision 1.6  2003/04/16 14:02:35  alriddoch
  *  2003-04-16 Al Riddoch <alriddoch@zepler.org>,
  *     - Fix up includes so they work properlly
  *
@@ -116,6 +126,22 @@
 
 #include <skstream/skserver.h>
 
+static inline int getSystemError()
+{
+  #ifdef _WIN32
+    return WSAGetLastError();
+  #else
+    return errno;
+  #endif
+}
+
+#ifndef HAVE_CLOSESOCKET
+static inline int closesocket(SOCKET_TYPE sock)
+{
+    return ::close(sock);
+}
+#endif // HAVE_CLOSESOCKET
+
 /////////////////////////////////////////////////////////////////////////////
 // class basic_socket_server implementation
 /////////////////////////////////////////////////////////////////////////////
@@ -144,11 +170,7 @@ bool basic_socket_server::shutdown() {
 
 // sistem dependant error verification
 void basic_socket_server::setLastError() {
-  #ifdef _WIN32
-    LastError = WSAGetLastError();
-  #else
-    LastError = errno;
-  #endif
+    LastError = getSystemError();
 }
 
 // close server's underlying socket

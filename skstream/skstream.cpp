@@ -23,7 +23,17 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.22  2003-04-22 15:14:59  alriddoch
+ * Revision 1.23  2003-05-04 00:34:30  alriddoch
+ *  2003-05-04 Al Riddoch <alriddoch@zepler.org>,
+ *     - Add a second pkgconfig file for apps that need unix socket support.
+ *     - Rename sksystem.h as skstreamconfig.h, and put it in an architecture
+ *       dependent subdir. Modify pkgconfig files to handle this.
+ *     - Handle errors in a more general way to reduce the number
+ *       of places where pre-processor conditionals are required.
+ *     - Remove some redundant code for dealing with win32 that has
+ *       now been superceded.
+ *
+ * Revision 1.22  2003/04/22 15:14:59  alriddoch
  *  2003-04-22 Al Riddoch <alriddoch@zepler.org>,
  *     - Add configure checks and support for protocol family independant
  *       socket address functions, so we can support IPv6 as well as IPv4.
@@ -207,14 +217,23 @@
 #ifndef _WIN32
 #include <unistd.h>
 #include <fcntl.h>
-#else
-#ifndef EINPROGRESS
-#define EINPROGRESS WSAEINPROGRESS
-#endif
-#ifndef socklen_t
-#define socklen_t int
-#endif
-#endif
+#endif // _WIN32
+
+static inline int getSystemError()
+{
+  #ifdef _WIN32
+    return WSAGetLastError();
+  #else
+    return errno;
+  #endif
+}
+
+#ifndef HAVE_CLOSESOCKET
+static inline int closesocket(SOCKET_TYPE sock)
+{
+    return ::close(sock);
+}
+#endif // HAVE_CLOSESOCKET
 
 /////////////////////////////////////////////////////////////////////////////
 // class socketbuf implementation
@@ -574,9 +593,9 @@ bool basic_socket_stream::startup() {
     WSADATA wsaData;
     LastError = WSAStartup(wMinVer, &wsaData);
     return (LastError == 0);
-  #else
+  #else // _WIN32
     return true;
-  #endif
+  #endif // _WIN32
 }
 
 // System dependant finalization
@@ -585,18 +604,14 @@ bool basic_socket_stream::shutdown() {
   #ifdef _WIN32
     LastError = WSACleanup();
     return (LastError == 0);
-  #else
+  #else // _WIN32
     return true;
-  #endif
+  #endif // _WIN32
 }
 
 // private function that sets the internal variable LastError
 void basic_socket_stream::setLastError() const {
-  #ifdef _WIN32
-    LastError = WSAGetLastError();
-  #else
-    LastError = errno;
-  #endif
+    LastError = getSystemError();
 }
 
 // closes a socket connection
@@ -619,23 +634,31 @@ void basic_socket_stream::close() {
 }
 
 // Check for failure condition
-  bool basic_socket_stream::fail() {
-    if(timeout()) {
-      clear();
-      return false;
-    }
-    if(std::iostream::fail()) {
-      setLastError();
-      return true;
-    }
+bool basic_socket_stream::fail() {
+  if(timeout()) {
+    clear();
     return false;
   }
+  if(std::iostream::fail()) {
+    setLastError();
+    return true;
+  }
+  return false;
+}
 
 
 
 /////////////////////////////////////////////////////////////////////////////
 // class tcp_socket_stream implementation
 /////////////////////////////////////////////////////////////////////////////
+
+tcp_socket_stream::~tcp_socket_stream() { 
+  shutdown(); 
+  if(_connecting_socket != INVALID_SOCKET) {
+    ::closesocket(_connecting_socket);
+  }
+}
+
 void tcp_socket_stream::open(const std::string& address, int service, bool nonblock) {
   if(is_open() || _connecting_socket != INVALID_SOCKET) close();
 
@@ -664,17 +687,11 @@ void tcp_socket_stream::open(const std::string& address, int service, bool nonbl
   if(nonblock) {
 #ifndef _WIN32
     int err_val = fcntl(_socket, F_SETFL, O_NONBLOCK);
-    if(err_val == -1) {
-      setLastError();
-      ::close(_socket);
-      _socket = INVALID_SOCKET;
-      fail();
-      return;
-    }
-#else
+#else // _WIN32
     u_long nonblocking = 1;  // This flag may be set elsewhere,
                              // in a header ?
     int err_val = ioctlsocket(_socket, FIONBIO, &nonblocking);
+#endif // _WIN32
     if(err_val == -1) {
       setLastError();
       ::closesocket(_socket);
@@ -682,7 +699,6 @@ void tcp_socket_stream::open(const std::string& address, int service, bool nonbl
       fail();
       return;
     }
-#endif
   }
 
   sockaddr_storage iaddr;
@@ -693,26 +709,17 @@ void tcp_socket_stream::open(const std::string& address, int service, bool nonbl
   ((sockaddr_in *)&iaddr)->sin_port = htons(service);
 
   if(::connect(_socket, (sockaddr *)&iaddr, iaddrlen) < 0) {
-#ifndef _WIN32
-    if(nonblock && errno == EINPROGRESS) {
-#else
-    if(nonblock && WSAGetLastError() == WSAEWOULDBLOCK) {
-#endif
+    if(nonblock && getSystemError() == SOCKET_BLOCK_ERROR) {
       _connecting_socket = _socket;
       return;
     }
     setLastError();
     fail();
-#ifndef _WIN32
-    ::close(_socket);
-#else
     ::closesocket(_socket);
-#endif
     return;
   }
 
 #else // HAVE_GETADDRINFO
-#warning Using legacy network address code
 
   // Create socket
   SOCKET_TYPE _socket = ::socket(AF_INET, SOCK_STREAM, protocol);
@@ -724,17 +731,11 @@ void tcp_socket_stream::open(const std::string& address, int service, bool nonbl
   if(nonblock) {
 #ifndef _WIN32
     int err_val = fcntl(_socket, F_SETFL, O_NONBLOCK);
-    if(err_val == -1) {
-      setLastError();
-      ::close(_socket);
-      _socket = INVALID_SOCKET;
-      fail();
-      return;
-    }
-#else
+#else // _WIN32
     u_long nonblocking = 1;  // This flag may be set elsewhere,
                              // in a header ?
     int err_val = ioctlsocket(_socket, FIONBIO, &nonblocking);
+#endif // _WIN32
     if(err_val == -1) {
       setLastError();
       ::closesocket(_socket);
@@ -742,7 +743,6 @@ void tcp_socket_stream::open(const std::string& address, int service, bool nonbl
       fail();
       return;
     }
-#endif
   }
 
   // find host name
@@ -759,11 +759,7 @@ void tcp_socket_stream::open(const std::string& address, int service, bool nonbl
 
   if(iaddr == INADDR_NONE) {
     fail();
-#ifndef _WIN32
-    ::close(_socket);
-#else
     ::closesocket(_socket);
-#endif
     return;
   }
 
@@ -775,21 +771,13 @@ void tcp_socket_stream::open(const std::string& address, int service, bool nonbl
   // Connect to host
 
   if(::connect(_socket,(sockaddr*)&sa, sizeof(sa)) == SOCKET_ERROR) {
-#ifndef _WIN32
-    if(nonblock && errno == EINPROGRESS) {
-#else
-    if(nonblock && WSAGetLastError() == WSAEWOULDBLOCK) {
-#endif
+    if(nonblock && getSystemError() == SOCKET_BLOCK_ERROR) {
       _connecting_socket = _socket;
       return;
     }
     setLastError();
     fail();
-#ifndef _WIN32
-    ::close(_socket);
-#else
     ::closesocket(_socket);
-#endif
     return;
   }
 #endif // HAVE_GETADDRINFO
@@ -798,16 +786,10 @@ void tcp_socket_stream::open(const std::string& address, int service, bool nonbl
   if(nonblock) {
 #ifndef _WIN32
     int err_val = fcntl(_socket, F_SETFL, 0);
-    if(err_val == -1) {
-      setLastError();
-      ::close(_socket);
-      _socket = INVALID_SOCKET;
-      fail();
-      return;
-    }
-#else
+#else // _WIN32
     u_long blocking = 0;
     int err_val = ioctlsocket(_socket, FIONBIO, &blocking);
+#endif // _WIN32
     if(err_val == -1) {
       setLastError();
       ::closesocket(_socket);
@@ -815,7 +797,6 @@ void tcp_socket_stream::open(const std::string& address, int service, bool nonbl
       fail();
       return;
     }
-#endif
   }
 
   // set socket for underlying socketbuf
@@ -825,11 +806,7 @@ void tcp_socket_stream::open(const std::string& address, int service, bool nonbl
 void tcp_socket_stream::close()
 {
   if(_connecting_socket != INVALID_SOCKET) {
-#ifndef _WIN32
-    ::close(_connecting_socket);
-#else
     ::closesocket(_connecting_socket);
-#endif
     _connecting_socket = INVALID_SOCKET;
   }
 
@@ -863,44 +840,33 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
   SOCKLEN errsize = sizeof(errnum);
 #ifndef _WIN32
   getsockopt(_socket, SOL_SOCKET, SO_ERROR, &errnum, &errsize);
-#else
+#else // _WIN32
   Sleep(0);
   getsockopt(_socket, SOL_SOCKET, SO_ERROR, (LPSTR)&errnum, &errsize); 
-#endif
+#endif // _WIN32
 
   if(errnum != 0) {
     // Can't use setLastError(), since errno doesn't have the error
     LastError = errnum;
     fail();
-#ifndef _WIN32
-    ::close(_socket);
-#else
     ::closesocket(_socket);
-#endif
     return true;
   }
 
   // set the socket blocking again for io
 #ifndef _WIN32
   int err_val = fcntl(_socket, F_SETFL, 0);
-  if(err_val == -1) {
-    setLastError();
-    ::close(_socket);
-    _socket = INVALID_SOCKET;
-    fail();
-    return true;
-  }
-#else
+#else // _WIN32
   u_long blocking = 0;
   int err_val = ioctlsocket(_socket, FIONBIO, &blocking);
-  if(err_val == SOCKET_ERROR) {
+#endif // _WIN32
+  if(err_val == -1) {
     setLastError();
     ::closesocket(_socket);
     _socket = INVALID_SOCKET;
     fail();
     return true;
   }
-#endif
 
   // set socket for underlying socketbuf
     _sockbuf.setSocket(_socket);
@@ -932,17 +898,11 @@ void unix_socket_stream::open(const std::string& address, bool nonblock) {
   if(nonblock) {
 #ifndef _WIN32
     int err_val = fcntl(_socket, F_SETFL, O_NONBLOCK);
-    if(err_val == -1) {
-      setLastError();
-      ::close(_socket);
-      _socket = INVALID_SOCKET;
-      fail();
-      return;
-    }
-#else
+#else // _WIN32
     u_long nonblocking = 1;  // This flag may be set elsewhere,
                              // in a header ?
     int err_val = ioctlsocket(_socket, FIONBIO, &nonblocking);
+#endif // _WIN32
     if(err_val == -1) {
       setLastError();
       ::closesocket(_socket);
@@ -950,7 +910,6 @@ void unix_socket_stream::open(const std::string& address, bool nonblock) {
       fail();
       return;
     }
-#endif
   }
 
   // Fill host information
@@ -959,21 +918,13 @@ void unix_socket_stream::open(const std::string& address, bool nonblock) {
   strncpy(sa.sun_path, address.c_str(), 108);
 
   if(::connect(_socket,(sockaddr*)&sa, sizeof(sa)) == SOCKET_ERROR) {
-#ifndef _WIN32
-    if(nonblock && errno == EINPROGRESS) {
-#else
-    if(nonblock && WSAGetLastError() == WSAEWOULDBLOCK) {
-#endif
+    if(nonblock && getSystemError() == SOCKET_BLOCK_ERROR) {
       _connecting_socket = _socket;
       return;
     }
     setLastError();
     fail();
-#ifndef _WIN32
-    ::close(_socket);
-#else
     ::closesocket(_socket);
-#endif
     return;
   }
 
@@ -981,16 +932,10 @@ void unix_socket_stream::open(const std::string& address, bool nonblock) {
   if(nonblock) {
 #ifndef _WIN32
     int err_val = fcntl(_socket, F_SETFL, 0);
-    if(err_val == -1) {
-      setLastError();
-      ::close(_socket);
-      _socket = INVALID_SOCKET;
-      fail();
-      return;
-    }
-#else
+#else // _WIN32
     u_long blocking = 0;
     int err_val = ioctlsocket(_socket, FIONBIO, &blocking);
+#endif // _WIN32
     if(err_val == -1) {
       setLastError();
       ::closesocket(_socket);
@@ -998,7 +943,6 @@ void unix_socket_stream::open(const std::string& address, bool nonblock) {
       fail();
       return;
     }
-#endif
   }
 
   // set socket for underlying socketbuf
@@ -1008,11 +952,7 @@ void unix_socket_stream::open(const std::string& address, bool nonblock) {
 void unix_socket_stream::close()
 {
   if(_connecting_socket != INVALID_SOCKET) {
-#ifndef _WIN32
-    ::close(_connecting_socket);
-#else
     ::closesocket(_connecting_socket);
-#endif
     _connecting_socket = INVALID_SOCKET;
   }
 
@@ -1046,44 +986,33 @@ bool unix_socket_stream::isReady(unsigned int milliseconds)
   SOCKLEN errsize = sizeof(errnum);
 #ifndef _WIN32
   getsockopt(_socket, SOL_SOCKET, SO_ERROR, &errnum, &errsize);
-#else
+#else // _WIN32
   Sleep(0);
   getsockopt(_socket, SOL_SOCKET, SO_ERROR, (LPSTR)&errnum, &errsize); 
-#endif
+#endif // _WIN32
 
   if(errnum != 0) {
     // Can't use setLastError(), since errno doesn't have the error
     LastError = errnum;
     fail();
-#ifndef _WIN32
-    ::close(_socket);
-#else
     ::closesocket(_socket);
-#endif
     return true;
   }
 
   // set the socket blocking again for io
 #ifndef _WIN32
   int err_val = fcntl(_socket, F_SETFL, 0);
-  if(err_val == -1) {
-    setLastError();
-    ::close(_socket);
-    _socket = INVALID_SOCKET;
-    fail();
-    return true;
-  }
-#else
+#else // _WIN32
   u_long blocking = 0;
   int err_val = ioctlsocket(_socket, FIONBIO, &blocking);
-  if(err_val == SOCKET_ERROR) {
+#endif // _WIN32
+  if(err_val == -1) {
     setLastError();
     ::closesocket(_socket);
     _socket = INVALID_SOCKET;
     fail();
     return true;
   }
-#endif
 
   // set socket for underlying socketbuf
     _sockbuf.setSocket(_socket);

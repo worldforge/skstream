@@ -210,6 +210,9 @@ AC_SUBST(SKSTREAM_SOCKLEN_TYPE)
 
 AC_LANG_RESTORE
 
+SKSTREAM_UNIX_PC=
+SKSTREAM_UNIX_PC_IN=
+
 AC_MSG_CHECKING([for unix domain sockets])
 AC_LANG_SAVE
 AC_LANG_CPLUSPLUS
@@ -221,12 +224,17 @@ AC_TRY_COMPILE([#include <sys/un.h>],
     AC_MSG_RESULT(yes)
     AC_DEFINE(SKSTREAM_UNIX_SOCKETS, 1,
               [Define if unix domain sockets are supported])
+    SKSTREAM_UNIX_PC=skstream-unix-0.3.pc
+    SKSTREAM_UNIX_PC_IN=skstream-unix-0.3.pc.in
 ],
 [
     AC_MSG_RESULT(no)
 ])
 
 AC_LANG_RESTORE
+
+AC_SUBST(SKSTREAM_UNIX_PC)
+AC_SUBST(SKSTREAM_UNIX_PC_IN)
 
 AC_MSG_CHECKING([for streambuf header])
 SKSTREAM_STREAMBUF_HEADER="#include <streambuf>"
@@ -302,11 +310,41 @@ AC_SUBST(SKSTREAM_WINDOWS_HEADER_FLAG)
 
 AC_LANG_RESTORE
 
+dnl Test for socket block error value
+
+AC_LANG_SAVE
+AC_LANG_CPLUSPLUS
+AC_MSG_CHECKING([for socket block error value])
+AC_TRY_COMPILE([#include <errno.h>],
+[
+    int i = EINPROGRESS;
+],
+[
+    SKSTREAM_BLOCK_ERROR_VAL=EINPROGRESS
+],
+[
+    AC_TRY_COMPILE([#include <windows.h>],
+    [
+        int i = WSAEWOULDBLOCK;
+    ],
+    [
+        SKSTREAM_BLOCK_ERROR_VAL=WSAEWOULDBLOCK
+    ],
+    [
+        AC_MSG_RESULT(failed)
+        AC_MSG_ERROR(Unable to determine error message for socket blocking)
+    ])
+])
+AC_MSG_RESULT($SKSTREAM_BLOCK_ERROR_VAL)
+AC_SUBST(SKSTREAM_BLOCK_ERROR_VAL)
+
+AC_LANG_RESTORE
+
 dnl Test for C library functions
 
 AC_LANG_SAVE
 AC_LANG_CPLUSPLUS
-AC_CHECK_FUNCS([getaddrinfo])
+AC_CHECK_FUNCS([getaddrinfo closesocket])
 
 AC_LANG_RESTORE
 
@@ -354,5 +392,6 @@ AC_OUTPUT([
 	test/Makefile
 	skstream.spec
 	skstream-0.3.pc
-	skstream/sksystem.h
+	skstream-unix-0.3.pc
+	skstream/skstreamconfig.h
 ])

@@ -1,0 +1,4 @@
+Name: skstream-unix
+Description: An iostream unix socket library.
+Requires skstream-0.3
+Version: @VERSION@
