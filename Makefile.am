@@ -12,3 +12,4 @@ bin_SCRIPTS = skstream-config
 
 EXTRA_DIST = AUTHORS README
 
+SUBDIRS = . test

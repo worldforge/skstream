@@ -138,6 +138,15 @@ AC_CHECK_HEADERS(cstdio iostream string)
 
 AC_LANG_RESTORE
 
+dnl Test for Libraries
+
+AC_LANG_SAVE
+AC_LANG_CPLUSPLUS
+AM_PATH_CPPUNIT(1.6.1,, 
+            AC_MSG_WARN(Couldn't Find CppUnit - Tests will not work)
+)
+AC_LANG_RESTORE
+
 SKSTREAM_LIBS="-lskstream"
 AC_SUBST(SKSTREAM_LIBS)
 
@@ -153,5 +162,6 @@ dnl Generate files
 
 AC_OUTPUT([
 	Makefile
+    test/Makefile
 	skstream-config
 ])

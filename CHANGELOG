@@ -46,6 +46,10 @@ Future Work:
   - A multi-threaded TCP server class.
 
 Change Log:
+ 02/19/2002 Dan Tomalesky <grim@xynesis.com>
+    -Added License header into skstream.h
+    -Added cppunit test class and Auto* for supporting it. 
+       (doesn't do anything yet)
  01/07/2002 Krystian G Bates
 	Removed the code in socketbuf::sync() that caused both input and output 
 	buffers to be emptied on `<< flush'
