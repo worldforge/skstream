@@ -23,7 +23,17 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.42  2003-09-26 10:49:03  alriddoch
+ * Revision 1.43  2003-09-26 14:38:43  alriddoch
+ *  2003-09-26 Al Riddoch <alriddoch@zepler.org>
+ *     - Write some tests to pick up the socket and name resolver libs on
+ *       System V.
+ *     - Clean up handling of libs required to get socket calls in general.
+ *     - ping/ping.cpp, skstream/skserver.cpp: Add missing stdio include.
+ *     - skstream/skserver.h: Remove non-required string.h include.
+ *     - skstream/skstream.cpp: Add mising stdio include, and clean up sprintf()
+ *       usage.
+ *
+ * Revision 1.42  2003/09/26 10:49:03  alriddoch
  *  2003-09-26 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skstream.cpp: Add code that handles converting service to
  *       presentation format in a protocol independant way.
@@ -348,9 +358,11 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <netdb.h>
+#include <errno.h>
 #include <arpa/inet.h>
 #endif // _WIN32
 
+#include <cstdio>
 #include <cassert>
 
 static inline int getSystemError()
@@ -1149,7 +1161,7 @@ const std::string tcp_socket_stream::getRemoteService() const
 #else // HAVE_GETADDRINFO
 
   unsigned short port = ntohs(((const sockaddr_in&)getInpeer()).sin_port);
-  sprintf(sbuf, "%d", port);
+  ::sprintf(sbuf, "%d", port);
   return std::string(sbuf);
 #endif // HAVE_GETADDRINFO
 }

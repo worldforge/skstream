@@ -10,6 +10,7 @@
 
 #include <map>
 #include <utility>
+#include <cstdio>
 
 #include <signal.h> // to trap Ctrl+C : SIGINT
 

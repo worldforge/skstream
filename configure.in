@@ -6,7 +6,7 @@ dnl Initialise automake
 
 SKSTREAM_MAJOR=0
 SKSTREAM_MINOR=2
-SKSTREAM_MICRO=91
+SKSTREAM_MICRO=98
 SKSTREAM_VERSION=$SKSTREAM_MAJOR.$SKSTREAM_MINOR.$SKSTREAM_MICRO
 
 AC_SUBST(SKSTREAM_VERSION)
@@ -23,6 +23,12 @@ AC_SUBST(SKSTREAM_VERSION_NO)
 
 AM_INIT_AUTOMAKE("skstream", $SKSTREAM_VERSION)
 AM_CONFIG_HEADER(config.h)
+
+SKSTREAM_UNIX_PC=
+SKSTREAM_UNIX_PC_IN=
+SKSTREAM_LIB_SUFFIX="-0.3"
+SKSTREAM_LIBS="-lskstream$SKSTREAM_LIB_SUFFIX"
+SKSTREAM_EXTRA_LIBS=
 
 dnl Test for GNU libtool
 
@@ -156,6 +162,26 @@ AC_CHECK_HEADERS(cstdio iostream string)
 
 AC_LANG_RESTORE
 
+dnl Test for mingw32
+
+AC_LANG_SAVE
+AC_LANG_CPLUSPLUS
+
+# There might be a better way to do this.
+AC_MSG_CHECKING(for mingw32)
+AC_TRY_COMPILE(,[
+#ifdef __MINGW32__
+#error MingW32 detected, adding -lwsock32 to SKSTREAM_LIBS
+#endif
+],
+AC_MSG_RESULT(no),[
+AC_MSG_RESULT(yes)
+LIBS="$LIBS -lwsock32"
+SKSTREAM_EXTRA_LIBS="$SKSTREAM_EXTRA_LIBS -lwsock32"
+])
+
+AC_LANG_RESTORE
+
 dnl Test for types
 
 AC_MSG_CHECKING([for socket type])
@@ -210,9 +236,6 @@ AC_MSG_RESULT($ac_cv_socklen_type)
 AC_SUBST(SKSTREAM_SOCKLEN_TYPE)
 
 AC_LANG_RESTORE
-
-SKSTREAM_UNIX_PC=
-SKSTREAM_UNIX_PC_IN=
 
 AC_MSG_CHECKING([for unix domain sockets])
 AC_LANG_SAVE
@@ -387,6 +410,40 @@ AC_TRY_COMPILE([#include <sys/types.h>
 
 AC_LANG_RESTORE
 
+dnl Test for nsl library
+
+AC_LANG_SAVE
+AC_LANG_CPLUSPLUS
+AC_CHECK_FUNC(gethostbyname,,
+[
+    AC_CHECK_LIB(nsl, gethostbyname,
+                     [
+                         LIBS="$LIBS -lnsl"
+                         SKSTREAM_EXTRA_LIBS="$SKSTREAM_EXTRA_LIBS -lnsl"
+                     ],
+                     AC_MSG_ERROR(Unable to find gethostbyname() socket call.)
+                )
+])
+
+AC_LANG_RESTORE
+
+dnl Test for socket library
+
+AC_LANG_SAVE
+AC_LANG_CPLUSPLUS
+AC_CHECK_FUNC(connect,,
+[
+    AC_CHECK_LIB(socket, connect,
+                     [
+                         LIBS="$LIBS -lsocket"
+                         SKSTREAM_EXTRA_LIBS="$SKSTREAM_EXTRA_LIBS -lsocket"
+                     ],
+                     AC_MSG_ERROR(Unable to find connect() socket call.)
+                 )
+])
+
+AC_LANG_RESTORE
+
 dnl Test for closesocket
 
 AC_MSG_CHECKING([for closesocket])
@@ -432,27 +489,12 @@ dnl test for support programs
 AC_CHECK_PROG(SK_ZIP, zip, zip, no)
 AM_CONDITIONAL(HAVE_PROG_ZIP, test x$ac_cv_prog_SK_ZIP = xzip)
 
-SKSTREAM_LIB_SUFFIX="-0.3"
-SKSTREAM_LIBS="-lskstream$SKSTREAM_LIB_SUFFIX"
-# There might be a better way to do this.
-AC_MSG_CHECKING(for mingw32)
-AC_TRY_COMPILE(,[
-#ifdef __MINGW32__
-#error MingW32 detected, adding -lwsock32 to SKSTREAM_LIBS
-#endif
-],
-AC_MSG_RESULT(no),[
-AC_MSG_RESULT(yes)
-SKSTREAM_LIBS="$SKSTREAM_LIBS -lwsock32"
-])
 AC_SUBST(SKSTREAM_LIB_SUFFIX)
 AC_SUBST(SKSTREAM_LIBS)
+AC_SUBST(SKSTREAM_EXTRA_LIBS)
 
 SKSTREAM_CFLAGS=""
 AC_SUBST(SKSTREAM_CFLAGS)
-
-SYSTEM_LIBS=""
-AC_SUBST(SYSTEM_LIBS)
 
 AC_DEFINE(CONFIG_H_INCLUDED, 1, true if config.h was included)
 

@@ -1,4 +1,12 @@
  2003-09-26 Al Riddoch <alriddoch@zepler.org>
+    - Write some tests to pick up the socket and name resolver libs on
+      System V.
+    - Clean up handling of libs required to get socket calls in general.
+    - ping/ping.cpp, skstream/skserver.cpp: Add missing stdio include.
+    - skstream/skserver.h: Remove non-required string.h include.
+    - skstream/skstream.cpp: Add mising stdio include, and clean up sprintf()
+      usage.
+ 2003-09-26 Al Riddoch <alriddoch@zepler.org>
     - skstream/skstream.cpp: Add code that handles converting service to
       presentation format in a protocol independant way.
  2003-09-26 Al Riddoch <alriddoch@zepler.org>

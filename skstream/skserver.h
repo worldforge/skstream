@@ -23,7 +23,17 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.11  2003-09-23 21:51:44  alriddoch
+ * Revision 1.12  2003-09-26 14:38:43  alriddoch
+ *  2003-09-26 Al Riddoch <alriddoch@zepler.org>
+ *     - Write some tests to pick up the socket and name resolver libs on
+ *       System V.
+ *     - Clean up handling of libs required to get socket calls in general.
+ *     - ping/ping.cpp, skstream/skserver.cpp: Add missing stdio include.
+ *     - skstream/skserver.h: Remove non-required string.h include.
+ *     - skstream/skstream.cpp: Add mising stdio include, and clean up sprintf()
+ *       usage.
+ *
+ * Revision 1.11  2003/09/23 21:51:44  alriddoch
  *  2003-09-23 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skserver.h: Make service an int in setService() as it always
  *       is elsewhere.
@@ -161,8 +171,6 @@
 #define RGJ_FREE_THREADS_SERVER_H_
 
 #include <skstream/skstream.h> // FreeSockets are needed
-
-#include <string>
 
 /////////////////////////////////////////////////////////////////////////////
 // class basic_socket_server

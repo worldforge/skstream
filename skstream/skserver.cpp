@@ -23,7 +23,17 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.15  2003-09-25 17:05:49  alriddoch
+ * Revision 1.16  2003-09-26 14:38:43  alriddoch
+ *  2003-09-26 Al Riddoch <alriddoch@zepler.org>
+ *     - Write some tests to pick up the socket and name resolver libs on
+ *       System V.
+ *     - Clean up handling of libs required to get socket calls in general.
+ *     - ping/ping.cpp, skstream/skserver.cpp: Add missing stdio include.
+ *     - skstream/skserver.h: Remove non-required string.h include.
+ *     - skstream/skstream.cpp: Add mising stdio include, and clean up sprintf()
+ *       usage.
+ *
+ * Revision 1.15  2003/09/25 17:05:49  alriddoch
  *  2003-09-25 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skpoll.cpp, skstream/skserver.cpp, skstream/skstream.cpp:
  *       Finish off fully qualifying all libc and system calls as being
@@ -192,7 +202,10 @@
 #ifndef _WIN32
 #include <sys/types.h>
 #include <netdb.h>
+#include <errno.h>
 #endif // _WIN32
+
+#include <cstdio>
 
 static inline int getSystemError()
 {
