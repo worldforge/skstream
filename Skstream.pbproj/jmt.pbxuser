@@ -3,7 +3,7 @@
 	C42E23770465BD8400A800C4 = {
 		activeBuildStyle = C42E23750465BD8400A800C4;
 		activeExecutable = C42E239A0465C14900A800C4;
-		activeTarget = C42E23980465C14900A800C4;
+		activeTarget = C42E23870465BE5800A800C4;
 		addToTargets = (
 			C42E23980465C14900A800C4,
 		);
@@ -11,19 +11,19 @@
 			C42E239A0465C14900A800C4,
 		);
 		perUserDictionary = {
-			PBXPerProjectTemplateStateSaveDate = 73776645;
+			PBXPerProjectTemplateStateSaveDate = 75149444;
 			"PBXTemplateGeometry-F5314676015831810DCA290F" = {
-				ContentSize = "{719, 527}";
+				ContentSize = "{685, 434}";
 				LeftSlideOut = {
 					Collapsed = NO;
-					Frame = "{{0, 23}, {719, 504}}";
+					Frame = "{{0, 23}, {685, 411}}";
 					Split0 = {
 						ActiveTab = 2;
 						ActiveTabName = PBXBuildResultsModule;
 						Collapsed = NO;
-						Frame = "{{0, 0}, {719, 504}}";
+						Frame = "{{0, 0}, {685, 411}}";
 						Split0 = {
-							Frame = "{{0, 301}, {719, 203}}";
+							Frame = "{{0, 301}, {685, 110}}";
 						};
 						SplitCount = 1;
 						Tab0 = {
@@ -72,10 +72,10 @@
 							};
 						};
 						Tab3 = {
-							BuildMessageFrame = "{{0, 0}, {721, 92}}";
-							BuildTranscriptFrame = "{{0, 101}, {721, 172}}";
+							BuildMessageFrame = "{{0, 0}, {687, 262}}";
+							BuildTranscriptFrame = "{{0, 271}, {687, 2}}";
 							BuildTranscriptFrameExpanded = YES;
-							Frame = "{{0, 0}, {719, 295}}";
+							Frame = "{{0, 0}, {685, 295}}";
 						};
 						Tab4 = {
 							Frame = "{{0, 0}, {612, 295}}";
@@ -138,7 +138,7 @@
 				StatusViewVisible = YES;
 				Template = F5314676015831810DCA290F;
 				ToolbarVisible = YES;
-				WindowLocation = "{7, 157}";
+				WindowLocation = "{312, 121}";
 			};
 			PBXWorkspaceContents = (
 				{
@@ -146,14 +146,18 @@
 						Split0 = {
 							Split0 = {
 								NavContent0 = {
-									bookmark = C42E23A20465C18A00A800C4;
+									bookmark = C4A63280047AB1E600A800C5;
 									history = (
-										C42E23A10465C18A00A800C4,
+										C4A6327D047AB1E600A800C5,
+										C4A6327E047AB1E600A800C5,
+									);
+									prevStack = (
+										C4A6327F047AB1E600A800C5,
 									);
 								};
 								NavCount = 1;
 								NavGeometry0 = {
-									Frame = "{{0, 0}, {510, 512}}";
+									Frame = "{{0, 0}, {620, 514}}";
 									NavBarVisible = YES;
 								};
 								NavSplitVertical = NO;
@@ -186,17 +190,17 @@
 			);
 			PBXWorkspaceGeometries = (
 				{
-					ContentSize = "{794, 535}";
+					ContentSize = "{904, 537}";
 					LeftSlideOut = {
 						ActiveTab = 0;
 						ActiveTabName = PBXGroupTreeModule;
 						Collapsed = NO;
-						Frame = "{{0, 23}, {794, 512}}";
+						Frame = "{{0, 23}, {904, 514}}";
 						Split0 = {
 							Collapsed = NO;
-							Frame = "{{284, 0}, {510, 512}}";
+							Frame = "{{284, 0}, {620, 514}}";
 							Split0 = {
-								Frame = "{{0, 0}, {510, 512}}";
+								Frame = "{{0, 0}, {620, 514}}";
 							};
 							SplitCount = 1;
 							Tab0 = {
@@ -258,7 +262,7 @@
 						};
 						SplitCount = 1;
 						Tab0 = {
-							Frame = "{{0, 0}, {260, 512}}";
+							Frame = "{{0, 0}, {260, 514}}";
 							GroupTreeTableConfiguration = (
 								SCMStatusColumn,
 								22,
@@ -289,7 +293,7 @@
 							Frame = "{{0, 0}, {217, 554}}";
 						};
 						Tab3 = {
-							Frame = "{{0, 0}, {239, 512}}";
+							Frame = "{{0, 0}, {239, 514}}";
 							TargetTableConfiguration = (
 								ActiveObject,
 								16,
@@ -313,16 +317,19 @@
 					StatusViewVisible = YES;
 					Template = 64ABBB4501FA494900185B06;
 					ToolbarVisible = YES;
-					WindowLocation = "{78, 120}";
+					WindowLocation = "{78, 118}";
 				},
 			);
-			PBXWorkspaceStateSaveDate = 73776645;
+			PBXWorkspaceStateSaveDate = 75149444;
 		};
 		perUserProjectItems = {
-			C42E23A10465C18A00A800C4 = C42E23A10465C18A00A800C4;
-			C42E23A20465C18A00A800C4 = C42E23A20465C18A00A800C4;
+			C4A6327D047AB1E600A800C5 = C4A6327D047AB1E600A800C5;
+			C4A6327E047AB1E600A800C5 = C4A6327E047AB1E600A800C5;
+			C4A6327F047AB1E600A800C5 = C4A6327F047AB1E600A800C5;
+			C4A63280047AB1E600A800C5 = C4A63280047AB1E600A800C5;
 		};
 		projectwideBuildSettings = {
+			SYMROOT = /Users/jmt/Worldforge/indri/build;
 		};
 		wantsIndex = 1;
 		wantsSCM = -1;
@@ -355,23 +362,57 @@
 		sourceDirectories = (
 		);
 	};
-	C42E23A10465C18A00A800C4 = {
-		isa = PBXTargetBookmark;
-		trg = C42E23980465C14900A800C4;
-	};
-	C42E23A20465C18A00A800C4 = {
+	C4A6327D047AB1E600A800C5 = {
 		isa = PBXTargetBookmark;
 		trg = C42E23980465C14900A800C4;
 		uiCtxt = {
-			TOCViewDetailVisibleRect = "{{0, 0}, {341, 233}}";
+			TOCViewDetailVisibleRect = "{{0, 0}, {445, 308}}";
 			TOCViewExpandedItems = (
 				"com.apple.target-editor-pane.settings",
 				"com.apple.target-editor-pane.settings.simple",
 				"com.apple.target-editor-pane.buildphases",
 			);
-			TOCViewMasterVisibleRect = "{{0, 0}, {130, 458}}";
+			TOCViewMasterVisibleRect = "{{0, 0}, {157, 460}}";
 			TOCViewSelectedItems = (
-				PBXTargetSummarySettingsModule,
+				"com.apple.target-editor-pane.buildphases",
+			);
+		};
+	};
+	C4A6327E047AB1E600A800C5 = {
+		isa = PBXTargetBookmark;
+		trg = C42E23870465BE5800A800C4;
+	};
+	C4A6327F047AB1E600A800C5 = {
+		isa = PBXTargetBookmark;
+		trg = C42E23980465C14900A800C4;
+		uiCtxt = {
+			TOCViewDetailVisibleRect = "{{0, 0}, {445, 308}}";
+			TOCViewExpandedItems = (
+				"com.apple.target-editor-pane.settings",
+				"com.apple.target-editor-pane.settings.simple",
+				"com.apple.target-editor-pane.buildphases",
+			);
+			TOCViewMasterVisibleRect = "{{0, 0}, {157, 460}}";
+			TOCViewSelectedItems = (
+				"com.apple.target-editor-pane.buildphases",
+			);
+		};
+	};
+	C4A63280047AB1E600A800C5 = {
+		isa = PBXTargetBookmark;
+		trg = C42E23870465BE5800A800C4;
+		uiCtxt = {
+			TOCViewDetailVisibleRect = "{{0, 0}, {419, 68}}";
+			TOCViewExpandedItems = (
+				"com.apple.target-editor-pane.settings",
+				"com.apple.target-editor-pane.settings.simple",
+				"com.apple.target-editor-pane.info-plist",
+				"com.apple.target-editor-pane.info-plist.simple",
+				"com.apple.target-editor-pane.buildphases",
+			);
+			TOCViewMasterVisibleRect = "{{0, 0}, {162, 460}}";
+			TOCViewSelectedItems = (
+				C42E23850465BE5800A800C4,
 			);
 		};
 	};
