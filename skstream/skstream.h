@@ -23,7 +23,13 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.37  2003-08-25 17:18:28  alriddoch
+ * Revision 1.38  2003-09-08 17:05:36  xmp
+ *  2003-09-06 Martin Pollard <circlemaster@blueyonder.co.uk>
+ *     - configure.in: changed win32 code to use winsock2.h instead of winsock.h.
+ *     - skstream/skstream.h: added a guard #ifndef SOCKET_ERROR to it's definition
+ * .
+ *
+ * Revision 1.37  2003/08/25 17:18:28  alriddoch
  *  2003-08-23 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skstream.h, skstream/skstream.cpp: Add extra argument
  *       to dgram_streambuf::setTarget() so protocol can be passed in.
@@ -315,7 +321,10 @@
 
 #include <skstream/skstreamconfig.h>
 
+// This constant is defined in windows, but not in most other systems
+#ifndef SOCKET_ERROR
 static const int SOCKET_ERROR = -1;
+#endif
 
 // This constant is defined in windows, but not in most other systems
 #ifndef INVALID_SOCKET

@@ -165,14 +165,14 @@ AC_LANG_SAVE
 AC_LANG_CPLUSPLUS
 AC_CACHE_VAL(ac_cv_socket_type,
 [
-    AC_TRY_COMPILE([#include <winsock.h>],
+    AC_TRY_COMPILE([#include <winsock2.h>],
     [
         SOCKET foo;
     ],
     [
         ac_cv_socket_type=SOCKET
         SKSTREAM_SOCKET_TYPE=$ac_cv_socket_type
-        SKSTREAM_SOCKET_HEADER="#include <winsock.h>"
+        SKSTREAM_SOCKET_HEADER="#include <winsock2.h>"
     ],
     [
         ac_cv_socket_type=int
@@ -249,12 +249,12 @@ AC_LANG_SAVE
 AC_LANG_CPLUSPLUS
 AC_CACHE_VAL(ac_cv_timeval_header,
 [
-    AC_TRY_COMPILE([#include <winsock.h>],
+    AC_TRY_COMPILE([#include <winsock2.h>],
     [
         timeval foo;
     ],
     [
-        ac_cv_timeval_header="#include <winsock.h>"
+        ac_cv_timeval_header="#include <winsock2.h>"
         SKSTREAM_TIMEVAL_HEADER=$ac_cv_timeval_header
         SKSTREAM_WINDOWS_HEADER_FLAG=1
     ],
@@ -359,7 +359,7 @@ dnl Test for closesocket
 AC_MSG_CHECKING([for closesocket])
 AC_LANG_SAVE
 AC_LANG_CPLUSPLUS
-AC_TRY_COMPILE([#include <winsock.h>],
+AC_TRY_COMPILE([#include <winsock2.h>],
 [
     closesocket(0);
 ],

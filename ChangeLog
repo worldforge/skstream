@@ -1,3 +1,6 @@
+ 2003-09-06 Martin Pollard <circlemaster@blueyonder.co.uk>
+    - configure.in: changed win32 code to use winsock2.h instead of winsock.h.
+    - skstream/skstream.h: added a guard #ifndef SOCKET_ERROR to it's definition.
  2003-08-23 Al Riddoch <alriddoch@zepler.org>
     - skstream/skstream.h, skstream/skstream.cpp: Add extra argument
       to dgram_streambuf::setTarget() so protocol can be passed in.
