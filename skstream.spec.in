@@ -50,6 +50,7 @@ rm -rf $RPM_BUILD_ROOT
 %files devel
 %defattr(-,root,root)
 %{prefix}/bin/skstream-config
+%{prefix}/man/man1/skstream-config.1*
 %{prefix}/include/skstream-0.2/skstream
 %{prefix}/lib/libskstream-0.2.a
 %{prefix}/lib/libskstream-0.2.la
