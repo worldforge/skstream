@@ -1,3 +1,8 @@
+2004-06-03  James Turner  <james@worldforge.org>
+
+	* XCode project updates; remove pbxuser file from CVS, shouldn't
+	  be checked in.
+
  2004-05-13 Al Riddoch  <alriddoch@zepler.org>
     - skstream/skserver_unix.h: Remove can_accept() from unix_socket_server
       as its not implemented and the version in the base class should be used.

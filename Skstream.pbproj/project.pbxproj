@@ -3,22 +3,27 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 38;
+	objectVersion = 39;
 	objects = {
 		C42E23730465BD8400A800C4 = {
 			children = (
 				C42E239B0465C15200A800C4,
 				C42E23780465BDA800A800C4,
 				C42E23890465BE5800A800C4,
+				C4C568BB055AF1D600944C0F,
 			);
 			isa = PBXGroup;
 			refType = 4;
+			sourceTree = "<group>";
 		};
 		C42E23750465BD8400A800C4 = {
 			buildRules = (
 			);
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
 			};
 			isa = PBXBuildStyle;
 			name = Development;
@@ -28,11 +33,15 @@
 			);
 			buildSettings = {
 				COPY_PHASE_STRIP = YES;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				ZERO_LINK = NO;
 			};
 			isa = PBXBuildStyle;
 			name = Deployment;
 		};
 		C42E23770465BD8400A800C4 = {
+			buildSettings = {
+			};
 			buildStyles = (
 				C42E23750465BD8400A800C4,
 				C42E23760465BD8400A800C4,
@@ -43,8 +52,8 @@
 			productRefGroup = C42E23890465BE5800A800C4;
 			projectDirPath = "";
 			targets = (
-				C42E23870465BE5800A800C4,
-				C42E23980465C14900A800C4,
+				C4C568AC055AF1D600944C0F,
+				C4C568BF055AF1DB00944C0F,
 			);
 		};
 		C42E23780465BDA800A800C4 = {
@@ -57,295 +66,87 @@
 				C42E237F0465BE3400A800C4,
 				C42E23800465BE3400A800C4,
 				C42E23810465BE3400A800C4,
+				C4DE4D46055D16ED0091BF9A,
+				C4DE4D47055D16ED0091BF9A,
 			);
 			isa = PBXGroup;
 			path = skstream;
 			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		C42E237A0465BE3400A800C4 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
 			path = sasproto.h;
 			refType = 4;
+			sourceTree = "<group>";
 		};
 		C42E237B0465BE3400A800C4 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
 			path = skpoll.cpp;
 			refType = 4;
+			sourceTree = "<group>";
 		};
 		C42E237C0465BE3400A800C4 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
 			path = skpoll.h;
 			refType = 4;
+			sourceTree = "<group>";
 		};
 		C42E237D0465BE3400A800C4 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
 			path = skserver.cpp;
 			refType = 4;
+			sourceTree = "<group>";
 		};
 		C42E237E0465BE3400A800C4 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
 			path = skserver.h;
 			refType = 4;
+			sourceTree = "<group>";
 		};
 		C42E237F0465BE3400A800C4 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
 			path = skstream_unix.h;
 			refType = 4;
+			sourceTree = "<group>";
 		};
 		C42E23800465BE3400A800C4 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
 			path = skstream.cpp;
 			refType = 4;
+			sourceTree = "<group>";
 		};
 		C42E23810465BE3400A800C4 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
 			path = skstream.h;
 			refType = 4;
-		};
-		C42E23820465BE5800A800C4 = {
-			buildActionMask = 2147483647;
-			files = (
-				C42E238A0465BE6100A800C4,
-				C42E238C0465BE6200A800C4,
-				C42E238E0465BE6300A800C4,
-				C42E238F0465BE6300A800C4,
-				C42E23910465BE9E00A800C4,
-			);
-			isa = PBXHeadersBuildPhase;
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		C42E23840465BE5800A800C4 = {
-			buildActionMask = 2147483647;
-			files = (
-				C42E238B0465BE6200A800C4,
-				C42E238D0465BE6300A800C4,
-				C42E23900465BE6400A800C4,
-			);
-			isa = PBXSourcesBuildPhase;
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		C42E23850465BE5800A800C4 = {
-			buildActionMask = 2147483647;
-			files = (
-			);
-			isa = PBXFrameworksBuildPhase;
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		C42E23870465BE5800A800C4 = {
-			buildPhases = (
-				C42E23820465BE5800A800C4,
-				C42E23930465BEFE00A800C4,
-				C42E23840465BE5800A800C4,
-				C42E23850465BE5800A800C4,
-			);
-			buildSettings = {
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				FRAMEWORK_VERSION = A;
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
-				OTHER_LIBTOOL_FLAGS = "";
-				OTHER_REZFLAGS = "";
-				PRINCIPAL_CLASS = "";
-				PRODUCT_NAME = skstream;
-				SECTORDER_FLAGS = "";
-				WARNING_CFLAGS = "-Wmost -Wno-four-char-constants -Wno-unknown-pragmas";
-				WRAPPER_EXTENSION = framework;
-			};
-			dependencies = (
-			);
-			isa = PBXFrameworkTarget;
-			name = skstream;
-			productInstallPath = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-			productName = skstream;
-			productReference = C42E23880465BE5800A800C4;
-			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
-<plist version=\"1.0\">
-<dict>
-	<key>CFBundleDevelopmentRegion</key>
-	<string>English</string>
-	<key>CFBundleExecutable</key>
-	<string></string>
-	<key>CFBundleGetInfoString</key>
-	<string></string>
-	<key>CFBundleIconFile</key>
-	<string></string>
-	<key>CFBundleIdentifier</key>
-	<string></string>
-	<key>CFBundleInfoDictionaryVersion</key>
-	<string>6.0</string>
-	<key>CFBundleName</key>
-	<string></string>
-	<key>CFBundlePackageType</key>
-	<string>FMWK</string>
-	<key>CFBundleShortVersionString</key>
-	<string></string>
-	<key>CFBundleSignature</key>
-	<string>????</string>
-	<key>CFBundleVersion</key>
-	<string>0.0.1d1</string>
-</dict>
-</plist>
-";
-		};
-		C42E23880465BE5800A800C4 = {
-			isa = PBXFrameworkReference;
-			path = skstream.framework;
-			refType = 3;
+			sourceTree = "<group>";
 		};
 		C42E23890465BE5800A800C4 = {
 			children = (
-				C42E23880465BE5800A800C4,
-				C42E23990465C14900A800C4,
+				C4C568BC055AF1D600944C0F,
+				C4C568C8055AF1DC00944C0F,
 			);
 			isa = PBXGroup;
 			name = Products;
 			refType = 4;
-		};
-		C42E238A0465BE6100A800C4 = {
-			fileRef = C42E237A0465BE3400A800C4;
-			isa = PBXBuildFile;
-			settings = {
-				ATTRIBUTES = (
-					Private,
-				);
-			};
-		};
-		C42E238B0465BE6200A800C4 = {
-			fileRef = C42E237B0465BE3400A800C4;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		C42E238C0465BE6200A800C4 = {
-			fileRef = C42E237C0465BE3400A800C4;
-			isa = PBXBuildFile;
-			settings = {
-				ATTRIBUTES = (
-					Public,
-				);
-			};
-		};
-		C42E238D0465BE6300A800C4 = {
-			fileRef = C42E237D0465BE3400A800C4;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		C42E238E0465BE6300A800C4 = {
-			fileRef = C42E237E0465BE3400A800C4;
-			isa = PBXBuildFile;
-			settings = {
-				ATTRIBUTES = (
-					Public,
-				);
-			};
-		};
-		C42E238F0465BE6300A800C4 = {
-			fileRef = C42E237F0465BE3400A800C4;
-			isa = PBXBuildFile;
-			settings = {
-				ATTRIBUTES = (
-					Public,
-				);
-			};
-		};
-		C42E23900465BE6400A800C4 = {
-			fileRef = C42E23800465BE3400A800C4;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		C42E23910465BE9E00A800C4 = {
-			fileRef = C42E23810465BE3400A800C4;
-			isa = PBXBuildFile;
-			settings = {
-				ATTRIBUTES = (
-					Public,
-				);
-			};
-		};
-		C42E23930465BEFE00A800C4 = {
-			buildActionMask = 2147483647;
-			files = (
-			);
-			generatedFileNames = (
-			);
-			isa = PBXShellScriptBuildPhase;
-			neededFileNames = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "cp -f $SRCROOT/skstream/skstreamconfig.h.pbx \\\n\t$BUILD_ROOT/skstream.framework/Headers/skstreamconfig.h";
-		};
-		C42E23940465C14900A800C4 = {
-			buildActionMask = 2147483647;
-			files = (
-				C42E239F0465C16F00A800C4,
-			);
-			isa = PBXHeadersBuildPhase;
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		C42E23950465C14900A800C4 = {
-			buildActionMask = 2147483647;
-			files = (
-				C42E239E0465C16F00A800C4,
-			);
-			isa = PBXSourcesBuildPhase;
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		C42E23960465C14900A800C4 = {
-			buildActionMask = 2147483647;
-			files = (
-				C42E23A00465C17400A800C4,
-			);
-			isa = PBXFrameworksBuildPhase;
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		C42E23970465C14900A800C4 = {
-			buildActionMask = 2147483647;
-			files = (
-			);
-			isa = PBXRezBuildPhase;
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		C42E23980465C14900A800C4 = {
-			buildPhases = (
-				C42E23940465C14900A800C4,
-				C42E23950465C14900A800C4,
-				C42E23960465C14900A800C4,
-				C42E23970465C14900A800C4,
-			);
-			buildSettings = {
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = Ping;
-				REZ_EXECUTABLE = YES;
-				SECTORDER_FLAGS = "";
-				WARNING_CFLAGS = "-Wmost -Wno-four-char-constants -Wno-unknown-pragmas";
-			};
-			dependencies = (
-			);
-			isa = PBXToolTarget;
-			name = Ping;
-			productInstallPath = /usr/local/bin;
-			productName = Ping;
-			productReference = C42E23990465C14900A800C4;
-		};
-		C42E23990465C14900A800C4 = {
-			isa = PBXExecutableFileReference;
-			path = Ping;
-			refType = 3;
+			sourceTree = "<group>";
 		};
 		C42E239B0465C15200A800C4 = {
 			children = (
@@ -355,35 +156,281 @@
 			isa = PBXGroup;
 			path = ping;
 			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		C42E239C0465C16F00A800C4 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
 			path = ping.cpp;
 			refType = 4;
+			sourceTree = "<group>";
 		};
 		C42E239D0465C16F00A800C4 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
 			path = ping.h;
 			refType = 4;
+			sourceTree = "<group>";
 		};
-		C42E239E0465C16F00A800C4 = {
-			fileRef = C42E239C0465C16F00A800C4;
+		C4C568AC055AF1D600944C0F = {
+			buildPhases = (
+				C4C568AD055AF1D600944C0F,
+				C4C568B4055AF1D600944C0F,
+				C4C568B8055AF1D600944C0F,
+			);
+			buildRules = (
+			);
+			buildSettings = {
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_VERSION = A;
+				GCC_PREPROCESSOR_DEFINITIONS = "SKSTREAM_UNIX_SOCKETS=1";
+				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
+				GCC_WARN_UNKNOWN_PRAGMAS = NO;
+				INFOPLIST_FILE = "Info-skstream__Upgraded_.plist";
+				INSTALL_PATH = "@executable_path/../Frameworks";
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "-seg1addr 0x23000000";
+				OTHER_LIBTOOL_FLAGS = "";
+				OTHER_REZFLAGS = "";
+				PRINCIPAL_CLASS = "";
+				PRODUCT_NAME = skstream;
+				SECTORDER_FLAGS = "";
+				SKIP_INSTALL = YES;
+				WARNING_CFLAGS = "-Wall";
+				WRAPPER_EXTENSION = framework;
+			};
+			dependencies = (
+			);
+			isa = PBXNativeTarget;
+			name = skstream;
+			productInstallPath = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+			productName = skstream;
+			productReference = C4C568BC055AF1D600944C0F;
+			productType = "com.apple.product-type.framework";
+		};
+		C4C568AD055AF1D600944C0F = {
+			buildActionMask = 2147483647;
+			files = (
+				C4C568AE055AF1D600944C0F,
+				C4C568AF055AF1D600944C0F,
+				C4C568B0055AF1D600944C0F,
+				C4C568B1055AF1D600944C0F,
+				C4C568B2055AF1D600944C0F,
+				C4DE4D48055D16EE0091BF9A,
+				C4DE4D49055D16EE0091BF9A,
+			);
+			isa = PBXHeadersBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C4C568AE055AF1D600944C0F = {
+			fileRef = C42E237A0465BE3400A800C4;
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					Private,
+				);
+			};
+		};
+		C4C568AF055AF1D600944C0F = {
+			fileRef = C42E237C0465BE3400A800C4;
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					Public,
+				);
+			};
+		};
+		C4C568B0055AF1D600944C0F = {
+			fileRef = C42E237E0465BE3400A800C4;
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					Public,
+				);
+			};
+		};
+		C4C568B1055AF1D600944C0F = {
+			fileRef = C42E237F0465BE3400A800C4;
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					Public,
+				);
+			};
+		};
+		C4C568B2055AF1D600944C0F = {
+			fileRef = C42E23810465BE3400A800C4;
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					Public,
+				);
+			};
+		};
+		C4C568B4055AF1D600944C0F = {
+			buildActionMask = 2147483647;
+			files = (
+				C4C568B5055AF1D600944C0F,
+				C4C568B6055AF1D600944C0F,
+				C4C568B7055AF1D600944C0F,
+			);
+			isa = PBXSourcesBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C4C568B5055AF1D600944C0F = {
+			fileRef = C42E237B0465BE3400A800C4;
 			isa = PBXBuildFile;
 			settings = {
 			};
 		};
-		C42E239F0465C16F00A800C4 = {
+		C4C568B6055AF1D600944C0F = {
+			fileRef = C42E237D0465BE3400A800C4;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		C4C568B7055AF1D600944C0F = {
+			fileRef = C42E23800465BE3400A800C4;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		C4C568B8055AF1D600944C0F = {
+			buildActionMask = 2147483647;
+			files = (
+			);
+			isa = PBXFrameworksBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C4C568BB055AF1D600944C0F = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.plist;
+			path = "Info-skstream__Upgraded_.plist";
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		C4C568BC055AF1D600944C0F = {
+			explicitFileType = wrapper.framework;
+			includeInIndex = 0;
+			isa = PBXFileReference;
+			path = skstream.framework;
+			refType = 3;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		C4C568BF055AF1DB00944C0F = {
+			buildPhases = (
+				C4C568C0055AF1DB00944C0F,
+				C4C568C2055AF1DB00944C0F,
+				C4C568C4055AF1DB00944C0F,
+				C4C568C6055AF1DB00944C0F,
+			);
+			buildRules = (
+			);
+			buildSettings = {
+				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
+				GCC_WARN_UNKNOWN_PRAGMAS = NO;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = Ping;
+				REZ_EXECUTABLE = YES;
+				SECTORDER_FLAGS = "";
+				WARNING_CFLAGS = "-Wmost";
+			};
+			dependencies = (
+			);
+			isa = PBXNativeTarget;
+			name = Ping;
+			productInstallPath = /usr/local/bin;
+			productName = Ping;
+			productReference = C4C568C8055AF1DC00944C0F;
+			productType = "com.apple.product-type.tool";
+		};
+		C4C568C0055AF1DB00944C0F = {
+			buildActionMask = 2147483647;
+			files = (
+				C4C568C1055AF1DB00944C0F,
+			);
+			isa = PBXHeadersBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C4C568C1055AF1DB00944C0F = {
 			fileRef = C42E239D0465C16F00A800C4;
 			isa = PBXBuildFile;
 			settings = {
 			};
 		};
-		C42E23A00465C17400A800C4 = {
-			fileRef = C42E23880465BE5800A800C4;
+		C4C568C2055AF1DB00944C0F = {
+			buildActionMask = 2147483647;
+			files = (
+				C4C568C3055AF1DB00944C0F,
+			);
+			isa = PBXSourcesBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C4C568C3055AF1DB00944C0F = {
+			fileRef = C42E239C0465C16F00A800C4;
 			isa = PBXBuildFile;
 			settings = {
+			};
+		};
+		C4C568C4055AF1DB00944C0F = {
+			buildActionMask = 2147483647;
+			files = (
+			);
+			isa = PBXFrameworksBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C4C568C6055AF1DB00944C0F = {
+			buildActionMask = 2147483647;
+			files = (
+			);
+			isa = PBXRezBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C4C568C8055AF1DC00944C0F = {
+			explicitFileType = "compiled.mach-o.executable";
+			includeInIndex = 0;
+			isa = PBXFileReference;
+			path = Ping;
+			refType = 3;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		C4DE4D46055D16ED0091BF9A = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = skserver_unix.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		C4DE4D47055D16ED0091BF9A = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = skstreamconfig.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		C4DE4D48055D16EE0091BF9A = {
+			fileRef = C4DE4D46055D16ED0091BF9A;
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					Public,
+				);
+			};
+		};
+		C4DE4D49055D16EE0091BF9A = {
+			fileRef = C4DE4D47055D16ED0091BF9A;
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					Private,
+				);
 			};
 		};
 	};

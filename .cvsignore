@@ -26,3 +26,5 @@ stamp-h[0-9]*
 stamp-h.in
 depcomp
 VisualC.zip
+build
+.DS_Store
