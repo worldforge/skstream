@@ -1,4 +1,8 @@
  2003-03-18 Al Riddoch <alriddoch@zepler.org>,
+    - Improve safety of some constructors, and move IP (host and port)
+      related functions into apropriate classes.
+    - Add in unix sockets, based on a configure check.
+ 2003-03-18 Al Riddoch <alriddoch@zepler.org>,
     - Remove legacy skstream-config script to avoid clash with stable version.
  2003-03-18 Al Riddoch <alriddoch@zepler.org>,
     - Increment API to version 0.3, and reset interface version, so

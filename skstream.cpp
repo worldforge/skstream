@@ -23,7 +23,13 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.19  2003-03-16 12:27:40  alriddoch
+ * Revision 1.20  2003-03-18 22:46:45  alriddoch
+ *  2003-03-18 Al Riddoch <alriddoch@zepler.org>,
+ *     - Improve safety of some constructors, and move IP (host and port)
+ *       related functions into apropriate classes.
+ *     - Add in unix sockets, based on a configure check.
+ *
+ * Revision 1.19  2003/03/16 12:27:40  alriddoch
  *  2003-03-16 Al Riddoch <alriddoch@zepler.org>,
  *     - skstream.cpp: Fix problem with virtual method being called
  *       after destructor.
@@ -182,6 +188,11 @@
  * Note there are some API changes and new features in this version, so I 
  * didn't just commit over the older one.
  */
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif // HAVE_CONFIG_H
+
 #include "skstream.h"
 
 #ifndef _WIN32
@@ -813,6 +824,191 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
 
   return true;
 }
+
+#ifdef SKSTREAM_UNIX_SOCKETS
+
+#include "skstream_unix.h"
+
+/////////////////////////////////////////////////////////////////////////////
+// class unix_socket_stream implementation
+/////////////////////////////////////////////////////////////////////////////
+void unix_socket_stream::open(const std::string& address, bool nonblock) {
+  if (address.size() >  107) {
+    return;
+  }
+
+  if(is_open() || _connecting_socket != INVALID_SOCKET) close();
+
+  // Create socket
+  SOCKET_TYPE _socket = ::socket(AF_UNIX, SOCK_STREAM, protocol);
+  if(_socket == INVALID_SOCKET) {
+    fail();
+    return;
+  }
+
+  if(nonblock) {
+#ifndef _WIN32
+    int err_val = fcntl(_socket, F_SETFL, O_NONBLOCK);
+    if(err_val == -1) {
+      setLastError();
+      ::close(_socket);
+      _socket = INVALID_SOCKET;
+      fail();
+      return;
+    }
+#else
+    u_long nonblocking = 1;  // This flag may be set elsewhere,
+                             // in a header ?
+    int err_val = ioctlsocket(_socket, FIONBIO, &nonblocking);
+    if(err_val == -1) {
+      setLastError();
+      ::closesocket(_socket);
+      _socket = INVALID_SOCKET;
+      fail();
+      return;
+    }
+#endif
+  }
+
+  // Fill host information
+  sockaddr_un sa;
+  sa.sun_family = AF_UNIX;
+  strncpy(sa.sun_path, address.c_str(), 108);
+
+  if(::connect(_socket,(sockaddr*)&sa, sizeof(sa)) == SOCKET_ERROR) {
+#ifndef _WIN32
+    if(nonblock && errno == EINPROGRESS) {
+#else
+    if(nonblock && WSAGetLastError() == WSAEWOULDBLOCK) {
+#endif
+      _connecting_socket = _socket;
+      return;
+    }
+    setLastError();
+    fail();
+#ifndef _WIN32
+    ::close(_socket);
+#else
+    ::closesocket(_socket);
+#endif
+    return;
+  }
+
+  // set the socket blocking again for io
+  if(nonblock) {
+#ifndef _WIN32
+    int err_val = fcntl(_socket, F_SETFL, 0);
+    if(err_val == -1) {
+      setLastError();
+      ::close(_socket);
+      _socket = INVALID_SOCKET;
+      fail();
+      return;
+    }
+#else
+    u_long blocking = 0;
+    int err_val = ioctlsocket(_socket, FIONBIO, &blocking);
+    if(err_val == -1) {
+      setLastError();
+      ::closesocket(_socket);
+      _socket = INVALID_SOCKET;
+      fail();
+      return;
+    }
+#endif
+  }
+
+  // set socket for underlying socketbuf
+  _sockbuf.setSocket(_socket);
+}
+
+void unix_socket_stream::close()
+{
+  if(_connecting_socket != INVALID_SOCKET) {
+#ifndef _WIN32
+    ::close(_connecting_socket);
+#else
+    ::closesocket(_connecting_socket);
+#endif
+    _connecting_socket = INVALID_SOCKET;
+  }
+
+  basic_socket_stream::close();
+}
+
+bool unix_socket_stream::isReady(unsigned int milliseconds)
+{
+  if(_connecting_socket == INVALID_SOCKET) {
+    return true;
+  }
+
+  fd_set fds;
+  struct timeval wait_time = {milliseconds / 1000, (milliseconds % 1000) * 1000};
+
+  FD_ZERO(&fds);
+  FD_SET(_connecting_socket, &fds);
+
+  if (select(_connecting_socket + 1, 0, &fds, 0, &wait_time) != 1
+      || !FD_ISSET(_connecting_socket, &fds)) {
+    return false;
+  }
+
+  // It's done connecting, check for error
+
+  // We're no longer connecting, put the socket in a tmp variable
+  SOCKET_TYPE _socket = _connecting_socket;
+  _connecting_socket = INVALID_SOCKET;
+
+  int errnum;
+  SOCKLEN errsize = sizeof(errnum);
+#ifndef _WIN32
+  getsockopt(_socket, SOL_SOCKET, SO_ERROR, &errnum, &errsize);
+#else
+  Sleep(0);
+  getsockopt(_socket, SOL_SOCKET, SO_ERROR, (LPSTR)&errnum, &errsize); 
+#endif
+
+  if(errnum != 0) {
+    // Can't use setLastError(), since errno doesn't have the error
+    LastError = errnum;
+    fail();
+#ifndef _WIN32
+    ::close(_socket);
+#else
+    ::closesocket(_socket);
+#endif
+    return true;
+  }
+
+  // set the socket blocking again for io
+#ifndef _WIN32
+  int err_val = fcntl(_socket, F_SETFL, 0);
+  if(err_val == -1) {
+    setLastError();
+    ::close(_socket);
+    _socket = INVALID_SOCKET;
+    fail();
+    return true;
+  }
+#else
+  u_long blocking = 0;
+  int err_val = ioctlsocket(_socket, FIONBIO, &blocking);
+  if(err_val == SOCKET_ERROR) {
+    setLastError();
+    ::closesocket(_socket);
+    _socket = INVALID_SOCKET;
+    fail();
+    return true;
+  }
+#endif
+
+  // set socket for underlying socketbuf
+    _sockbuf.setSocket(_socket);
+
+  return true;
+}
+
+#endif // SKSTREAM_UNIX_SOCKETS
 
 /////////////////////////////////////////////////////////////////////////////
 // class raw_socket_stream implementation

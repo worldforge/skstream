@@ -23,7 +23,13 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.27  2003-03-17 23:37:04  alriddoch
+ * Revision 1.28  2003-03-18 22:46:45  alriddoch
+ *  2003-03-18 Al Riddoch <alriddoch@zepler.org>,
+ *     - Improve safety of some constructors, and move IP (host and port)
+ *       related functions into apropriate classes.
+ *     - Add in unix sockets, based on a configure check.
+ *
+ * Revision 1.27  2003/03/17 23:37:04  alriddoch
  *  2003-03-17 Al Riddoch <alriddoch@zepler.org>,
  *     - Start handling portability with configure checks.
  *
@@ -432,7 +438,8 @@ public:
   /** Make a new socket buffer from an existing socket, with optional
    *  buffer sizes.
    */
-  socketbuf(SOCKET_TYPE sock, unsigned insize=0x8000, unsigned outsize=0x8000);
+  explicit socketbuf(SOCKET_TYPE sock, unsigned insize=0x8000,
+                                       unsigned outsize=0x8000);
   /** Make a new socket buffer from an existing socket, with an existing
    *  buffer.
    */
@@ -521,7 +528,8 @@ public:
   /** Make a new socket buffer from an existing socket, with optional
    *  buffer sizes.
    */
-  stream_socketbuf(SOCKET_TYPE sock, unsigned insize=0x8000, unsigned outsize=0x8000);
+  explicit stream_socketbuf(SOCKET_TYPE sock, unsigned insize=0x8000,
+                                              unsigned outsize=0x8000);
   /** Make a new socket buffer from an existing socket, with an existing
    *  buffer.
    */
@@ -543,7 +551,8 @@ public:
   /** Make a new socket buffer from an existing socket, with optional
    *  buffer sizes.
    */
-  dgram_socketbuf(SOCKET_TYPE sock, unsigned insize=0x8000, unsigned outsize=0x8000);
+  explicit dgram_socketbuf(SOCKET_TYPE sock, unsigned insize=0x8000,
+                                             unsigned outsize=0x8000);
   /** Make a new socket buffer from an existing socket, with an existing
    *  buffer.
    */
@@ -630,7 +639,7 @@ public:
   basic_socket_stream(unsigned insize,unsigned outsize,
                       int proto = FreeSockets::proto_IP);
   /// Make a socket stream using an existing socket.
-  basic_socket_stream(SOCKET_TYPE sock);
+  explicit basic_socket_stream(SOCKET_TYPE sock);
   /// Make a socket stream with a buffer with specified sizes using an existing socket.
   basic_socket_stream(SOCKET_TYPE sock, unsigned insize,unsigned outsize);
 
@@ -682,17 +691,6 @@ public:
   virtual SOCKET_TYPE getSocket() const { 
     return _sockbuf.getSocket(); 
   }
-
-#if 0
-  // FIXME AJR 20030314 These are wrong here
-  std::string getRemoteHost() const {
-    return std::string(::inet_ntoa(getInpeer().sin_addr));
-  }
-
-  unsigned short getRemotePort() const {
-    return ntohs(getInpeer().sin_port);
-  }
-#endif
 
   int getLastError() const { 
     return LastError; 
@@ -795,6 +793,14 @@ public:
   virtual void close();
   virtual SOCKET_TYPE getSocket() const { return (_connecting_socket == INVALID_SOCKET)
     ? basic_socket_stream::getSocket() : _connecting_socket;}
+
+  std::string getRemoteHost() const {
+    return std::string(::inet_ntoa(((const sockaddr_in&)getInpeer()).sin_addr));
+  }
+
+  unsigned short getRemotePort() const {
+    return ntohs(((const sockaddr_in&)getInpeer()).sin_port);
+  }
 
   // is_ready() is deprecated in favor of isReady()
   bool is_ready(unsigned int milliseconds = 0) {return isReady(milliseconds);}
