@@ -1,3 +1,6 @@
+ 2003-09-27 Al Riddoch <alriddoch@zepler.org>
+    - skstream/skstreamconfig.h.windows: Update headers and defines
+      to build latest code on MSVC
  2003-09-26 Al Riddoch <alriddoch@zepler.org>
     - Add option to get streams remote details as reverse lookup, rather
       than just presentation form.
