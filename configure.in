@@ -263,10 +263,10 @@ AC_SUBST(SKSTREAM_STREAMBUF_HEADER)
 AC_LANG_RESTORE
 
 AC_MSG_CHECKING([for timeval header])
-SKSTREAM_TIMEVAL_HEADER="#include <sys/time.h"
-SKSTREAM_UNIX_HEADERS=0
-SKSTREAM_BEOS_HEADERS=0
-SKSTREAM_WINDOWS_HEADERS=0
+SKSTREAM_TIMEVAL_HEADER="#include <sys/time.h>"
+SKSTREAM_UNIX_HEADER_FLAG=0
+SKSTREAM_BEOS_HEADER_FLAG=0
+SKSTREAM_WINDOWS_HEADER_FLAG=0
 AC_LANG_SAVE
 AC_LANG_CPLUSPLUS
 AC_CACHE_VAL(ac_cv_timeval_header,
@@ -278,7 +278,7 @@ AC_CACHE_VAL(ac_cv_timeval_header,
     [
         ac_cv_timeval_header="#include <winsock.h>"
         SKSTREAM_TIMEVAL_HEADER=$ac_cv_timeval_header
-        SKSTREAM_WINDOWS_HEADERS=1
+        SKSTREAM_WINDOWS_HEADER_FLAG=1
     ],
     [
         AC_TRY_COMPILE([#include <sys/time.h>],
@@ -288,7 +288,7 @@ AC_CACHE_VAL(ac_cv_timeval_header,
         [
             ac_cv_timeval_header="#include <sys/time.h>"
             SKSTREAM_TIMEVAL_HEADER=$ac_cv_timeval_header
-            SKSTREAM_UNIX_HEADERS=1
+            SKSTREAM_UNIX_HEADER_FLAG=1
         ],
         [
             AC_TRY_COMPILE([#include <net/socket.h>],
@@ -298,7 +298,7 @@ AC_CACHE_VAL(ac_cv_timeval_header,
             [
                 ac_cv_timeval_header="#include <net/socket.h>"
                 SKSTREAM_TIMEVAL_HEADER=$ac_cv_timeval_header
-                SKSTREAM_BEOS_HEADERS=1
+                SKSTREAM_BEOS_HEADER_FLAG=1
             ],
             [
                 AC_MSG_ERROR(Unable to find header for timeval type)
@@ -309,9 +309,9 @@ AC_CACHE_VAL(ac_cv_timeval_header,
 ])
 AC_MSG_RESULT($ac_cv_timeval_header)
 AC_SUBST(SKSTREAM_TIMEVAL_HEADER)
-AC_SUBST(SKSTREAM_UNIX_HEADERS)
-AC_SUBST(SKSTREAM_BEOS_HEADERS)
-AC_SUBST(SKSTREAM_WINDOWS_HEADERS)
+AC_SUBST(SKSTREAM_UNIX_HEADER_FLAG)
+AC_SUBST(SKSTREAM_BEOS_HEADER_FLAG)
+AC_SUBST(SKSTREAM_WINDOWS_HEADER_FLAG)
 
 AC_LANG_RESTORE
 

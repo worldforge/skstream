@@ -1,3 +1,5 @@
+ 2003-04-09 Al Riddoch <alriddoch@zepler.org>,
+    - Fix problem caused by ending variable name with _HEADERS.
  2003-03-18 Al Riddoch <alriddoch@zepler.org>,
     - Improve safety of some constructors, and move IP (host and port)
       related functions into apropriate classes.
