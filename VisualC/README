@@ -1,0 +1,6 @@
+This directory is where files specific to Microsoft Visual 
+C++ will reside.  'make dist' will package the contents of
+this directory into a .zip archive and then put that into
+the tarball.
+
+
