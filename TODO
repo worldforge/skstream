@@ -1,1 +1,4 @@
 - convert the linux detection code in skstream.h to use configure tests
+
+Use a -DHAVESKSTREAMCONFIG_H to tell the code to include the genereated header, else
+include a pre-defined one.
