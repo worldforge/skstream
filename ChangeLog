@@ -1,3 +1,10 @@
+ 04/08/2002 Malcolm Walker <malcolm@worldforge.org>, 
+            Martin Pollard <xmp@blueyonder.co.uk>
+    -Moved code out of skstream.h and into skstream.cpp for
+     basic_socket_stream constructors and methods.
+    -Renamed CHANGELOG to CHANGELOG.FreeSockets to stop filename clash on
+     lame filesystems
+    -Added MS Visual C++ project files to VisualC directory.
  03/04/2002 Dan Tomalesky <grim@xynesis.com>
     -Added $ACLOCAL_FLAGS to aclocal call in autogen.sh
  03/02/2002 Dan Tomalesky <grim@xynesis.com>

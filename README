@@ -20,7 +20,7 @@
 
 (This file was created from the original CHANGELOG's header.)
 
-Latest Release Version: 0.2.2
+Latest Release Version: 0.2.3
 
 REMAINING BUGS:
   - Setting the size of the underlying buffer is not yet working.
@@ -32,10 +32,11 @@ Supported and Tested plataforms:
 
 Compilers used for testing:
   Borland C++Buider 3, 4 & 5. Borland C++ Free Compiler.
+  Microsoft Visual C++ 6.0 and .NET
   GCC 2.91 & 2.95 (Linux)
   GCC BeOS
 
-Plataform Remarks:
+Platform Remarks:
 -BeOS
   * Timeout control is unavaiable under BeOS due to its implementation of
   sockets. BeOS support select() only when reading and not for writing or

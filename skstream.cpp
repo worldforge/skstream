@@ -23,7 +23,14 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.3  2002-02-26 20:33:55  grimicus
+ * Revision 1.4  2002-04-08 19:47:12  malcolm
+ * Changes to allow clean compilation on Microsoft Visual C++.  I must go and
+ * boil my keyboard now.  Constructor code for basic_socket_stream moved out of
+ * header and into .cpp.
+ *
+ * MS Project files are untested (I edited them!  Oh no!)
+ *
+ * Revision 1.3  2002/02/26 20:33:55  grimicus
  * 02/26/2002 Dan Tomalesky <grim@xynesis.com>
  *     * Added test cases for skserver and friends
  *
@@ -277,6 +284,37 @@ int socketbuf::underflow() {
 /////////////////////////////////////////////////////////////////////////////
 // class basic_socket_stream implementation
 /////////////////////////////////////////////////////////////////////////////
+// Constructors
+  basic_socket_stream::basic_socket_stream()
+      : std::iostream(&_sockbuf), _sockbuf(INVALID_SOCKET), protocol(FreeSockets::proto_IP), LastError(0)
+  {
+    startup();
+    init(&_sockbuf); // initialize underlying streambuf
+  }
+
+  basic_socket_stream::basic_socket_stream(unsigned insize,unsigned outsize,
+                      int proto=FreeSockets::proto_IP)
+      : std::iostream(&_sockbuf), _sockbuf(INVALID_SOCKET,insize,outsize),
+        protocol(proto), LastError(0)
+  {
+    startup();
+    init(&_sockbuf); // initialize underlying streambuf
+  }
+
+  basic_socket_stream::basic_socket_stream(SOCKET_TYPE sock)
+      : std::iostream(&_sockbuf), _sockbuf(sock), protocol(FreeSockets::proto_IP), LastError(0) {
+    startup();
+    init(&_sockbuf); // initialize underlying streambuf
+  }
+
+  basic_socket_stream::basic_socket_stream(SOCKET_TYPE sock,
+                      unsigned insize,unsigned outsize)
+      : std::iostream(&_sockbuf), _sockbuf(sock,insize,outsize),
+        protocol(FreeSockets::proto_IP), LastError(0) {
+    startup();
+    init(&_sockbuf); // initialize underlying streambuf
+  }
+
 // System dependant initialization
 bool basic_socket_stream::startup() {
   #ifdef _WIN32
@@ -327,6 +365,21 @@ void basic_socket_stream::close() {
     _sockbuf.setSocket(INVALID_SOCKET);
   }
 }
+
+// Check for failure condition
+  bool basic_socket_stream::fail() {
+    if(timeout()) {
+      clear();
+      return false;
+    }
+    if(std::iostream::fail()) {
+      setLastError();
+      return true;
+    }
+    return false;
+  }
+
+
 
 /////////////////////////////////////////////////////////////////////////////
 // class tcp_socket_stream implementation

@@ -23,7 +23,14 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.9  2002-03-18 07:36:25  malcolm
+ * Revision 1.10  2002-04-08 19:47:12  malcolm
+ * Changes to allow clean compilation on Microsoft Visual C++.  I must go and
+ * boil my keyboard now.  Constructor code for basic_socket_stream moved out of
+ * header and into .cpp.
+ *
+ * MS Project files are untested (I edited them!  Oh no!)
+ *
+ * Revision 1.9  2002/03/18 07:36:25  malcolm
  * Add superclass constructor code to *_socket_stream classes
  * (Necessary for compilation with gcc3)
  *
@@ -141,7 +148,11 @@
 #include <stdexcept>
 
 #ifdef _WIN32
-  #include <streambuf.h>
+  #ifdef _MSC_VER
+    #include <streambuf>
+  #else
+    #include <streambuf.h>
+  #endif
 
   #include <winsock.h>
 
@@ -350,55 +361,22 @@ protected:
 
 public:
   // Constructors
-  basic_socket_stream()
-      : std::iostream(&_sockbuf), _sockbuf(INVALID_SOCKET), protocol(FreeSockets::proto_IP), LastError(0)
-  {
-    startup();
-    init(&_sockbuf); // initialize underlying streambuf
-  }
-
+  basic_socket_stream();
   basic_socket_stream(unsigned insize,unsigned outsize,
-                      int proto=FreeSockets::proto_IP)
-      : std::iostream(&_sockbuf), _sockbuf(INVALID_SOCKET,insize,outsize),
-        protocol(proto), LastError(0)
-  {
-    startup();
-    init(&_sockbuf); // initialize underlying streambuf
-  }
-
-  basic_socket_stream(SOCKET_TYPE sock)
-      : std::iostream(&_sockbuf), _sockbuf(sock), protocol(FreeSockets::proto_IP), LastError(0) {
-    startup();
-    init(&_sockbuf); // initialize underlying streambuf
-  }
-
+                      int proto=FreeSockets::proto_IP);
+  basic_socket_stream(SOCKET_TYPE sock);
   basic_socket_stream(SOCKET_TYPE sock,
-                      unsigned insize,unsigned outsize)
-      : std::iostream(&_sockbuf), _sockbuf(sock,insize,outsize),
-        protocol(FreeSockets::proto_IP), LastError(0) {
-    startup();
-    init(&_sockbuf); // initialize underlying streambuf
-  }
+		  unsigned insize,unsigned outsize);
 
   // Destructor
   virtual ~basic_socket_stream() {
     shutdown();
   }
 
+  virtual bool fail();
+
   virtual bool operator!() { 
     return fail(); 
-  }
-
-  virtual bool fail() {
-    if(timeout()) {
-      clear();
-      return false;
-    }
-    if(std::iostream::fail()) {
-      setLastError();
-      return true;
-    }
-    return false;
   }
 
   virtual bool timeout() const {
