@@ -23,7 +23,13 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.12  2002-04-14 22:50:46  xmp
+ * Revision 1.13  2002-05-16 18:10:54  SpeedBump
+ * added detection code for Solaris.  tested with 2.6.  needs testing on further
+ * platforms.
+ * also added TODO item to use configure tests instead of preprocessor tests in
+ * skstream.h
+ *
+ * Revision 1.12  2002/04/14 22:50:46  xmp
  * one liner change to define sorting out cygwin compiles
  *
  * Revision 1.11  2002/04/08 20:02:00  xmp
@@ -221,6 +227,35 @@
 //type thing, but windows is not to be trusted.  SOCKET_TYPE does *NOT* stand
 //for the various 'types' of socket connections (SOCK_STREAM, SOCK_DGRAM, etc)
   typedef int SOCKET_TYPE;
+#endif
+
+#ifdef __sun__
+  #include <sys/socket.h>
+  #include <netdb.h>
+  #include <arpa/inet.h>
+  #include <errno.h>
+  #include <unistd.h>
+
+  #define INVALID_SOCKET (SOCKET_TYPE)(~0)
+  #define SOCKET_ERROR   -1
+
+  #define SOCKLEN int
+
+  #define IPPORT_RESERVED 1024
+  #define INADDR_NONE	  0xFFFFFFFF
+
+  #define closesocket(x) close(x)
+  
+//SOCKET_TYPE is used to define the socket in each of the different OSes 
+//that skstream supports.  This is because it is not guaranteed how any
+//will handle the socket.  Currently, they all use an integer file descriptor
+//type thing, but windows is not to be trusted.  SOCKET_TYPE does *NOT* stand
+//for the various 'types' of socket connections (SOCK_STREAM, SOCK_DGRAM, etc)
+  typedef int SOCKET_TYPE;
+#endif
+
+#ifndef SOCKLEN
+  #error "no support for target os"
 #endif
 
 /////////////////////////////////////////////////////////////////////////////

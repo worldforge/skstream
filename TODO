@@ -1,0 +1,1 @@
+- convert the linux detection code in skstream.h to use configure tests
