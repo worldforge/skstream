@@ -33,28 +33,15 @@ private:
   unix_socket_stream& operator=(const unix_socket_stream& socket);
 
   SOCKET_TYPE _connecting_socket;
-  stream_socketbuf stream_sockbuf;
+  stream_socketbuf & stream_sockbuf;
 
 public:
-  unix_socket_stream() : basic_socket_stream(stream_sockbuf),
-                         _connecting_socket(INVALID_SOCKET),
-                         stream_sockbuf(INVALID_SOCKET) {
-  }
+  unix_socket_stream();
 
   explicit unix_socket_stream(const std::string& address,
-                              bool nonblock = false) : 
-          basic_socket_stream(stream_sockbuf),
-          _connecting_socket(INVALID_SOCKET),
-          stream_sockbuf(INVALID_SOCKET) {
-    open(address, nonblock);
-  }
+                              bool nonblock = false);
 
-  unix_socket_stream(const std::string& address, unsigned int milliseconds) :
-              basic_socket_stream(stream_sockbuf),
-              _connecting_socket(INVALID_SOCKET),
-              stream_sockbuf(INVALID_SOCKET) {
-    open(address, milliseconds);
-  }
+  unix_socket_stream(const std::string& address, unsigned int milliseconds);
 
   virtual ~unix_socket_stream();
 

@@ -1,3 +1,15 @@
+2004-11-24  Al Riddoch  <alriddoch@zepler.org>
+
+	* skstream/skstream.cpp, skstream/skstream.h, skstream/skstream_unix.h:
+	  Re-work the way stream buffer objects are created so they are
+	  allocated in the super class using new, and passed to the base
+	  where they are deleted in the destructor. This ensures that the
+	  stream buffer is never used un-initialised, or after destruction.
+	  Move some lengthy constructors into the .cpp file.
+
+	* configure.ac: Increment version and interface so applications can
+	  ensure they get the updated API.
+
 2004-11-23  Al Riddoch  <alriddoch@zepler.org>
 
 	* skstream/skserver.cpp, skstream/skserver.h,

@@ -23,7 +23,20 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.44  2004-11-23 01:22:24  alriddoch
+ * Revision 1.45  2004-11-24 00:50:37  alriddoch
+ * 2004-11-24  Al Riddoch  <alriddoch@zepler.org>
+ *
+ * 	* skstream/skstream.cpp, skstream/skstream.h, skstream/skstream_unix.h:
+ * 	  Re-work the way stream buffer objects are created so they are
+ * 	  allocated in the super class using new, and passed to the base
+ * 	  where they are deleted in the destructor. This ensures that the
+ * 	  stream buffer is never used un-initialised, or after destruction.
+ * 	  Move some lengthy constructors into the .cpp file.
+ *
+ * 	* configure.ac: Increment version and interface so applications can
+ * 	  ensure they get the updated API.
+ *
+ * Revision 1.44  2004/11/23 01:22:24  alriddoch
  * 2004-11-23  Al Riddoch  <alriddoch@zepler.org>
  *
  * 	* skstream/skserver.cpp, skstream/skserver.h,
@@ -584,7 +597,6 @@ protected:
   mutable int LastError;
 
   bool startup();
-  void shutdown();
 
   void setLastError() const;
 
@@ -645,6 +657,8 @@ public:
   // tcp sockets
   virtual void close();
 
+  void shutdown();
+
   void setTimeout(unsigned sec, unsigned usec=0) { 
     _sockbuf.setTimeout(sec,usec); 
   }
@@ -672,44 +686,17 @@ private:
   struct addrinfo * _connecting_address;
   struct addrinfo * _connecting_addrlist;
 
-  stream_socketbuf stream_sockbuf;
+  stream_socketbuf & stream_sockbuf;
 
 public:
-  tcp_socket_stream() : basic_socket_stream(stream_sockbuf),
-                        _connecting_socket(INVALID_SOCKET),
-                        _connecting_address(0),
-                        _connecting_addrlist(0),
-                        stream_sockbuf(INVALID_SOCKET) {
-    protocol = FreeSockets::proto_TCP;
-  }
-
-  tcp_socket_stream(SOCKET_TYPE socket) : basic_socket_stream(stream_sockbuf),
-                                          _connecting_socket(INVALID_SOCKET),
-                                          _connecting_address(0),
-                                          _connecting_addrlist(0),
-                                          stream_sockbuf(socket) {
-    protocol = FreeSockets::proto_TCP;
-  }
+  tcp_socket_stream();
+  tcp_socket_stream(SOCKET_TYPE socket);
 
   tcp_socket_stream(const std::string& address, int service,
-                    bool nonblock = false):basic_socket_stream(stream_sockbuf),
-                                           _connecting_socket(INVALID_SOCKET),
-                                           _connecting_address(0),
-                                           _connecting_addrlist(0),
-                                           stream_sockbuf(INVALID_SOCKET) {
-    protocol = FreeSockets::proto_TCP;
-    open(address, service, nonblock);
-  }
+                    bool nonblock = false);
 
   tcp_socket_stream(const std::string& address, int service,
-              unsigned int milliseconds) : basic_socket_stream(stream_sockbuf),
-                                           _connecting_socket(INVALID_SOCKET),
-                                           _connecting_address(0),
-                                           _connecting_addrlist(0),
-                                           stream_sockbuf(INVALID_SOCKET) {
-    protocol = FreeSockets::proto_TCP;
-    open(address, service, milliseconds);
-  }
+                    unsigned int milliseconds);
 
   virtual ~tcp_socket_stream();
 
@@ -741,7 +728,7 @@ private:
 
   udp_socket_stream& operator=(const udp_socket_stream& socket);
 
-  dgram_socketbuf dgram_sockbuf;
+  dgram_socketbuf & dgram_sockbuf;
 
 public:
   udp_socket_stream();
@@ -766,7 +753,7 @@ private:
 
 protected:
   sockaddr_storage local_host;
-  dgram_socketbuf dgram_sockbuf;
+  dgram_socketbuf & dgram_sockbuf;
 
 public:
   raw_socket_stream(FreeSockets::IP_Protocol proto=FreeSockets::proto_RAW);

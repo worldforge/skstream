@@ -23,7 +23,20 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.45  2004-11-23 01:22:24  alriddoch
+ * Revision 1.46  2004-11-24 00:50:36  alriddoch
+ * 2004-11-24  Al Riddoch  <alriddoch@zepler.org>
+ *
+ * 	* skstream/skstream.cpp, skstream/skstream.h, skstream/skstream_unix.h:
+ * 	  Re-work the way stream buffer objects are created so they are
+ * 	  allocated in the super class using new, and passed to the base
+ * 	  where they are deleted in the destructor. This ensures that the
+ * 	  stream buffer is never used un-initialised, or after destruction.
+ * 	  Move some lengthy constructors into the .cpp file.
+ *
+ * 	* configure.ac: Increment version and interface so applications can
+ * 	  ensure they get the updated API.
+ *
+ * Revision 1.45  2004/11/23 01:22:24  alriddoch
  * 2004-11-23  Al Riddoch  <alriddoch@zepler.org>
  *
  * 	* skstream/skserver.cpp, skstream/skserver.h,
@@ -848,6 +861,7 @@ basic_socket_stream::~basic_socket_stream()
     ::shutdown(_sockbuf.getSocket(), SHUT_RDWR);
     ::closesocket(_sockbuf.getSocket());
   }
+  delete &_sockbuf;
 }
 
 bool basic_socket_stream::operator!()
@@ -935,6 +949,46 @@ bool basic_socket_stream::setBroadcast(bool opt)
 /////////////////////////////////////////////////////////////////////////////
 // class tcp_socket_stream implementation
 /////////////////////////////////////////////////////////////////////////////
+
+tcp_socket_stream::tcp_socket_stream() :
+                  basic_socket_stream(*new stream_socketbuf(INVALID_SOCKET)),
+                  _connecting_socket(INVALID_SOCKET),
+                  _connecting_address(0),
+                  _connecting_addrlist(0),
+                  stream_sockbuf((stream_socketbuf&)_sockbuf) {
+  protocol = FreeSockets::proto_TCP;
+}
+
+tcp_socket_stream::tcp_socket_stream(SOCKET_TYPE socket) :
+                  basic_socket_stream(*new stream_socketbuf(socket)),
+                  _connecting_socket(INVALID_SOCKET),
+                  _connecting_address(0),
+                  _connecting_addrlist(0),
+                  stream_sockbuf((stream_socketbuf&)_sockbuf) {
+  protocol = FreeSockets::proto_TCP;
+}
+
+tcp_socket_stream::tcp_socket_stream(const std::string& address, int service,
+                                     bool nonblock) :
+                  basic_socket_stream(*new stream_socketbuf(INVALID_SOCKET)),
+                  _connecting_socket(INVALID_SOCKET),
+                  _connecting_address(0),
+                  _connecting_addrlist(0),
+                  stream_sockbuf((stream_socketbuf&)_sockbuf) {
+  protocol = FreeSockets::proto_TCP;
+  open(address, service, nonblock);
+}
+
+tcp_socket_stream::tcp_socket_stream(const std::string& address, int service,
+                                     unsigned int milliseconds) :
+                  basic_socket_stream(*new stream_socketbuf(INVALID_SOCKET)),
+                  _connecting_socket(INVALID_SOCKET),
+                  _connecting_address(0),
+                  _connecting_addrlist(0),
+                  stream_sockbuf((stream_socketbuf&)_sockbuf) {
+  protocol = FreeSockets::proto_TCP;
+  open(address, service, milliseconds);
+}
 
 tcp_socket_stream::~tcp_socket_stream() { 
   if(_connecting_socket != INVALID_SOCKET) {
@@ -1304,8 +1358,9 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
 // class udp_socket_stream implementation
 /////////////////////////////////////////////////////////////////////////////
 
-udp_socket_stream::udp_socket_stream() : basic_socket_stream(dgram_sockbuf),
-                                         dgram_sockbuf(INVALID_SOCKET)
+udp_socket_stream::udp_socket_stream() :
+                  basic_socket_stream(*new dgram_socketbuf(INVALID_SOCKET)),
+                  dgram_sockbuf((dgram_socketbuf&)_sockbuf)
 {
   protocol = FreeSockets::proto_UDP; 
 }
@@ -1325,6 +1380,28 @@ udp_socket_stream::~udp_socket_stream()
 /////////////////////////////////////////////////////////////////////////////
 // class unix_socket_stream implementation
 /////////////////////////////////////////////////////////////////////////////
+
+unix_socket_stream::unix_socket_stream() :
+                   basic_socket_stream(*new stream_socketbuf(INVALID_SOCKET)),
+                   _connecting_socket(INVALID_SOCKET),
+                   stream_sockbuf((stream_socketbuf&)_sockbuf) {
+}
+
+unix_socket_stream::unix_socket_stream(const std::string & address,
+                                       bool nonblock) :
+                   basic_socket_stream(*new stream_socketbuf(INVALID_SOCKET)),
+                   _connecting_socket(INVALID_SOCKET),
+                   stream_sockbuf((stream_socketbuf&)_sockbuf) {
+  open(address, nonblock);
+}
+
+unix_socket_stream::unix_socket_stream(const std::string & address,
+                                       unsigned int milliseconds) :
+                   basic_socket_stream(stream_sockbuf),
+                   _connecting_socket(INVALID_SOCKET),
+                   stream_sockbuf((stream_socketbuf&)_sockbuf) {
+  open(address, milliseconds);
+}
 
 unix_socket_stream::~unix_socket_stream()
 { 
@@ -1491,7 +1568,8 @@ bool unix_socket_stream::isReady(unsigned int milliseconds)
 #ifdef SOCK_RAW
 
 raw_socket_stream::raw_socket_stream(FreeSockets::IP_Protocol proto) :
-    basic_socket_stream(dgram_sockbuf), dgram_sockbuf(INVALID_SOCKET)
+                  basic_socket_stream(*new dgram_socketbuf(INVALID_SOCKET)),
+                  dgram_sockbuf((dgram_socketbuf&)_sockbuf)
 {
   protocol = proto;
   SOCKET_TYPE _socket = ::socket(AF_INET, SOCK_RAW, protocol);
@@ -1500,8 +1578,11 @@ raw_socket_stream::raw_socket_stream(FreeSockets::IP_Protocol proto) :
 
 raw_socket_stream::raw_socket_stream(unsigned insize,unsigned outsize,
                                      FreeSockets::IP_Protocol proto) :
-                                 basic_socket_stream(dgram_sockbuf, proto),
-                                 dgram_sockbuf(INVALID_SOCKET,insize,outsize)
+                  basic_socket_stream(*new dgram_socketbuf(INVALID_SOCKET,
+                                                           insize,
+                                                           outsize),
+                                      proto),
+                  dgram_sockbuf((dgram_socketbuf&)_sockbuf)
 {
   protocol = proto;
   SOCKET_TYPE _socket = ::socket(AF_INET, SOCK_RAW, protocol);
