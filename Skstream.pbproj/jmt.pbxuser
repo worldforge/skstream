@@ -11,19 +11,19 @@
 			C42E239A0465C14900A800C4,
 		);
 		perUserDictionary = {
-			PBXPerProjectTemplateStateSaveDate = 75149444;
+			PBXPerProjectTemplateStateSaveDate = 86132056;
 			"PBXTemplateGeometry-F5314676015831810DCA290F" = {
-				ContentSize = "{685, 434}";
+				ContentSize = "{697, 568}";
 				LeftSlideOut = {
 					Collapsed = NO;
-					Frame = "{{0, 23}, {685, 411}}";
+					Frame = "{{0, 23}, {697, 545}}";
 					Split0 = {
 						ActiveTab = 2;
 						ActiveTabName = PBXBuildResultsModule;
 						Collapsed = NO;
-						Frame = "{{0, 0}, {685, 411}}";
+						Frame = "{{0, 0}, {697, 545}}";
 						Split0 = {
-							Frame = "{{0, 301}, {685, 110}}";
+							Frame = "{{0, 301}, {697, 244}}";
 						};
 						SplitCount = 1;
 						Tab0 = {
@@ -72,10 +72,10 @@
 							};
 						};
 						Tab3 = {
-							BuildMessageFrame = "{{0, 0}, {687, 262}}";
-							BuildTranscriptFrame = "{{0, 271}, {687, 2}}";
+							BuildMessageFrame = "{{0, 0}, {699, 262}}";
+							BuildTranscriptFrame = "{{0, 271}, {699, 2}}";
 							BuildTranscriptFrameExpanded = YES;
-							Frame = "{{0, 0}, {685, 295}}";
+							Frame = "{{0, 0}, {697, 295}}";
 						};
 						Tab4 = {
 							Frame = "{{0, 0}, {612, 295}}";
@@ -138,7 +138,7 @@
 				StatusViewVisible = YES;
 				Template = F5314676015831810DCA290F;
 				ToolbarVisible = YES;
-				WindowLocation = "{312, 121}";
+				WindowLocation = "{7, 115}";
 			};
 			PBXWorkspaceContents = (
 				{
@@ -146,13 +146,9 @@
 						Split0 = {
 							Split0 = {
 								NavContent0 = {
-									bookmark = C4A63280047AB1E600A800C5;
+									bookmark = C4C4FFD5052246E900A800CE;
 									history = (
-										C4A6327D047AB1E600A800C5,
-										C4A6327E047AB1E600A800C5,
-									);
-									prevStack = (
-										C4A6327F047AB1E600A800C5,
+										C4C4FFC00521093800A800CE,
 									);
 								};
 								NavCount = 1;
@@ -317,19 +313,17 @@
 					StatusViewVisible = YES;
 					Template = 64ABBB4501FA494900185B06;
 					ToolbarVisible = YES;
-					WindowLocation = "{78, 118}";
+					WindowLocation = "{46, 117}";
 				},
 			);
-			PBXWorkspaceStateSaveDate = 75149444;
+			PBXWorkspaceStateSaveDate = 86132056;
 		};
 		perUserProjectItems = {
-			C4A6327D047AB1E600A800C5 = C4A6327D047AB1E600A800C5;
-			C4A6327E047AB1E600A800C5 = C4A6327E047AB1E600A800C5;
-			C4A6327F047AB1E600A800C5 = C4A6327F047AB1E600A800C5;
-			C4A63280047AB1E600A800C5 = C4A63280047AB1E600A800C5;
+			C4C4FFC00521093800A800CE = C4C4FFC00521093800A800CE;
+			C4C4FFD5052246E900A800CE = C4C4FFD5052246E900A800CE;
 		};
 		projectwideBuildSettings = {
-			SYMROOT = /Users/jmt/Worldforge/indri/build;
+			SYMROOT = /Users/jmt/Worldforge/forge/servers/indri/build;
 		};
 		wantsIndex = 1;
 		wantsSCM = -1;
@@ -362,58 +356,24 @@
 		sourceDirectories = (
 		);
 	};
-	C4A6327D047AB1E600A800C5 = {
-		isa = PBXTargetBookmark;
-		trg = C42E23980465C14900A800C4;
-		uiCtxt = {
-			TOCViewDetailVisibleRect = "{{0, 0}, {445, 308}}";
-			TOCViewExpandedItems = (
-				"com.apple.target-editor-pane.settings",
-				"com.apple.target-editor-pane.settings.simple",
-				"com.apple.target-editor-pane.buildphases",
-			);
-			TOCViewMasterVisibleRect = "{{0, 0}, {157, 460}}";
-			TOCViewSelectedItems = (
-				"com.apple.target-editor-pane.buildphases",
-			);
-		};
+	C4C4FFC00521093800A800CE = {
+		fRef = C42E237F0465BE3400A800C4;
+		isa = PBXTextBookmark;
+		name = "skstream_unix.h: 76";
+		rLen = 0;
+		rLoc = 2632;
+		rType = 0;
+		vrLen = 1115;
+		vrLoc = 1498;
 	};
-	C4A6327E047AB1E600A800C5 = {
-		isa = PBXTargetBookmark;
-		trg = C42E23870465BE5800A800C4;
-	};
-	C4A6327F047AB1E600A800C5 = {
-		isa = PBXTargetBookmark;
-		trg = C42E23980465C14900A800C4;
-		uiCtxt = {
-			TOCViewDetailVisibleRect = "{{0, 0}, {445, 308}}";
-			TOCViewExpandedItems = (
-				"com.apple.target-editor-pane.settings",
-				"com.apple.target-editor-pane.settings.simple",
-				"com.apple.target-editor-pane.buildphases",
-			);
-			TOCViewMasterVisibleRect = "{{0, 0}, {157, 460}}";
-			TOCViewSelectedItems = (
-				"com.apple.target-editor-pane.buildphases",
-			);
-		};
-	};
-	C4A63280047AB1E600A800C5 = {
-		isa = PBXTargetBookmark;
-		trg = C42E23870465BE5800A800C4;
-		uiCtxt = {
-			TOCViewDetailVisibleRect = "{{0, 0}, {419, 68}}";
-			TOCViewExpandedItems = (
-				"com.apple.target-editor-pane.settings",
-				"com.apple.target-editor-pane.settings.simple",
-				"com.apple.target-editor-pane.info-plist",
-				"com.apple.target-editor-pane.info-plist.simple",
-				"com.apple.target-editor-pane.buildphases",
-			);
-			TOCViewMasterVisibleRect = "{{0, 0}, {162, 460}}";
-			TOCViewSelectedItems = (
-				C42E23850465BE5800A800C4,
-			);
-		};
+	C4C4FFD5052246E900A800CE = {
+		fRef = C42E237F0465BE3400A800C4;
+		isa = PBXTextBookmark;
+		name = "skstream_unix.h: 76";
+		rLen = 0;
+		rLoc = 2632;
+		rType = 0;
+		vrLen = 1115;
+		vrLoc = 1498;
 	};
 }
