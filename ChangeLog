@@ -1,4 +1,9 @@
  2003-08-23 Al Riddoch <alriddoch@zepler.org>
+    - skstream/skserver.h, skstream/skserver_unix.h: Add default constructor
+      to tcp_socket_server, and make single argument constructors explicit.
+    - skstream/skserver.cpp: Use AI_PASSIVE with getaddrinfo() to make listen
+      sockets accept any connection.
+ 2003-08-23 Al Riddoch <alriddoch@zepler.org>
     - skstream/skserver.cpp: Use getaddrinfo to create server sockets
       in a protocol independant way.
  2003-08-23 Al Riddoch <alriddoch@zepler.org>

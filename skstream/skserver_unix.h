@@ -40,7 +40,8 @@ protected:
   }
 
 public:
-  unix_socket_server(const std::string & service) : basic_socket_server() { 
+  explicit unix_socket_server(const std::string & service) :
+                                     basic_socket_server() { 
     setService(service); 
   }
 

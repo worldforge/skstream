@@ -23,7 +23,14 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.8  2003-08-08 23:56:26  alriddoch
+ * Revision 1.9  2003-08-23 14:01:57  alriddoch
+ *  2003-08-23 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skserver.h, skstream/skserver_unix.h: Add default constructor
+ *       to tcp_socket_server, and make single argument constructors explicit.
+ *     - skstream/skserver.cpp: Use AI_PASSIVE with getaddrinfo() to make listen
+ *       sockets accept any connection.
+ *
+ * Revision 1.8  2003/08/08 23:56:26  alriddoch
  *  2003-08-08 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skstream.cpp, skstream/skstream_unix.h: Include skstream
  *       header with its fully qualified name for compatability, and move
@@ -154,7 +161,7 @@ private:
   bool shutdown();
 
 protected:
-  basic_socket_server(SOCKET_TYPE _sock = INVALID_SOCKET)
+  explicit basic_socket_server(SOCKET_TYPE _sock = INVALID_SOCKET)
      : _socket(_sock), LastError(0) { 
     startup(); 
   }
@@ -199,7 +206,7 @@ protected:
     open(_service);
   }
 
-  ip_socket_server(SOCKET_TYPE _sock = INVALID_SOCKET) :
+  explicit ip_socket_server(SOCKET_TYPE _sock = INVALID_SOCKET) :
              basic_socket_server(_sock), _service(0) {
   }
 public:
@@ -217,7 +224,10 @@ public:
 /////////////////////////////////////////////////////////////////////////////
 class tcp_socket_server : public ip_socket_server {
 public:
-  tcp_socket_server(int service) : ip_socket_server() { 
+  tcp_socket_server() {
+  }
+
+  explicit tcp_socket_server(int service) : ip_socket_server() { 
     setService(service); 
   }
 
@@ -234,7 +244,7 @@ public:
 /////////////////////////////////////////////////////////////////////////////
 class udp_socket_server : public ip_socket_server {
 public:
-  udp_socket_server(int service) : ip_socket_server() { 
+  explicit udp_socket_server(int service) : ip_socket_server() { 
     setService(service); 
   }
 

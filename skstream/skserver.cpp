@@ -23,7 +23,14 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.10  2003-08-23 12:14:39  alriddoch
+ * Revision 1.11  2003-08-23 14:01:57  alriddoch
+ *  2003-08-23 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skserver.h, skstream/skserver_unix.h: Add default constructor
+ *       to tcp_socket_server, and make single argument constructors explicit.
+ *     - skstream/skserver.cpp: Use AI_PASSIVE with getaddrinfo() to make listen
+ *       sockets accept any connection.
+ *
+ * Revision 1.10  2003/08/23 12:14:39  alriddoch
  *  2003-08-23 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skserver.cpp: Use getaddrinfo to create server sockets
  *       in a protocol independant way.
@@ -252,7 +259,7 @@ bool basic_socket_server::can_accept() {
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// class tcp_socket_server implementation
+// class ip_socket_server implementation
 /////////////////////////////////////////////////////////////////////////////
 
 ip_socket_server::~ip_socket_server()
@@ -292,7 +299,7 @@ void tcp_socket_server::open(int service)
 
   sprintf(serviceName, "%d", service);
 
-  req.ai_flags = 0;
+  req.ai_flags = AI_PASSIVE;
   req.ai_family = PF_UNSPEC;
   req.ai_socktype = SOCK_STREAM;
   req.ai_protocol = 0;
@@ -376,16 +383,17 @@ SOCKET_TYPE udp_socket_server::accept()
 // create a UDP socket binded to a given port
 void udp_socket_server::open(int service)
 {
-  if(is_open()) {
+  if (is_open()) {
     close();
   }
+
 #ifdef HAVE_GETADDRINFO
   struct addrinfo req, *ans;
   char serviceName[32];
 
   sprintf(serviceName, "%d", service);
 
-  req.ai_flags = 0;
+  req.ai_flags = AI_PASSIVE;
   req.ai_family = PF_UNSPEC;
   req.ai_socktype = SOCK_DGRAM;
   req.ai_protocol = 0;
