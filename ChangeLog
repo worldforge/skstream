@@ -1,3 +1,7 @@
+ 2003-12-19 Al Riddoch  <alriddoch@zepler.org>
+    - Remove Serial from rpm spec as it is not required, and messes up
+      deps.
+    - Release version 0.3.1
  2003-12-08 Al Riddoch <alriddoch@zepler.org>
     - skstream/skserver.cpp: Correctly use SOCKET_ERROR instead of
       INVALID_SOCKET when checking return value of syscalls.
