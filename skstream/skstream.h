@@ -23,7 +23,10 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.19  2002-06-12 16:06:58  rsteinke
+ * Revision 1.20  2002-06-30 11:01:11  rsteinke
+ * Missing const in prototype to override virtual function
+ *
+ * Revision 1.19  2002/06/12 16:06:58  rsteinke
  *     -Added a timeout version of the tcp_socket_stream
  *      constructor, which wraps the timeout version
  *      of open()
@@ -610,7 +613,7 @@ public:
   }
 
   virtual void close();
-  virtual SOCKET_TYPE getSocket() {return (_connecting_socket == INVALID_SOCKET)
+  virtual SOCKET_TYPE getSocket() const { return (_connecting_socket == INVALID_SOCKET)
     ? basic_socket_stream::getSocket() : _connecting_socket;}
 
   bool is_ready(unsigned int milliseconds = 0);
