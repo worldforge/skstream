@@ -10,7 +10,7 @@ Name:              %{name}
 Version:           %{version} 
 Release:           %{release}
 Copyright:         LGPL
-Group:             Amusements/Games
+Group:             System Environment/Libraries
 Source:            %{name}-%{version}.tar.gz
 BuildRoot:         /var/tmp/%{name}-%{version}-buildroot
 Requires:          libstdc++
@@ -21,7 +21,7 @@ BuildRequires:     libstdc++-devel >= 2.95.2
 
 %package devel
 Summary:           An iostream socket library headers and static libs.
-Group:             Amusements/Games
+Group:             Development/Libraries
 Requires:          %{name} = %{version}
 
 %description devel
@@ -45,10 +45,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root)
 %{prefix}/lib/libskstream.so.@SKSTREAM_CURRENT@
 %{prefix}/lib/libskstream.so.@SKSTREAM_VERSION_NO@
-%{prefix}/share/doc/%{name}-%{version}/README
-%{prefix}/share/doc/%{name}-%{version}/COPYING
-%{prefix}/share/doc/%{name}-%{version}/AUTHORS
-%{prefix}/share/doc/%{name}-%{version}/NEWS
+%doc README COPYING AUTHORS NEWS
 
 %files devel
 %defattr(-,root,root)
