@@ -23,7 +23,13 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.23  2003-05-04 00:34:30  alriddoch
+ * Revision 1.24  2003-05-04 01:14:07  alriddoch
+ *  2003-05-04 Al Riddoch <alriddoch@zepler.org>,
+ *     - skstream/skstream.cpp: Add a check to detect IPv6 sockaddr in
+ *       headers, and treat address explicitly as an IPv6 address if
+ *       it is.
+ *
+ * Revision 1.23  2003/05/04 00:34:30  alriddoch
  *  2003-05-04 Al Riddoch <alriddoch@zepler.org>,
  *     - Add a second pkgconfig file for apps that need unix socket support.
  *     - Rename sksystem.h as skstreamconfig.h, and put it in an architecture
@@ -706,7 +712,15 @@ void tcp_socket_stream::open(const std::string& address, int service, bool nonbl
   SOCKLEN iaddrlen = ans->ai_addrlen;
   ::freeaddrinfo(ans);
 
-  ((sockaddr_in *)&iaddr)->sin_port = htons(service);
+#ifndef HAVE_IPV6
+  ((sockaddr_in &)iaddr).sin_port = htons(service);
+#else // HAVE_IPV6
+  if (iaddr.ss_family == AF_INET6) {
+      ((sockaddr_in6 &)iaddr).sin6_port = htons(service);
+  } else {
+      ((sockaddr_in &)iaddr).sin_port = htons(service);
+  }
+#endif // HAVE_IPV6
 
   if(::connect(_socket, (sockaddr *)&iaddr, iaddrlen) < 0) {
     if(nonblock && getSystemError() == SOCKET_BLOCK_ERROR) {

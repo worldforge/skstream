@@ -6,7 +6,7 @@ dnl Initialise automake
 
 SKSTREAM_MAJOR=0
 SKSTREAM_MINOR=2
-SKSTREAM_MICRO=90
+SKSTREAM_MICRO=91
 SKSTREAM_VERSION=$SKSTREAM_MAJOR.$SKSTREAM_MINOR.$SKSTREAM_MICRO
 
 AC_SUBST(SKSTREAM_VERSION)
@@ -339,6 +339,36 @@ AC_MSG_RESULT($SKSTREAM_BLOCK_ERROR_VAL)
 AC_SUBST(SKSTREAM_BLOCK_ERROR_VAL)
 
 AC_LANG_RESTORE
+
+dnl Test for IPv6 socket addresses
+
+AC_LANG_SAVE
+AC_LANG_CPLUSPLUS
+AC_MSG_CHECKING([for IPv6 socket address])
+AC_TRY_COMPILE([#include <netinet/in.h>],
+[
+    sockaddr_in6 sin6;
+    sin6.sin6_family = AF_INET6;
+],
+[
+    AC_MSG_RESULT(yes)
+    AC_DEFINE(HAVE_IPV6, 1, true if we have sockaddr_in6 and AF_INET6)
+],
+[
+    AC_TRY_COMPILE([#include <windows.h>],
+    [
+        sockaddr_in6 sin6;
+        sin6.sin6_family = AF_INET6;
+    ],
+    [
+        AC_MSG_RESULT(yes)
+        AC_DEFINE(HAVE_IPV6, 1, true if we have sockaddr_in6 and AF_INET6)
+    ],
+    [
+        AC_MSG_RESULT(no)
+    ])
+])
+
 
 dnl Test for C library functions
 

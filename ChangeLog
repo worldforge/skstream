@@ -1,4 +1,8 @@
  2003-05-04 Al Riddoch <alriddoch@zepler.org>,
+    - skstream/skstream.cpp: Add a check to detect IPv6 sockaddr in
+      headers, and treat address explicitly as an IPv6 address if
+      it is.
+ 2003-05-04 Al Riddoch <alriddoch@zepler.org>,
     - Add a second pkgconfig file for apps that need unix socket support.
     - Rename sksystem.h as skstreamconfig.h, and put it in an architecture
       dependent subdir. Modify pkgconfig files to handle this.
