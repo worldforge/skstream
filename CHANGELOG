@@ -46,8 +46,29 @@ Future Work:
   - A multi-threaded TCP server class.
 
 Change Log:
+ 02/23/2002 Dan Tomalesky <grim@xynesis.com>
+    -added in CVS logging variable so that changes show up in modified files
+     This will help keep changes made by worldforge in each file that is 
+     changed as required by the GPL.
+    -changed some parameter variables to have better meaning. 
+     (ad -> address, etc.)
+    -added some code into tcp_sk_stream::open so that it calls setLastError()
+     when the connection fails.
+    -Added some comments into skstream.h to better describe SOCKET_TYPE as 
+     there can be some confusion between what it is actually for 
+     (pointer/file descriptor/windows cludge of the socket) and the various 
+     types of sockets (tcp, udp, raw, etc)
+    -changed some more formatting for readability.
+    -uncommented some commented out code in skstream.h so that the sync() 
+     method returns 0 on the else, rather than not returning anything.
+    -added some code into setBroadcast() so that setLastError() is called
+     if it fails to perform the getsocketopt().
+    -modified the test/Makefile.am to remove the header files from the SOURCES
+     as the .h files do not seem to affect the build.
+    -updated all the current test so that they use a socket instead of the
+     absolutely wrong stuff I was doing before.
+    -added tests for tcp, udp, and raw skstreams child classes.
  02/20/2002 Dan Tomalesky <grim@xynesis.com>
-    -did I mention I hate this change log.
     -added a new test case header for basic_socket_streams
     -made a mod to basic_socket_stream::setOutpeer(sockaddr_in&)
      seemed to me it had an erroneous ! in the statement

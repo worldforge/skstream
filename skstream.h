@@ -17,6 +17,83 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 **************************************************************************/
+
+/**
+ * This software package has been modified by the Worldforge Project 
+ * in the following ways:
+ *
+ * $Log$
+ * Revision 1.6  2002-02-24 03:15:41  grimicus
+ * 02/23/2002 Dan Tomalesky <grim@xynesis.com>
+ *
+ *     * Added in CVS logging variable so that changes show up in modified files
+ *       This will help keep changes made by worldforge in each file that is
+ *       changed as required by the GPL.
+ *
+ *     * Changed some parameter variables to have better meaning.
+ *       (ad -> address, etc.)
+ *
+ *     * Added some code into tcp_sk_stream::open so that it calls setLastError()
+ *       when the connection fails.
+ *
+ *     * Added some comments into skstream.h to better describe SOCKET_TYPE as
+ *       there can be some confusion between what it is actually for
+ *       (pointer/file descriptor/windows cludge of the socket) and the various
+ *       types of sockets (tcp, udp, raw, etc)
+ *
+ *     * Changed some more formatting for readability.
+ *
+ *     * Uncommented some commented out code in skstream.h so that the sync()
+ *       method returns 0 on the else, rather than not returning anything.
+ *
+ *     * Added some code into setBroadcast() so that setLastError() is called
+ *       if it fails to perform the getsocketopt().
+ *
+ *     * Modified the test/Makefile.am to remove the header files from the SOURCES
+ *       as the .h files do not seem to affect the build.
+ *
+ *     * Updated all the current test so that they use a socket instead of the
+ *       absolutely wrong stuff I was doing before.
+ *
+ *     * Added tests for tcp, udp, and raw skstreams child classes.
+ *
+ * Revision 1.5  2002/02/21 05:11:15  grimicus
+ * 2002-02-20 Dan Tomalesky <grim@xynesis.com>
+ *    * Added a new test case header for basic_socket_streams
+ *
+ *    * Made a mod to basic_socket_stream::setOutpeer(sockaddr_in&)
+ *      seemed to me it had an erroneous ! in the return
+ *
+ *    * Oh, and I reformatted skstream.h so its not so damn hard to look at
+ *
+ * Revision 1.4  2002/02/20 05:04:07  grimicus
+ * 2002-02-19 Grimicus <grim@xynesis.com>
+ *
+ *    * updated socketbuf(SOCKET_TYPE, unsigned, unsigned) to have variable
+ *      names in the declaration so it was a bit easier to look at. (and know
+ *      what the heck they were suppose to be for)
+ *
+ *    * Added some tests in for socketbuf.  Not very good ones but its a start
+ *
+ * Revision 1.3  2002/02/19 22:04:31  grimicus
+ * 2002-02-19 Grimicus <grim@xynesis.com>
+ *
+ *   * Added License header to skstream.h
+ *
+ *   * Added cppunit TestCase  classes in test/ and auto* support functionality
+ *
+ * Revision 1.2  2002/02/15 18:24:24  grimicus
+ * 2002-02-15 Grimicus <grim@xynesis.com>
+ *
+ *   * Modified skstream.h so that it is in the correct format for CVS
+ *     (was checked in as a dos file instead of *nix, so it had funky
+ *     control characters on the end...plays havok with some editors and such)
+ *
+ * Revision 1.1  2002/01/07 23:02:08  rykard
+ * Adding the new version of skstream/FreeSockets to cvs.  
+ * Note there are some API changes and new features in this version, so I 
+ * didn't just commit over the older one.
+ */
 #ifndef RGJ_FREE_SOCKET_H_
 #define RGJ_FREE_SOCKET_H_
 
@@ -30,6 +107,11 @@
 
   #include <winsock.h>
 
+//SOCKET_TYPE is used to define the socket in each of the different OSes 
+//that skstream supports.  This is because it is not guaranteed how any
+//will handle the socket.  Currently, they all use an integer file descriptor
+//type thing, but windows is not to be trusted.  SOCKET_TYPE does *NOT* stand
+//for the various 'types' of socket connections (SOCK_STREAM, SOCK_DGRAM, etc)
   typedef SOCKET SOCKET_TYPE;
 
   #define SOCKLEN int 
@@ -57,6 +139,11 @@
 
   #define closesocket(x) close(x)
 
+//SOCKET_TYPE is used to define the socket in each of the different OSes 
+//that skstream supports.  This is because it is not guaranteed how any
+//will handle the socket.  Currently, they all use an integer file descriptor
+//type thing, but windows is not to be trusted.  SOCKET_TYPE does *NOT* stand
+//for the various 'types' of socket connections (SOCK_STREAM, SOCK_DGRAM, etc)
   typedef int SOCKET_TYPE;
 #endif
 
@@ -73,6 +160,11 @@
   #define IPPORT_RESERVED 1024
   #define INADDR_NONE	  0xFFFFFF
 
+//SOCKET_TYPE is used to define the socket in each of the different OSes 
+//that skstream supports.  This is because it is not guaranteed how any
+//will handle the socket.  Currently, they all use an integer file descriptor
+//type thing, but windows is not to be trusted.  SOCKET_TYPE does *NOT* stand
+//for the various 'types' of socket connections (SOCK_STREAM, SOCK_DGRAM, etc)
   typedef int SOCKET_TYPE;
 #endif
 
@@ -123,7 +215,9 @@ public:
     in_peer = out_peer;
   }
 
-  SOCKET_TYPE getSocket() const { return _socket; }
+  SOCKET_TYPE getSocket() const {
+      return _socket; 
+  }
 
   void setTimeout(unsigned sec, unsigned usec=0) {
     _timeout.tv_sec  = sec;
@@ -141,13 +235,13 @@ protected:
   virtual int sync() {
     if(overflow() == EOF) // traits::eof()
       return EOF;	// ios will set the fail bit // traits::eof()
-//    else {
+    else {
 //      // empty put and get areas
 //      setp(pbase(), epptr());
 //      setg(eback(), egptr(), egptr());
 //
-//      return 0; // traits::not_eof(0);
-//    }
+      return 0; // traits::not_eof(0);
+    }
   }
 
   virtual std::streambuf* setbuf(char* buf, long len) {
@@ -246,7 +340,6 @@ public:
 
   // Destructor
   virtual ~basic_socket_stream() {
-    close();
     shutdown();
   }
 
@@ -328,7 +421,9 @@ public:
     int ok = opt?1:0;
     ok = setsockopt(_sockbuf.getSocket(),
                     SOL_SOCKET,SO_BROADCAST,(char*)&ok,sizeof(ok));
-    return (ok != SOCKET_ERROR);
+    bool ret = (ok != SOCKET_ERROR);
+    if(!ret) setLastError();
+    return ret;
   }
 };
 
@@ -359,21 +454,26 @@ basic_socket_stream& operator<<(basic_socket_stream& out,const remote_host& host
 class tcp_socket_stream : public basic_socket_stream {
 private:
   tcp_socket_stream(const tcp_socket_stream&);
+  tcp_socket_stream(SOCKET_TYPE socket);
+
   tcp_socket_stream& operator=(const tcp_socket_stream& socket);
 
-  tcp_socket_stream(SOCKET_TYPE socket);
 public:
   tcp_socket_stream() : basic_socket_stream() {
     protocol = FreeSockets::proto_TCP;
   }
-  tcp_socket_stream(const std::string& ad, int s) : basic_socket_stream() {
+
+  tcp_socket_stream(const std::string& address, int service) : 
+      basic_socket_stream() {
     protocol = FreeSockets::proto_TCP;
-    open(ad, s);
+    open(address, service);
   }
 
-  virtual ~tcp_socket_stream() { shutdown(); }
+  virtual ~tcp_socket_stream() { 
+      shutdown(); 
+  }
 
-  void open(const std::string& addr, int service);
+  void open(const std::string& address, int service);
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -382,20 +482,22 @@ public:
 class udp_socket_stream : public basic_socket_stream {
 private:
   udp_socket_stream(const udp_socket_stream&);
+  udp_socket_stream(SOCKET_TYPE socket);
+
   udp_socket_stream& operator=(const udp_socket_stream& socket);
 
-  udp_socket_stream(SOCKET_TYPE socket);
 
 public:
   udp_socket_stream(FreeSockets::IP_Protocol proto=FreeSockets::proto_UDP)
-     : basic_socket_stream()
-  {
-    protocol = proto;
+     : basic_socket_stream() {
+    protocol = proto; 
     SOCKET_TYPE _socket = ::socket(AF_INET, SOCK_DGRAM, protocol);
     _sockbuf.setSocket(_socket);
   }
 
-  virtual ~udp_socket_stream() { shutdown(); }
+  virtual ~udp_socket_stream() {
+    shutdown(); 
+  }
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -406,15 +508,15 @@ class raw_socket_stream : public basic_socket_stream {
 private:
   raw_socket_stream(const raw_socket_stream&);
   raw_socket_stream(SOCKET_TYPE socket);
+
   raw_socket_stream& operator=(const raw_socket_stream& socket);
 
 protected:
   sockaddr_in local_host;
 
 public:
-  raw_socket_stream(FreeSockets::IP_Protocol proto=FreeSockets::proto_RAW)
-    : basic_socket_stream()
-  {
+  raw_socket_stream(FreeSockets::IP_Protocol proto=FreeSockets::proto_RAW) 
+    : basic_socket_stream() {
     protocol = proto;
     SOCKET_TYPE _socket = ::socket(AF_INET, SOCK_RAW, protocol);
     _sockbuf.setSocket(_socket);
@@ -422,18 +524,21 @@ public:
 
   raw_socket_stream(unsigned insize,unsigned outsize,
                     FreeSockets::IP_Protocol proto=FreeSockets::proto_RAW)
-    : basic_socket_stream(insize,outsize)
-  {
+    : basic_socket_stream(insize,outsize) {
     protocol = proto;
     SOCKET_TYPE _socket = ::socket(AF_INET, SOCK_RAW, protocol);
     _sockbuf.setSocket(_socket);
   }
 
-  virtual ~raw_socket_stream() { shutdown(); }
+  virtual ~raw_socket_stream() {
+      shutdown(); 
+  }
 
   void setProtocol(FreeSockets::IP_Protocol proto);
 
-  sockaddr_in getLocalHost() const { return local_host; }
+  sockaddr_in getLocalHost() const { 
+    return local_host; 
+  }
 };
 #endif // SOCK_RAW
 

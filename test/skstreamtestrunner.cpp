@@ -22,7 +22,41 @@
 //  Created: 2000-10-03 by Bryce
 //
 // $Log$
-// Revision 1.3  2002-02-21 05:11:15  grimicus
+// Revision 1.4  2002-02-24 03:15:41  grimicus
+// 02/23/2002 Dan Tomalesky <grim@xynesis.com>
+//
+//     * Added in CVS logging variable so that changes show up in modified files
+//       This will help keep changes made by worldforge in each file that is
+//       changed as required by the GPL.
+//
+//     * Changed some parameter variables to have better meaning.
+//       (ad -> address, etc.)
+//
+//     * Added some code into tcp_sk_stream::open so that it calls setLastError()
+//       when the connection fails.
+//
+//     * Added some comments into skstream.h to better describe SOCKET_TYPE as
+//       there can be some confusion between what it is actually for
+//       (pointer/file descriptor/windows cludge of the socket) and the various
+//       types of sockets (tcp, udp, raw, etc)
+//
+//     * Changed some more formatting for readability.
+//
+//     * Uncommented some commented out code in skstream.h so that the sync()
+//       method returns 0 on the else, rather than not returning anything.
+//
+//     * Added some code into setBroadcast() so that setLastError() is called
+//       if it fails to perform the getsocketopt().
+//
+//     * Modified the test/Makefile.am to remove the header files from the SOURCES
+//       as the .h files do not seem to affect the build.
+//
+//     * Updated all the current test so that they use a socket instead of the
+//       absolutely wrong stuff I was doing before.
+//
+//     * Added tests for tcp, udp, and raw skstreams child classes.
+//
+// Revision 1.3  2002/02/21 05:11:15  grimicus
 // 2002-02-20 Dan Tomalesky <grim@xynesis.com>
 //     * Added a new test case header for basic_socket_streams
 //
@@ -52,9 +86,16 @@
 
 #include "socketbuftest.h"
 #include "basicskstreamtest.h"
+#include "childskstreamtest.h"
 
 CPPUNIT_TEST_SUITE_REGISTRATION(socketbuftest);
 CPPUNIT_TEST_SUITE_REGISTRATION(basicskstreamtest);
+CPPUNIT_TEST_SUITE_REGISTRATION(tcpskstreamtest);
+CPPUNIT_TEST_SUITE_REGISTRATION(udpskstreamtest);
+
+#ifdef SOCK_RAW
+CPPUNIT_TEST_SUITE_REGISTRATION(rawskstreamtest);
+#endif
 
 int main(int argc, char **argv)
 {

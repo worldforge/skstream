@@ -3,8 +3,7 @@ check_PROGRAMS = $(TESTS)
 
 INCLUDES = -I$(top_srcdir) 
 
-skstreamtestrunner_SOURCES = socketbuftest.h \
-                             skstreamtestrunner.cpp
+skstreamtestrunner_SOURCES = skstreamtestrunner.cpp
 
 skstreamtestrunner_LDADD= \
     @CPPUNIT_LIBS@ \

@@ -22,7 +22,41 @@
 //  Created: 2002-02-19 by Dan Tomalesky
 //
 // $Log$
-// Revision 1.1  2002-02-21 05:11:15  grimicus
+// Revision 1.2  2002-02-24 03:15:41  grimicus
+// 02/23/2002 Dan Tomalesky <grim@xynesis.com>
+//
+//     * Added in CVS logging variable so that changes show up in modified files
+//       This will help keep changes made by worldforge in each file that is
+//       changed as required by the GPL.
+//
+//     * Changed some parameter variables to have better meaning.
+//       (ad -> address, etc.)
+//
+//     * Added some code into tcp_sk_stream::open so that it calls setLastError()
+//       when the connection fails.
+//
+//     * Added some comments into skstream.h to better describe SOCKET_TYPE as
+//       there can be some confusion between what it is actually for
+//       (pointer/file descriptor/windows cludge of the socket) and the various
+//       types of sockets (tcp, udp, raw, etc)
+//
+//     * Changed some more formatting for readability.
+//
+//     * Uncommented some commented out code in skstream.h so that the sync()
+//       method returns 0 on the else, rather than not returning anything.
+//
+//     * Added some code into setBroadcast() so that setLastError() is called
+//       if it fails to perform the getsocketopt().
+//
+//     * Modified the test/Makefile.am to remove the header files from the SOURCES
+//       as the .h files do not seem to affect the build.
+//
+//     * Updated all the current test so that they use a socket instead of the
+//       absolutely wrong stuff I was doing before.
+//
+//     * Added tests for tcp, udp, and raw skstreams child classes.
+//
+// Revision 1.1  2002/02/21 05:11:15  grimicus
 // 2002-02-20 Dan Tomalesky <grim@xynesis.com>
 //     * Added a new test case header for basic_socket_streams
 //
@@ -50,15 +84,16 @@ class basicskstreamtest : public CppUnit::TestCase
     CPPUNIT_TEST(testConstructor_3);
     CPPUNIT_TEST(testConstructor_4);
     CPPUNIT_TEST(testSetOutpeer);
+    CPPUNIT_TEST(testSetSocket);
+    CPPUNIT_TEST(testSetBroadcast);
+    CPPUNIT_TEST(testRemoteHost);
     CPPUNIT_TEST_SUITE_END();
 
     private: 
         basic_socket_stream *skstream;
         std::string *hostname;
+        SOCKET_TYPE socket;
         int port;
-
-        SOCKET_TYPE *socket_types; 
-        int st_length;
 
     public:
         basicskstreamtest(std::string name) : TestCase(name) { }
@@ -100,39 +135,19 @@ class basicskstreamtest : public CppUnit::TestCase
 
         void testConstructor_3()
         {
-            basic_socket_stream *sks;
-
-            for(int i = 0; i < st_length; ++i)
-            {
-                sks = new basic_socket_stream(socket_types[i]);
-
-                CPPUNIT_ASSERT(sks);
-
-                CPPUNIT_ASSERT(sks->getSocket() == socket_types[i]);
-
-                delete sks;
-            }
+            CPPUNIT_ASSERT(skstream);
         }
 
         void testConstructor_4()
         {
-            basic_socket_stream *sks;
-            unsigned insize, outsize;
+            unsigned insize = 5, outsize = 6;
+            SOCKET_TYPE sock = skstream->getSocket();
 
-            for(int i = 0; i < st_length; ++i)
-            {
-                //maybe make them random? :-)
-                insize = i * 3;
-                outsize = i * 2;
+            basic_socket_stream sks(sock, insize, outsize);
 
-                sks = new basic_socket_stream(socket_types[i], insize, outsize);
+            CPPUNIT_ASSERT(sks);
 
-                CPPUNIT_ASSERT(sks);
-
-                CPPUNIT_ASSERT(sks->getSocket() == socket_types[i]);
-
-                delete sks;
-            }
+            CPPUNIT_ASSERT(sks.getSocket() == sock);
         }
 
         void testSetOutpeer()
@@ -148,55 +163,61 @@ class basicskstreamtest : public CppUnit::TestCase
 
             //now test other setOutpeer method
             CPPUNIT_ASSERT(skstream->setOutpeer(sain));
-
-//            this test no worky, need to connect to see the values...
-//            std::cout << endl << "remote host: " << 
- //                        skstream->getRemoteHost() << endl;
-  //          CPPUNIT_ASSERT(*hostname == skstream->getRemoteHost());
-   //         CPPUNIT_ASSERT(port == skstream->getRemotePort());
-
         }
 
         void testSetSocket()
         {
-            for(int i = 0; i < st_length ; ++i)
-            {
-                int value = socket_types[i];
-                skstream->setSocket(value);
-
-                CPPUNIT_ASSERT(skstream->getSocket() == value);
-                CPPUNIT_ASSERT(skstream->is_open());
-            }
+            CPPUNIT_ASSERT(skstream->getSocket() == socket);
+            CPPUNIT_ASSERT(skstream->is_open());
         }
 
         void testSetBroadcast()
         {
-            CPPUNIT_ASSERT(skstream->setBroadcast(true));
+            if(!skstream->setBroadcast(true))
+            {
+                cout << endl;
+                switch(skstream->getLastError()) 
+                {
+                    case EBADF:
+                       cout << "Error with broadcast: EBADF" << endl;
+                       break;
+                    case ENOTSOCK:
+                       cout << "Error with broadcast: ENOTSOCK" << endl;
+                       break;
+                    case ENOPROTOOPT:
+                       cout << "Error with broadcast: ENOPROTOOPT" << endl;
+                       break;
+                    case EFAULT:
+                       cout << "Error with broadcast: EFAULT" << endl;
+                       break;
+                }
+
+                CPPUNIT_ASSERT(false);
+            }
+            
             CPPUNIT_ASSERT(skstream->setBroadcast(false));
+        }
+
+        void testRemoteHost()
+        {
+            remote_host rh(*hostname, port);
+
+            *skstream << rh;
+            sockaddr_in sain = skstream->getOutpeer();
+            CPPUNIT_ASSERT(sain.sin_port);
+            CPPUNIT_ASSERT(sain.sin_addr.s_addr);
         }
 
         void setUp()
         {
-            skstream = new basic_socket_stream();
+            socket = ::socket(AF_INET, SOCK_STREAM, FreeSockets::proto_TCP);
+            skstream = new basic_socket_stream(socket);
             
             //echo service must be running (check inetd settings or if you
             //are a winders user, you have to install it)
             hostname = new std::string("127.0.0.1");
                 //new std::string("localhost");
             port = 7;
-
-            //these are the potential values for SOCKET_TYPE
-            //it is assumed the sockets are using AF_INET, and
-            //hence SOCK_SEQPACKET should fail at least in a GNU 
-            //implementation of sockets...?
-            st_length = 6;
-            socket_types = new int [st_length];
-            socket_types[0] = SOCK_STREAM;
-            socket_types[1] = SOCK_DGRAM;
-            socket_types[2] = SOCK_RAW;
-            socket_types[3] = SOCK_RDM;
-            socket_types[4] = SOCK_SEQPACKET;
-            socket_types[5] = SOCK_PACKET;
         }
 
         void tearDown()
@@ -204,9 +225,7 @@ class basicskstreamtest : public CppUnit::TestCase
             delete skstream;
             delete hostname;
             port = 0;
-
-            delete [] socket_types;
-            st_length = 0;
+            socket = INVALID_SOCKET;
         }
 
 };
