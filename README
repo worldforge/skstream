@@ -1,0 +1,48 @@
+/**************************************************************************
+ FreeSockets - Portable C++ classes for IP(sockets) applications. (v0.3)
+ Copyright (C) 2000-2001 Rafael Guterres Jeffman
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Library General Public
+    License as published by the Free Software Foundation; either
+    version 2 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Library General Public License for more details.
+
+    You should have received a copy of the GNU Library General Public
+    License along with this library; if not, write to the Free
+    Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+**************************************************************************/
+
+(This file was created from the original CHANGELOG's header.)
+
+Current Version: 0.3
+
+REMAINING BUGS:
+  - Setting the size of the underlying buffer is not yet working.
+
+Supported and Tested plataforms:
+  Windows 95/98/2000
+  Linux
+  BeOS
+
+Compilers used for testing:
+  Borland C++Buider 3, 4 & 5. Borland C++ Free Compiler.
+  GCC 2.91 & 2.95 (Linux)
+  GCC BeOS
+
+Plataform Remarks:
+-BeOS
+  * Timeout control is unavaiable under BeOS due to its implementation of
+  sockets. BeOS support select() only when reading and not for writing or
+  exceptions. This will change when BONE is officially released.
+  * SOCK_RAW is not supported under BeOS.
+-Linux
+  * RAW Sockets can only be used under Linux when SUID is ROOT.
+
+Future Work:
+  - A multi-threaded TCP server class.

@@ -1,0 +1,118 @@
+ 03/02/2002 Dan Tomalesky <grim@xynesis.com>
+    -Added acinclude.m4 with the cppunit m4 in it so that people without
+     cppunit can still autogen/configure (I see your point now James :-)
+    -Adding ChangeLog, NEWS, and README which are requirements for doing
+     automake's make dist.  old CHANGELOG has been broken into README and
+     ChangeLog.
+ 03/01/2002 Dan Tomalesky <grim@xynesis.com>
+    -Pushed the version to 0.2.2 so that people building with 0.2.1 know that
+     they don't have can_accept() in tcp_socket_server
+    -changed can_accept's timeval to be all 0, so that it is just a quick
+     poll and returns immediately (Thanks to alriddoch for the suggestion)
+    -modified the ugly switch block I was using to print out error message
+     names to use strerror (Thanks to James for that one)
+ 02/26/2002 Dan Tomalesky <grim@xynesis.com>
+    -added test cases for skserver and friends
+    -adding .cvsignore files so that it doesn't mess with non-cvs files anymore
+    -in skserver.cpp and skstream.cpp, in the close() methods, I commented out 
+     the return; in the error part of the shutdown() call because it is 
+     possible that a socket can exist without it actually having been used, 
+     so this could error out on those cases and the socket is never actually 
+     closed.
+    -in skserver.h, added can_accept() to tcp_socket_server so that it can be
+     checked to see if the server socket has any connections available, so that
+     accept() can then be called. (if it returns false, if accept is called, 
+     it will block until a connection is made)
+    -removed the #include <iostream> from skserver.h and skstream.h as they are
+     not actually needed for any of the code. (else it comes in from some other
+     include, I'm not positive)
+    -Made some formatting changes in skserver.h along the same lines as I have
+     been doing throughout the code.
+    -added testClose() to basicskstreamtest.
+    -changed the socket created in basicskstreamtest from SOCK_STREAM to 
+     SOCK_DGRAM though it doesn't make any difference what so ever in the
+     testing.
+    -added the skservertests into the test runner.
+ 02/23/2002 Dan Tomalesky <grim@xynesis.com>
+    -added in CVS logging variable so that changes show up in modified files
+     This will help keep changes made by worldforge in each file that is 
+     changed as required by the GPL.
+    -changed some parameter variables to have better meaning. 
+     (ad -> address, etc.)
+    -added some code into tcp_sk_stream::open so that it calls setLastError()
+     when the connection fails.
+    -Added some comments into skstream.h to better describe SOCKET_TYPE as 
+     there can be some confusion between what it is actually for 
+     (pointer/file descriptor/windows cludge of the socket) and the various 
+     types of sockets (tcp, udp, raw, etc)
+    -changed some more formatting for readability.
+    -uncommented some commented out code in skstream.h so that the sync() 
+     method returns 0 on the else, rather than not returning anything.
+    -added some code into setBroadcast() so that setLastError() is called
+     if it fails to perform the getsocketopt().
+    -modified the test/Makefile.am to remove the header files from the SOURCES
+     as the .h files do not seem to affect the build.
+    -updated all the current test so that they use a socket instead of the
+     absolutely wrong stuff I was doing before.
+    -added tests for tcp, udp, and raw skstreams child classes.
+ 02/20/2002 Dan Tomalesky <grim@xynesis.com>
+    -added a new test case header for basic_socket_streams
+    -made a mod to basic_socket_stream::setOutpeer(sockaddr_in&)
+     seemed to me it had an erroneous ! in the statement
+ 02/19/2002 Dan Tomalesky <grim@xynesis.com>
+    -changed socketbuf(int, unsigned, unsigned) to have variable names
+     so it is easier to read in the declaration.
+    -Added License header into skstream.h
+    -Added cppunit test class and Auto* for supporting it. 
+       (doesn't do anything yet)
+ 01/07/2002 Krystian G Bates
+	Removed the code in socketbuf::sync() that caused both input and output 
+	buffers to be emptied on `<< flush'
+ 01/09/2001 - RGJ
+    Added the function timeout(), which returns true if a timeout has occured.
+    It also clears the state bits of the stream so it can send/received after
+    a timeout is detected. If badbit is set, the stream still cannot send and/or
+    receive.
+ 12/28/2000 - RGJ
+    FreeSockets version 0.3 released under GNU LGPL License.
+ 11/27/2000 - RGJ
+    Changed constructors of nearly all classes.
+    Now the size of the buffers may be defined.
+    Added support for RAW sockets.
+ 11/24/2000 - RGJ
+    Added a namespace (FreeSockets) to hold:
+      - Enumeration IP_Services: define common IP ports used.
+      - Enumeration IP_Protocols: define some avaiable protocols.
+ 11/23/2000 - RGJ
+    Class hierarchy was redesigned.
+    Version 0.2 released.
+  9/20/2000 - RGJ
+    Added support for UDP server sockets .
+    Added a stream manipulator to set remote host.
+  9/15/2000 - RGJ
+    Added support for client UDP sockets.
+  8/24/2000 - RGJ
+    Added timeout control using select().
+  8/23/2000 - RGJ
+    Completed port to BSD Sockets(*NIX).
+  8/3/2000 - RGJ
+    Added support for server sockets.
+    Added class basic_protocol that can be used to create multithreaded
+    servers. FreeThreads(http://fly.to/rafasgj) are used to provide an
+    object oriented portable multithreading API.
+  7/30/2000 - RGJ
+    First release of FreeSockets(v 0.1).
+    Support for client sockets.
+    Only Windows plataform supported.
+
+Contact Information:
+  Feel free to send comments, suggestions or bug reports by e-mail to
+    Rafael Guterres Jeffman <rafasgj@exatas.unisinos.br>
+
+  I use only GCC under Linux, Windows and BeOS and Borland's Free C++
+  Compiler under Windows. Since, these are the only plataforms/compilers
+  I can help with.
+  I DO NOT(and certainly have no plans to) use Microsoft's Visual C++.
+  Have fun!
+  And visit GOBO, o Invariante at http://eden.cscience.org/~lode/gobo).
+
