@@ -23,7 +23,16 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.39  2003-09-24 01:05:46  alriddoch
+ * Revision 1.40  2003-09-26 01:29:41  alriddoch
+ *  2003-09-26 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skstream.h: Add accessors for address size members.
+ *     - ping/ping.cpp: Clean up use of libc and system calls.
+ *     - skstream/skstream.cpp: Clean up handling socket address sizes
+ *       when setting socket by descriptor in the buffer objects.
+ *       Add code that handles converting address to presentation format
+ *       in a protocol independant way.
+ *
+ * Revision 1.39  2003/09/24 01:05:46  alriddoch
  *  2003-09-24 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skstream.h, skstream/skstream.cpp: Re-write connecting
  *       code for IP datagram and stream sockets so they try each of the
@@ -393,6 +402,14 @@ public:
 
   const sockaddr_storage & getInpeer() const { 
     return in_peer; 
+  }
+
+  SOCKLEN getOutpeerSize() const {
+    return out_p_size;
+  }
+
+  SOCKLEN getInpeerSize() const {
+    return in_p_size;
   }
 
   /// Set the existing socket that this buffer should use.

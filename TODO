@@ -1,3 +1,7 @@
+Use gethostinfo() to convert IP addresses to presentation format.
+Doesn't help that we don't appear to store the remote hosts address anyway.
+Mostly done, except for getRemotePort()
+
 Reformat all the code according to the standard WF style.
 
 Check in files other that skstream.cpp that they use :: in front of

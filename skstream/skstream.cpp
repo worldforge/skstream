@@ -23,7 +23,16 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.40  2003-09-25 17:05:49  alriddoch
+ * Revision 1.41  2003-09-26 01:29:41  alriddoch
+ *  2003-09-26 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skstream.h: Add accessors for address size members.
+ *     - ping/ping.cpp: Clean up use of libc and system calls.
+ *     - skstream/skstream.cpp: Clean up handling socket address sizes
+ *       when setting socket by descriptor in the buffer objects.
+ *       Add code that handles converting address to presentation format
+ *       in a protocol independant way.
+ *
+ * Revision 1.40  2003/09/25 17:05:49  alriddoch
  *  2003-09-25 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skpoll.cpp, skstream/skserver.cpp, skstream/skstream.cpp:
  *       Finish off fully qualifying all libc and system calls as being
@@ -416,9 +425,10 @@ socketbuf::~socketbuf(){
 void socketbuf::setSocket(SOCKET_TYPE sock)
 {
   _socket = sock;
-  SOCKLEN size = sizeof(sockaddr);
-  ::getpeername(sock,(sockaddr*)&out_peer,&size);
+  out_p_size = sizeof(sockaddr);
+  ::getpeername(sock, (sockaddr*)&out_peer, &out_p_size);
   in_peer = out_peer;
+  in_p_size = out_p_size;
 }
 
 
@@ -535,7 +545,8 @@ int stream_socketbuf::overflow(int nCh) { // traits::eof()
 }
 
 // underflow() - handles input from a connected socket.
-int stream_socketbuf::underflow() {
+int stream_socketbuf::underflow()
+{
   if(_socket == INVALID_SOCKET)
     return EOF; // Invalid socket! // traits::eof()
 
@@ -1103,11 +1114,25 @@ SOCKET_TYPE tcp_socket_stream::getSocket() const
             ? basic_socket_stream::getSocket() : _connecting_socket;
 }
 
-std::string tcp_socket_stream::getRemoteHost() const {
+std::string tcp_socket_stream::getRemoteHost() const
+{
+#ifdef HAVE_GETADDRINFO
+  char hbuf[NI_MAXHOST];
+
+  if (::getnameinfo((const sockaddr*)&getInpeer(),
+                    stream_sockbuf.getInpeerSize(),
+                    hbuf, sizeof(hbuf), 0, 0, NI_NUMERICHOST) == 0) {
+    return std::string(hbuf);
+  }
+  return "[unknown]";
+#else // HAVE_GETADDRINFO
   return std::string(::inet_ntoa(((const sockaddr_in&)getInpeer()).sin_addr));
+#endif // HAVE_GETADDRINFO
 }
 
-unsigned short tcp_socket_stream::getRemotePort() const {
+unsigned short tcp_socket_stream::getRemotePort() const
+{
+  // FIXME - not protocol independant
   return ntohs(((const sockaddr_in&)getInpeer()).sin_port);
 }
 
@@ -1259,7 +1284,8 @@ unix_socket_stream::~unix_socket_stream() {
 }
 
 
-void unix_socket_stream::open(const std::string& address, bool nonblock) {
+void unix_socket_stream::open(const std::string& address, bool nonblock)
+{
   if (address.size() >  107) {
     return;
   }

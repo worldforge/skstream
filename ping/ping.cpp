@@ -146,7 +146,7 @@ void send_request(raw_socket_stream& sock, const std::string& host) {
 
   const sockaddr_storage & sst = sock.getOutpeer();
 #ifndef HAVE_IPV6
-  std::cout << "Pinging "<<host<<"["<<inet_ntoa(((sockaddr_in &)sst).sin_addr);
+  std::cout << "Pinging "<<host<<"["<<::inet_ntoa(((sockaddr_in &)sst).sin_addr);
 #else // HAVE_IPV6
   void * adr = 0;
   if (sst.ss_family == AF_INET) {
@@ -215,7 +215,7 @@ void print_statistics(const ECHO_REPLY& reply) {
   // again: portability vs. precision
   clock_t elapsed = clock() - reply.echoRequest.dwTime;
 
-  std::string replier(inet_ntoa(reply.ipHdr.iaSrc));
+  std::string replier(::inet_ntoa(reply.ipHdr.iaSrc));
 
   stat_type::iterator iter = statistics.find(replier);
   if(iter == statistics.end())
