@@ -171,13 +171,13 @@ AC_LANG_CPLUSPLUS
 AC_MSG_CHECKING(for mingw32)
 AC_TRY_COMPILE(,[
 #ifdef __MINGW32__
-#error MingW32 detected, adding -lwsock32 to SKSTREAM_LIBS
+#error MingW32 detected, adding -lws2_32 and -lwsock32 to LIBS
 #endif
 ],
 AC_MSG_RESULT(no),[
 AC_MSG_RESULT(yes)
-LIBS="$LIBS -lwsock32"
-SKSTREAM_EXTRA_LIBS="$SKSTREAM_EXTRA_LIBS -lwsock32"
+LIBS="$LIBS -lws2_32 -lwsock32"
+SKSTREAM_EXTRA_LIBS="$SKSTREAM_EXTRA_LIBS -lws2_32 -lwsock32"
 ])
 
 AC_LANG_RESTORE

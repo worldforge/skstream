@@ -12,6 +12,7 @@
 #include <cstdio>
 
 #include <time.h>
+#include <signal.h> // to trap Ctrl+C : SIGINT
 
 #ifndef _WIN32
 #include <fcntl.h>
@@ -19,7 +20,6 @@
 #include <netdb.h>
 #include <errno.h>
 #include <arpa/inet.h>
-#include <signal.h> // to trap Ctrl+C : SIGINT
 #endif // _WIN32
 
 //---------------------------------------------------------------------------
