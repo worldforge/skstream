@@ -1,7 +1,7 @@
  2003-04-18 Al Riddoch <alriddoch@zepler.org>,
     - Add Skstream.pbproj to distribution
     - Reset interface version due to lib name change, increment version,
-      add news item and release 0.2.4
+      add news item and release 0.2.5
  2003-04-17 James Turner <james@worldforge.org>
     - Add ProjectBuilder files for the stable branch. Incldues a
       target to build the 'ping' test utility, though it doesn't
