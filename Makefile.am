@@ -1,10 +1,10 @@
 lib_LTLIBRARIES = libskstream.la
 libskstream_la_LDFLAGS = -version-info @SKSTREAM_VERSION_INFO@
 
-libskstream_la_SOURCES = skstream.cpp skserver.cpp
+libskstream_la_SOURCES = skstream.cpp skserver.cpp skpoll.cpp
 
 libskstreamincludedir = $(includedir)/skstream
-libskstreaminclude_HEADERS = skstream.h skserver.h sasproto.h
+libskstreaminclude_HEADERS = skstream.h skserver.h skpoll.h sasproto.h
 
 m4datadir = $(datadir)/aclocal
 m4data_DATA = skstream.m4

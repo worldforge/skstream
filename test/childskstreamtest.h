@@ -22,7 +22,17 @@
 //  Created: 2002-02-23 by Dan Tomalesky
 //
 // $Log$
-// Revision 1.2  2002-05-21 07:29:37  malcolm
+// Revision 1.3  2002-12-09 22:13:21  rsteinke
+//     - created basic_socket, a virtual base class
+//       for basic_socket_stream and basic_socket_server,
+//       so that the polling code has a common base
+//       with getSocket() to access
+//     - created basic_socket_poll polling class
+//     - changed tcp_socket_stream::is_ready() to isReady()
+//       to match standards for function naming, left is_ready()
+//       as a wrapper of isReady() for compatibility
+//
+// Revision 1.2  2002/05/21 07:29:37  malcolm
 // Added rsteinke's nonblocking connect patch.  Works on linux; does not break API
 // (I bumped version to 0.2.3 anyway).  May not work on win32, though I did test it
 // and socket communication does happen.
@@ -128,7 +138,7 @@ class tcpskstreamtest : public CppUnit::TestCase
 	    skstream->open(*hostname, port, true);
 
 	    int waitcount = 0;
-	    while(!skstream->is_ready()) // wait
+	    while(!skstream->isReady()) // wait
 		++waitcount;
 
 	    // FIXME print waitcount somehow, to verify we're not connecting

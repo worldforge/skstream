@@ -23,7 +23,17 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.4  2002-04-08 20:02:00  xmp
+ * Revision 1.5  2002-12-09 22:13:21  rsteinke
+ *     - created basic_socket, a virtual base class
+ *       for basic_socket_stream and basic_socket_server,
+ *       so that the polling code has a common base
+ *       with getSocket() to access
+ *     - created basic_socket_poll polling class
+ *     - changed tcp_socket_stream::is_ready() to isReady()
+ *       to match standards for function naming, left is_ready()
+ *       as a wrapper of isReady() for compatibility
+ *
+ * Revision 1.4  2002/04/08 20:02:00  xmp
  * Just a few fixes to MSVC support, removing a few unnessesary std::'s and shifting a default argument to a header.
  *
  * Revision 1.3  2002/02/26 20:33:55  grimicus
@@ -107,7 +117,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // class basic_socket_server
 /////////////////////////////////////////////////////////////////////////////
-class basic_socket_server {
+class basic_socket_server : public basic_socket {
 protected:
   SOCKET_TYPE _socket;
   int _service;
@@ -147,7 +157,7 @@ public:
     return (_socket != INVALID_SOCKET); 
   }
 
-  SOCKET_TYPE getSocket() const { 
+  virtual SOCKET_TYPE getSocket() const { 
     return _socket; 
   }
 

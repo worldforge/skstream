@@ -23,7 +23,17 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.24  2002-11-04 22:49:15  alriddoch
+ * Revision 1.25  2002-12-09 22:13:21  rsteinke
+ *     - created basic_socket, a virtual base class
+ *       for basic_socket_stream and basic_socket_server,
+ *       so that the polling code has a common base
+ *       with getSocket() to access
+ *     - created basic_socket_poll polling class
+ *     - changed tcp_socket_stream::is_ready() to isReady()
+ *       to match standards for function naming, left is_ready()
+ *       as a wrapper of isReady() for compatibility
+ *
+ * Revision 1.24  2002/11/04 22:49:15  alriddoch
  *  2002-11-04 Al Riddoch <alriddoch@zepler.org>,
  *     - Add doxygen docs.
  *
@@ -525,11 +535,19 @@ namespace FreeSockets {
   };
 };
 
+/////////////////////////////////////////////////////////////////////////////
+// class basic_socket, a virtual base class for use in polling
+/////////////////////////////////////////////////////////////////////////////
+
+class basic_socket {
+public:
+  virtual SOCKET_TYPE getSocket() const = 0;
+};
 
 /////////////////////////////////////////////////////////////////////////////
 // class socket_stream
 /////////////////////////////////////////////////////////////////////////////
-class basic_socket_stream : public std::iostream {
+class basic_socket_stream : public basic_socket, public std::iostream {
 protected:
   socketbuf _sockbuf;
   int protocol;
@@ -697,7 +715,7 @@ public:
   void open(const std::string& address, int service, bool nonblock = false);
   void open(const std::string& address, int service, unsigned int milliseconds) {
     open(address, service, true);
-    if(!is_ready(milliseconds)) {
+    if(!isReady(milliseconds)) {
       close();
       fail();
     }
@@ -707,7 +725,9 @@ public:
   virtual SOCKET_TYPE getSocket() const { return (_connecting_socket == INVALID_SOCKET)
     ? basic_socket_stream::getSocket() : _connecting_socket;}
 
-  bool is_ready(unsigned int milliseconds = 0);
+  // is_ready() is deprecated in favor of isReady()
+  bool is_ready(unsigned int milliseconds = 0) {return isReady(milliseconds);}
+  bool isReady(unsigned int milliseconds = 0);
 };
 
 /////////////////////////////////////////////////////////////////////////////

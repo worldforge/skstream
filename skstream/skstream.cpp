@@ -23,7 +23,17 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.16  2002-11-04 22:49:15  alriddoch
+ * Revision 1.17  2002-12-09 22:13:21  rsteinke
+ *     - created basic_socket, a virtual base class
+ *       for basic_socket_stream and basic_socket_server,
+ *       so that the polling code has a common base
+ *       with getSocket() to access
+ *     - created basic_socket_poll polling class
+ *     - changed tcp_socket_stream::is_ready() to isReady()
+ *       to match standards for function naming, left is_ready()
+ *       as a wrapper of isReady() for compatibility
+ *
+ * Revision 1.16  2002/11/04 22:49:15  alriddoch
  *  2002-11-04 Al Riddoch <alriddoch@zepler.org>,
  *     - Add doxygen docs.
  *
@@ -577,7 +587,7 @@ void tcp_socket_stream::close()
   basic_socket_stream::close();
 }
 
-bool tcp_socket_stream::is_ready(unsigned int milliseconds)
+bool tcp_socket_stream::isReady(unsigned int milliseconds)
 {
   if(_connecting_socket == INVALID_SOCKET) {
     return true;
