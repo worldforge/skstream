@@ -23,7 +23,10 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.4  2002-03-01 14:00:09  grimicus
+ * Revision 1.5  2002-04-08 20:02:00  xmp
+ * Just a few fixes to MSVC support, removing a few unnessesary std::'s and shifting a default argument to a header.
+ *
+ * Revision 1.4  2002/03/01 14:00:09  grimicus
  * 03/01/2002 Dan Tomalesky <grim@xynesis.com>
  *     * Changed can_accept's timeval to be all 0, so that it is just a quick
  *       poll and returns immediately (Thanks to alriddoch for the suggestion)

@@ -23,7 +23,10 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.3  2002-02-26 20:33:55  grimicus
+ * Revision 1.4  2002-04-08 20:02:00  xmp
+ * Just a few fixes to MSVC support, removing a few unnessesary std::'s and shifting a default argument to a header.
+ *
+ * Revision 1.3  2002/02/26 20:33:55  grimicus
  * 02/26/2002 Dan Tomalesky <grim@xynesis.com>
  *     * Added test cases for skserver and friends
  *

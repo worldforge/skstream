@@ -23,7 +23,10 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.2  2002-02-24 03:15:41  grimicus
+ * Revision 1.3  2002-04-08 20:02:00  xmp
+ * Just a few fixes to MSVC support, removing a few unnessesary std::'s and shifting a default argument to a header.
+ *
+ * Revision 1.2  2002/02/24 03:15:41  grimicus
  * 02/23/2002 Dan Tomalesky <grim@xynesis.com>
  *
  *     * Added in CVS logging variable so that changes show up in modified files

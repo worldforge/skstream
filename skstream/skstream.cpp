@@ -23,7 +23,10 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.4  2002-04-08 19:47:12  malcolm
+ * Revision 1.5  2002-04-08 20:02:00  xmp
+ * Just a few fixes to MSVC support, removing a few unnessesary std::'s and shifting a default argument to a header.
+ *
+ * Revision 1.4  2002/04/08 19:47:12  malcolm
  * Changes to allow clean compilation on Microsoft Visual C++.  I must go and
  * boil my keyboard now.  Constructor code for basic_socket_stream moved out of
  * header and into .cpp.
@@ -131,7 +134,7 @@ socketbuf::socketbuf(SOCKET_TYPE sock, unsigned insize, unsigned outsize)
 
 // Constructor
 socketbuf::socketbuf(SOCKET_TYPE sock, char* buf, int length)
-    : _socket(sock),std::streambuf(), Timeout(false)
+    : _socket(sock),streambuf(), Timeout(false)
 {
   _buffer = NULL;
   if(this != setbuf(buf,length)) {
@@ -286,15 +289,15 @@ int socketbuf::underflow() {
 /////////////////////////////////////////////////////////////////////////////
 // Constructors
   basic_socket_stream::basic_socket_stream()
-      : std::iostream(&_sockbuf), _sockbuf(INVALID_SOCKET), protocol(FreeSockets::proto_IP), LastError(0)
+      : iostream(&_sockbuf), _sockbuf(INVALID_SOCKET), protocol(FreeSockets::proto_IP), LastError(0)
   {
     startup();
     init(&_sockbuf); // initialize underlying streambuf
   }
 
   basic_socket_stream::basic_socket_stream(unsigned insize,unsigned outsize,
-                      int proto=FreeSockets::proto_IP)
-      : std::iostream(&_sockbuf), _sockbuf(INVALID_SOCKET,insize,outsize),
+                      int proto)
+      : iostream(&_sockbuf), _sockbuf(INVALID_SOCKET,insize,outsize),
         protocol(proto), LastError(0)
   {
     startup();
@@ -302,14 +305,14 @@ int socketbuf::underflow() {
   }
 
   basic_socket_stream::basic_socket_stream(SOCKET_TYPE sock)
-      : std::iostream(&_sockbuf), _sockbuf(sock), protocol(FreeSockets::proto_IP), LastError(0) {
+      : iostream(&_sockbuf), _sockbuf(sock), protocol(FreeSockets::proto_IP), LastError(0) {
     startup();
     init(&_sockbuf); // initialize underlying streambuf
   }
 
   basic_socket_stream::basic_socket_stream(SOCKET_TYPE sock,
                       unsigned insize,unsigned outsize)
-      : std::iostream(&_sockbuf), _sockbuf(sock,insize,outsize),
+      : iostream(&_sockbuf), _sockbuf(sock,insize,outsize),
         protocol(FreeSockets::proto_IP), LastError(0) {
     startup();
     init(&_sockbuf); // initialize underlying streambuf
@@ -372,7 +375,7 @@ void basic_socket_stream::close() {
       clear();
       return false;
     }
-    if(std::iostream::fail()) {
+    if(iostream::fail()) {
       setLastError();
       return true;
     }

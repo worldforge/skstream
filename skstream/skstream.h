@@ -23,7 +23,10 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.10  2002-04-08 19:47:12  malcolm
+ * Revision 1.11  2002-04-08 20:02:00  xmp
+ * Just a few fixes to MSVC support, removing a few unnessesary std::'s and shifting a default argument to a header.
+ *
+ * Revision 1.10  2002/04/08 19:47:12  malcolm
  * Changes to allow clean compilation on Microsoft Visual C++.  I must go and
  * boil my keyboard now.  Constructor code for basic_socket_stream moved out of
  * header and into .cpp.
