@@ -23,7 +23,10 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.1  2002-12-09 22:13:21  rsteinke
+ * Revision 1.2  2002-12-11 20:41:25  rsteinke
+ * Removed default function parameters from .cpp file. Oops!
+ *
+ * Revision 1.1  2002/12/09 22:13:21  rsteinke
  *     - created basic_socket, a virtual base class
  *       for basic_socket_stream and basic_socket_server,
  *       so that the polling code has a common base
@@ -44,7 +47,7 @@ basic_socket_poll::basic_socket_poll() : maxfd_(0)
   FD_ZERO(&except_);
 }
 
-int basic_socket_poll::poll(const socket_map& map, unsigned long timeout = 0)
+int basic_socket_poll::poll(const socket_map& map, unsigned long timeout)
 {
   FD_ZERO(&read_);
   FD_ZERO(&write_);
@@ -73,7 +76,7 @@ int basic_socket_poll::poll(const socket_map& map, unsigned long timeout = 0)
 }
 
 basic_socket_poll::poll_type basic_socket_poll::isReady(const basic_socket* soc,
-	poll_type mask = MASK)
+	poll_type mask)
 {
   SOCKET_TYPE socket;
   if(!(mask & MASK) || !soc || (socket = soc->getSocket()) == INVALID_SOCKET
