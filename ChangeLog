@@ -1,4 +1,6 @@
  2003-09-24 Al Riddoch <alriddoch@zepler.org>
+    - skstream/skstream.cpp: Implement non-blocking connect with addrinfo list.
+ 2003-09-24 Al Riddoch <alriddoch@zepler.org>
     - Typo in in_addr_t check fixed.
     - skstream/skstream.cpp: Missed out typedef keyword fix.
  2003-09-24 Al Riddoch <alriddoch@zepler.org>

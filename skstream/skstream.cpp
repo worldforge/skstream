@@ -23,7 +23,11 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.36  2003-09-24 16:20:03  alriddoch
+ * Revision 1.37  2003-09-24 21:02:11  alriddoch
+ *  2003-09-24 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skstream.cpp: Implement non-blocking connect with addrinfo list.
+ *
+ * Revision 1.36  2003/09/24 16:20:03  alriddoch
  *  2003-09-24 Al Riddoch <alriddoch@zepler.org>
  *     - Typo in in_addr_t check fixed.
  *     - skstream/skstream.cpp: Missed out typedef keyword fix.
@@ -317,6 +321,8 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #endif // _WIN32
+
+#include <cassert>
 
 static inline int getSystemError()
 {
@@ -1156,23 +1162,67 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
   getsockopt(_socket, SOL_SOCKET, SO_ERROR, (LPSTR)&errnum, &errsize); 
 #endif // _WIN32
 
-  // FIXME Need to check for failure, and if it has occured, we need to
-  // revisit the address list we got from getaddrinfo. For now we just
-  // free the list of addresses.
 #ifdef HAVE_GETADDRINFO
-  if (_connecting_addrlist != 0) {
-    ::freeaddrinfo(_connecting_addrlist);
-    _connecting_addrlist = 0;
-  }
-#endif // HAVE_GETADDRINFO
+  // Check for failure, and if it has occured, we need to
+  // revisit the address list we got from getaddrinfo.
+  assert(_connecting_addrlist != 0);
+  assert(_connecting_address != 0);
 
-  if(errnum != 0) {
+  if (errnum != 0) {
+    ::closesocket(_socket);
+
+    bool success = false;
+
+    struct addrinfo * i = _connecting_address->ai_next;
+    for (; success == false && i != 0; i = i->ai_next) {
+      _socket = ::socket(i->ai_family, i->ai_socktype, i->ai_protocol);
+      if(_socket == INVALID_SOCKET) {
+        continue;
+      }
+   #ifndef _WIN32
+      int err_val = fcntl(_socket, F_SETFL, O_NONBLOCK);
+   #else // _WIN32
+      u_long nonblocking = 1;  // This flag may be set elsewhere,
+                               // in a header ?
+      int err_val = ioctlsocket(_socket, FIONBIO, &nonblocking);
+   #endif // _WIN32
+      if(err_val == -1) {
+        setLastError();
+        ::closesocket(_socket);
+        continue;
+      }
+
+      sockaddr_storage iaddr;
+      memcpy(&iaddr, i->ai_addr, i->ai_addrlen);
+      SOCKLEN iaddrlen = i->ai_addrlen;
+
+      if(::connect(_socket, (sockaddr *)&iaddr, iaddrlen) < 0) {
+        if(getSystemError() == SOCKET_BLOCK_ERROR) {
+          _connecting_socket = _socket;
+          _connecting_address = i;
+          return false;
+        }
+        setLastError();
+        ::closesocket(_socket);
+      } else {
+        success = true;
+      }
+    }
+
+  }
+
+  ::freeaddrinfo(_connecting_addrlist);
+  _connecting_addrlist = 0;
+  _connecting_address = 0;
+#else // HAVE_GETADDRINFO
+  if (errnum != 0) {
     // Can't use setLastError(), since errno doesn't have the error
     LastError = errnum;
     fail();
     ::closesocket(_socket);
     return true;
   }
+#endif // HAVE_GETADDRINFO
 
   // set the socket blocking again for io
 #ifndef _WIN32
