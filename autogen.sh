@@ -42,7 +42,7 @@ echo autoconf...
 
 autoconf
 
-if "x$NOCONFIGURE" = "x" ; then
+if test "x$NOCONFIGURE" = "x" ; then
     ./configure $@
 fi
 
