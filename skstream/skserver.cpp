@@ -23,7 +23,16 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.12  2003-08-23 22:13:55  alriddoch
+ * Revision 1.13  2003-09-23 21:51:44  alriddoch
+ *  2003-09-23 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skserver.h: Make service an int in setService() as it always
+ *       is elsewhere.
+ *     - skstream/skserver.h, skstream/skserver.cpp: Make open() methods return
+ *       true on success, and false on failure.
+ *     - skstream/skserver.h, skstream/skserver.cpp: Add new method for
+ *       creating and binding to a socket, to avoid duplicating code.
+ *
+ * Revision 1.12  2003/08/23 22:13:55  alriddoch
  *  2003-08-23 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skstreamconfig.h.in, skstream/skstream_unix.h,
  *       skstream/skstream.h, skstream/skstream.cpp,
@@ -279,6 +288,72 @@ bool basic_socket_server::can_accept() {
 // class ip_socket_server implementation
 /////////////////////////////////////////////////////////////////////////////
 
+bool ip_socket_server::bindToIpService(int service, int type, int protocol)
+{
+#ifdef HAVE_GETADDRINFO
+  struct addrinfo req, *ans;
+  char serviceName[32];
+
+  sprintf(serviceName, "%d", service);
+
+  req.ai_flags = AI_PASSIVE;
+  req.ai_family = PF_UNSPEC;
+  req.ai_socktype = type;
+  req.ai_protocol = 0;
+  req.ai_addrlen = 0;
+  req.ai_addr = 0;
+  req.ai_canonname = 0;
+  req.ai_next = 0;
+
+  int ret;
+  if ((ret = ::getaddrinfo(0, serviceName, &req, &ans)) != 0) {
+    std::cout << "skstream: " << gai_strerror(ret)
+              << std::endl << std::flush;
+    setLastError();
+    return false;
+  }
+
+  _socket = ::socket(ans->ai_family, ans->ai_socktype, ans->ai_protocol);
+  if (_socket == INVALID_SOCKET) {
+    setLastError();
+    return false;
+  }
+
+  sockaddr_storage iaddr;
+  memcpy(&iaddr, ans->ai_addr, ans->ai_addrlen);
+  SOCKLEN iaddrlen = ans->ai_addrlen;
+  ::freeaddrinfo(ans);
+
+  if (::bind(_socket, (sockaddr*)&iaddr, iaddrlen) == SOCKET_ERROR) {
+    setLastError();
+    close();
+    return false;
+  }
+
+  return true;
+#else
+  // create socket
+  _socket = ::socket(AF_INET, type, protocol);
+  if(_socket == INVALID_SOCKET) {
+    setLastError();
+    return false;
+  }
+
+  // Bind Socket
+  sockaddr_in sa;
+  sa.sin_family = AF_INET;
+  sa.sin_addr.s_addr = INADDR_ANY; // we want to connect to ANY client!
+  sa.sin_port = htons((unsigned short)service); // define service port
+  if(::bind(_socket, (sockaddr*)&sa, sizeof(sa)) == SOCKET_ERROR) {
+    setLastError();
+    close();
+    return false;
+  }
+
+  return true;
+#endif // HAVE_GETADDRINFO
+}
+
 ip_socket_server::~ip_socket_server()
 {
 }
@@ -292,7 +367,8 @@ tcp_socket_server::~tcp_socket_server()
 }
 
 // handles tcp connections request
-SOCKET_TYPE tcp_socket_server::accept() {
+SOCKET_TYPE tcp_socket_server::accept()
+{
   if(_socket==INVALID_SOCKET) return INVALID_SOCKET;
   SOCKET_TYPE commsock = ::accept(_socket, NULL, NULL);
   if(commsock == INVALID_SOCKET) {
@@ -304,84 +380,24 @@ SOCKET_TYPE tcp_socket_server::accept() {
 }
 
 // start tcp server and put it in listen state
-void tcp_socket_server::open(int service)
+bool tcp_socket_server::open(int service)
 {
   if (is_open()) {
     close();
   }
 
-#ifdef HAVE_GETADDRINFO
-  struct addrinfo req, *ans;
-  char serviceName[32];
-
-  sprintf(serviceName, "%d", service);
-
-  req.ai_flags = AI_PASSIVE;
-  req.ai_family = PF_UNSPEC;
-  req.ai_socktype = SOCK_STREAM;
-  req.ai_protocol = 0;
-  req.ai_addrlen = 0;
-  req.ai_addr = 0;
-  req.ai_canonname = 0;
-  req.ai_next = 0;
-
-  int ret;
-  if ((ret = ::getaddrinfo(0, serviceName, &req, &ans)) != 0) {
-    std::cout << "skstream: " << gai_strerror(ret)
-              << std::endl << std::flush;
-    setLastError();
-    return;
-  }
-
-  _socket = ::socket(ans->ai_family, ans->ai_socktype, ans->ai_protocol);
-  if (_socket == INVALID_SOCKET) {
-    setLastError();
-    return;
-  }
-
-  sockaddr_storage iaddr;
-  memcpy(&iaddr, ans->ai_addr, ans->ai_addrlen);
-  SOCKLEN iaddrlen = ans->ai_addrlen;
-  ::freeaddrinfo(ans);
-
-  if (::bind(_socket, (sockaddr*)&iaddr, iaddrlen) == SOCKET_ERROR) {
-    setLastError();
-    close();
-    return;
+  if (!bindToIpService(service, SOCK_STREAM, IPPROTO_TCP)) {
+    return false;
   }
 
   // Listen
   if(::listen(_socket, 5) == SOCKET_ERROR) { // max backlog
     setLastError();
     close();
-    return;
-  }
-#else
-  // create socket
-  _socket = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-  if(_socket == INVALID_SOCKET) {
-    setLastError();
-    return;
+    return false;
   }
 
-  // Bind Socket
-  sockaddr_in sa;
-  sa.sin_family = AF_INET;
-  sa.sin_addr.s_addr = INADDR_ANY; // we want to connect to ANY client!
-  sa.sin_port = htons((unsigned short)service); // define service port
-  if(::bind(_socket, (sockaddr*)&sa, sizeof(sa)) == SOCKET_ERROR) {
-    setLastError();
-    close();
-    return;
-  }
-
-  // Listen
-  if(::listen(_socket, 5) == SOCKET_ERROR) { // max backlog
-    setLastError();
-    close();
-    return;
-  }
-#endif // HAVE_GETADDRINFO
+  return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -398,71 +414,17 @@ SOCKET_TYPE udp_socket_server::accept()
 }
 
 // create a UDP socket binded to a given port
-void udp_socket_server::open(int service)
+bool udp_socket_server::open(int service)
 {
   if (is_open()) {
     close();
   }
 
-#ifdef HAVE_GETADDRINFO
-  struct addrinfo req, *ans;
-  char serviceName[32];
-
-  sprintf(serviceName, "%d", service);
-
-  req.ai_flags = AI_PASSIVE;
-  req.ai_family = PF_UNSPEC;
-  req.ai_socktype = SOCK_DGRAM;
-  req.ai_protocol = 0;
-  req.ai_addrlen = 0;
-  req.ai_addr = 0;
-  req.ai_canonname = 0;
-  req.ai_next = 0;
-
-  int ret;
-  if ((ret = ::getaddrinfo(0, serviceName, &req, &ans)) != 0) {
-    std::cout << "skstream: " << gai_strerror(ret)
-              << std::endl << std::flush;
-    setLastError();
-    return;
+  if (!bindToIpService(service, SOCK_DGRAM, IPPROTO_UDP)) {
+    return false;
   }
 
-  _socket = ::socket(ans->ai_family, ans->ai_socktype, ans->ai_protocol);
-  if (_socket == INVALID_SOCKET) {
-    setLastError();
-    return;
-  }
-
-  sockaddr_storage iaddr;
-  memcpy(&iaddr, ans->ai_addr, ans->ai_addrlen);
-  SOCKLEN iaddrlen = ans->ai_addrlen;
-  ::freeaddrinfo(ans);
-
-  if (::bind(_socket, (sockaddr*)&iaddr, iaddrlen) == SOCKET_ERROR) {
-    setLastError();
-    close();
-    return;
-  }
-#else // HAVE_GETADDRINFO
-  // Create socket
-  _socket = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-  if(_socket == INVALID_SOCKET) {
-    setLastError();
-    return;
-  }
-  // Bind Socket
-  sockaddr_in sa;
-  sa.sin_family = AF_INET;
-  sa.sin_addr.s_addr = INADDR_ANY; // we want to connect to ANY client!
-  //sa.sin_addr.s_addr = inet_addr("10.10.100.1");
-
-  sa.sin_port = htons((unsigned short)service); // define service port
-  if(::bind(_socket, (sockaddr*)&sa, sizeof(sa)) == SOCKET_ERROR) {
-    setLastError();
-    close();
-    return;
-  }
-#endif // HAVE_GETADDRINFO
+  return true;
 }
 
 #ifdef SKSTREAM_UNIX_SOCKETS

@@ -23,7 +23,16 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.10  2003-08-23 22:13:55  alriddoch
+ * Revision 1.11  2003-09-23 21:51:44  alriddoch
+ *  2003-09-23 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skserver.h: Make service an int in setService() as it always
+ *       is elsewhere.
+ *     - skstream/skserver.h, skstream/skserver.cpp: Make open() methods return
+ *       true on success, and false on failure.
+ *     - skstream/skserver.h, skstream/skserver.cpp: Add new method for
+ *       creating and binding to a socket, to avoid duplicating code.
+ *
+ * Revision 1.10  2003/08/23 22:13:55  alriddoch
  *  2003-08-23 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skstreamconfig.h.in, skstream/skstream_unix.h,
  *       skstream/skstream.h, skstream/skstream.cpp,
@@ -210,13 +219,15 @@ class ip_socket_server : public basic_socket_server {
 protected:
   int _service;
 
-  void setService(unsigned service) {
+  void setService(int service) {
     if(is_open())
       close();
 
     _service = service;
     open(_service);
   }
+
+  bool bindToIpService(int service, int type, int protocol);
 
   explicit ip_socket_server(SOCKET_TYPE _sock = INVALID_SOCKET) :
              basic_socket_server(_sock), _service(0) {
@@ -228,7 +239,7 @@ public:
       return _service;
   }
 
-  virtual void open(int service) = 0;
+  virtual bool open(int service) = 0;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -248,7 +259,7 @@ public:
 
   virtual SOCKET_TYPE accept();
 
-  virtual void open(int service);
+  virtual bool open(int service);
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -266,7 +277,7 @@ public:
   // return the socket used to send/recv UDP packets
   virtual SOCKET_TYPE accept();
 
-  virtual void open(int service);
+  virtual bool open(int service);
 };
 
 #endif // RGJ_FREE_THREADS_SERVER_H_
