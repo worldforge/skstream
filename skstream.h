@@ -23,7 +23,13 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.16  2002-06-12 00:27:40  rsteinke
+ * Revision 1.17  2002-06-12 00:38:24  rsteinke
+ *     -Modified getSocket() so you can poll on the writability
+ *      of a tcp_socket_stream during a nonblocking connect,
+ *      instead of calling is_ready() in a timeout. You still
+ *      have to call is_ready() when the poll returns.
+ *
+ * Revision 1.16  2002/06/12 00:27:40  rsteinke
  *     -Fixed many bugs in nonblocking tcp socket connect code
  *
  * Revision 1.15  2002/05/27 10:53:09  mkoch
@@ -479,14 +485,14 @@ public:
   }
 
   bool is_open() const { 
-    return ( getSocket() != INVALID_SOCKET); 
+    return ( _sockbuf.getSocket() != INVALID_SOCKET); 
   }
 
   void setSocket(SOCKET_TYPE sock) { 
     _sockbuf.setSocket(sock); 
   }
 
-  SOCKET_TYPE getSocket() const { 
+  virtual SOCKET_TYPE getSocket() const { 
     return _sockbuf.getSocket(); 
   }
 
@@ -580,6 +586,8 @@ public:
 
   void open(const std::string& address, int service, bool nonblock = false);
   virtual void close();
+  virtual SOCKET_TYPE getSocket() {return (_connecting_socket == INVALID_SOCKET)
+    ? basic_socket_stream::getSocket() : _connecting_socket;}
 
   bool is_ready();
 };

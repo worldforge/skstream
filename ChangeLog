@@ -1,4 +1,9 @@
  06/11/2002 Ron Steinke <rsteinke@w-link.net>,
+    -Modified getSocket() so you can poll on the writability
+     of a tcp_socket_stream during a nonblocking connect,
+     instead of calling is_ready() in a timeout. You still
+     have to call is_ready() when the poll returns.
+ 06/11/2002 Ron Steinke <rsteinke@w-link.net>,
     -Fixed many bugs in nonblocking tcp socket connect code
  2002-06-10 Al Riddoch <alriddoch@zepler.org>
     -Add generated rpm spec and sort out interface versioning. Install docs.
