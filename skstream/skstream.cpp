@@ -23,7 +23,13 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.32  2003-08-23 22:13:55  alriddoch
+ * Revision 1.33  2003-08-25 17:18:27  alriddoch
+ *  2003-08-23 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skstream.h, skstream/skstream.cpp: Add extra argument
+ *       to dgram_streambuf::setTarget() so protocol can be passed in.
+ *       Add #warnings if the old non getaddrinfo code is being used.
+ *
+ * Revision 1.32  2003/08/23 22:13:55  alriddoch
  *  2003-08-23 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skstreamconfig.h.in, skstream/skstream_unix.h,
  *       skstream/skstream.h, skstream/skstream.cpp,
@@ -530,7 +536,8 @@ int stream_socketbuf::underflow() {
 }
 
 // setTarget() - set the target socket address
-bool dgram_socketbuf::setTarget(const std::string& address, unsigned port)
+bool dgram_socketbuf::setTarget(const std::string& address, unsigned port,
+                                int protocol)
 {
   if (_socket != INVALID_SOCKET) {
     ::closesocket(_socket);
@@ -573,6 +580,8 @@ bool dgram_socketbuf::setTarget(const std::string& address, unsigned port)
 
   return true;
 #else // HAVE_GETADDRINFO
+
+#warning Using deprecated resolver code because getaddrinfo() is not available
 
   hostent * he = ::gethostbyname(address.c_str());
   if (he != 0) {
@@ -929,6 +938,8 @@ void tcp_socket_stream::open(const std::string & address,
   }
 
 #else // HAVE_GETADDRINFO
+
+#warning Using deprecated resolver code because getaddrinfo() is not available
 
   // Create socket
   SOCKET_TYPE _socket = ::socket(AF_INET, SOCK_STREAM, protocol);

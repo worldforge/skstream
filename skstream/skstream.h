@@ -23,7 +23,13 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.36  2003-08-23 22:13:55  alriddoch
+ * Revision 1.37  2003-08-25 17:18:28  alriddoch
+ *  2003-08-23 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skstream.h, skstream/skstream.cpp: Add extra argument
+ *       to dgram_streambuf::setTarget() so protocol can be passed in.
+ *       Add #warnings if the old non getaddrinfo code is being used.
+ *
+ * Revision 1.36  2003/08/23 22:13:55  alriddoch
  *  2003-08-23 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skstreamconfig.h.in, skstream/skstream_unix.h,
  *       skstream/skstream.h, skstream/skstream.cpp,
@@ -447,7 +453,7 @@ public:
   /// Destroy the socket buffer.
   virtual ~dgram_socketbuf();
 
-  bool setTarget(const std::string& address, unsigned port);
+  bool setTarget(const std::string& address, unsigned port, int protocol);
 
 protected:
   /// Handle writing data from the buffer to the socket.
@@ -659,7 +665,7 @@ public:
   virtual ~udp_socket_stream();
 
   bool setTarget(const std::string& address, unsigned port) { 
-    return dgram_sockbuf.setTarget(address,port); 
+    return dgram_sockbuf.setTarget(address, port, protocol); 
   }
 };
 
@@ -689,7 +695,7 @@ public:
   void setProtocol(FreeSockets::IP_Protocol proto);
 
   bool setTarget(const std::string& address, unsigned port) { 
-    return dgram_sockbuf.setTarget(address,port); 
+    return dgram_sockbuf.setTarget(address, port, protocol); 
   }
 
   sockaddr_storage getLocalHost() const { 

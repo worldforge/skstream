@@ -1,4 +1,8 @@
  2003-08-23 Al Riddoch <alriddoch@zepler.org>
+    - skstream/skstream.h, skstream/skstream.cpp: Add extra argument
+      to dgram_streambuf::setTarget() so protocol can be passed in.
+      Add #warnings if the old non getaddrinfo code is being used.
+ 2003-08-23 Al Riddoch <alriddoch@zepler.org>
     - skstream/skstreamconfig.h.in, skstream/skstream_unix.h,
       skstream/skstream.h, skstream/skstream.cpp,
       skstream/skserver_unix.h, skstream/skserver.h, skstream/skserver.cpp:
