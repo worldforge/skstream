@@ -23,7 +23,13 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.46  2004-11-29 22:47:30  alriddoch
+ * Revision 1.47  2005-03-03 15:46:05  alriddoch
+ * 2004-03-03  Al Riddoch  <alriddoch@zepler.org>
+ *
+ * 	* skstream/skstream.h, skstream/skstream.cpp: Add a virtual
+ * 	  destructor to basic_socket interface.
+ *
+ * Revision 1.46  2004/11/29 22:47:30  alriddoch
  * 2004-11-29  Al Riddoch  <alriddoch@zepler.org>
  *
  * 	* skstream/skstream.h, skstream/skstream.cpp: Inline operator!
@@ -590,6 +596,8 @@ namespace FreeSockets {
 
 class basic_socket {
 public:
+  virtual ~basic_socket();
+
   virtual SOCKET_TYPE getSocket() const = 0;
 };
 

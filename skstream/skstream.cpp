@@ -23,7 +23,13 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.48  2004-12-06 01:24:18  alriddoch
+ * Revision 1.49  2005-03-03 15:46:05  alriddoch
+ * 2004-03-03  Al Riddoch  <alriddoch@zepler.org>
+ *
+ * 	* skstream/skstream.h, skstream/skstream.cpp: Add a virtual
+ * 	  destructor to basic_socket interface.
+ *
+ * Revision 1.48  2004/12/06 01:24:18  alriddoch
  * 2004-12-06  Al Riddoch  <alriddoch@zepler.org>
  *
  * 	* skstream/skstream.cpp: Fix an issue with shutdown arguments being
@@ -858,6 +864,14 @@ int dgram_socketbuf::underflow() {
   setg(eback(), egptr()-size, egptr());
 
   return (int)(unsigned char)(*gptr()); // traits::not_eof(...)
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// class basic_socket implementation
+/////////////////////////////////////////////////////////////////////////////
+
+basic_socket::~basic_socket()
+{
 }
 
 /////////////////////////////////////////////////////////////////////////////
