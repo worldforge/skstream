@@ -53,11 +53,6 @@ public:
 
   virtual SOCKET_TYPE accept();
 
-  /**
-   * See if accept() can be called without blocking on it.
-   */
-  bool can_accept();
-
   const std::string & getService() {
       return _service;
   }

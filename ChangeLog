@@ -1,3 +1,6 @@
+ 2004-05-13 Al Riddoch  <alriddoch@zepler.org>
+    - skstream/skserver_unix.h: Remove can_accept() from unix_socket_server
+      as its not implemented and the version in the base class should be used.
  2003-12-19 Al Riddoch  <alriddoch@zepler.org>
     - Remove Serial from rpm spec as it is not required, and messes up
       deps.
