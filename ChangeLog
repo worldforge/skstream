@@ -1,3 +1,11 @@
+2004-09-29  Al Riddoch  <alriddoch@zepler.org>
+
+	* Move to using configure.ac with updated contents.
+
+	* Create new README and move old one to README.FreeSockets.
+
+	* Release 0.3.2, interface version 0.0.0.
+
 2004-06-06  Al Riddoch  <alriddoch@zepler.org>
 
 	* Fix devel dependencies in rpm spec.

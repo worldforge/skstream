@@ -1,6 +1,7 @@
 dnl Initialise autoconf
 
-AC_INIT(skstream/skstream.cpp)
+AC_INIT()
+AC_CONFIG_SRCDIR(skstream/skstream.cpp)
 
 dnl Detect the canonical host and target environment
 
@@ -10,10 +11,12 @@ dnl Initialise automake
 
 SKSTREAM_MAJOR=0
 SKSTREAM_MINOR=3
-SKSTREAM_MICRO=1
+SKSTREAM_MICRO=2
 SKSTREAM_VERSION=$SKSTREAM_MAJOR.$SKSTREAM_MINOR.$SKSTREAM_MICRO
 
-AC_SUBST(SKSTREAM_VERSION)
+AM_INIT_AUTOMAKE(skstream, $SKSTREAM_VERSION)
+AM_CONFIG_HEADER(config.h)
+AM_MAINTAINER_MODE
 
 SKSTREAM_CURRENT=0
 SKSTREAM_REVISION=0
@@ -21,18 +24,16 @@ SKSTREAM_AGE=0
 SKSTREAM_VERSION_INFO=$SKSTREAM_CURRENT:$SKSTREAM_REVISION:$SKSTREAM_AGE
 SKSTREAM_VERSION_NO=$SKSTREAM_CURRENT.$SKSTREAM_AGE.$SKSTREAM_REVISION
 
-AC_SUBST(SKSTREAM_CURRENT)
-AC_SUBST(SKSTREAM_VERSION_INFO)
-AC_SUBST(SKSTREAM_VERSION_NO)
-
-AM_INIT_AUTOMAKE("skstream", $SKSTREAM_VERSION)
-AM_CONFIG_HEADER(config.h)
-
 SKSTREAM_UNIX_PC=
 SKSTREAM_UNIX_PC_IN=
 SKSTREAM_LIB_SUFFIX="-0.3"
 SKSTREAM_LIBS="-lskstream$SKSTREAM_LIB_SUFFIX"
 SKSTREAM_EXTRA_LIBS=
+
+AC_SUBST(SKSTREAM_VERSION)
+AC_SUBST(SKSTREAM_CURRENT)
+AC_SUBST(SKSTREAM_VERSION_INFO)
+AC_SUBST(SKSTREAM_VERSION_NO)
 
 dnl Test for GNU libtool
 
@@ -60,116 +61,13 @@ dnl Test for ANSI standard language features
 
 dnl Test for C++ bool keyword
 
-AC_MSG_CHECKING([for C++ bool keyword])
-AC_LANG_SAVE
-AC_LANG_CPLUSPLUS
-AC_CACHE_VAL(ac_cv_feature_bool,
-[
-    AC_TRY_COMPILE(,
-    [
-        bool t = true, f = false;
-    ],
-    [
-        ac_cv_feature_bool=yes
-    ],
-    [
-        ac_cv_feature_bool=no
-    ])
-])
-
-if test "$ac_cv_feature_bool" = yes ; then
-    AC_MSG_RESULT(yes)
-else
-    AC_MSG_RESULT(no)
-fi
-
-AC_LANG_RESTORE
-
-dnl Test for C++ namespaces
-
-AC_MSG_CHECKING([for C++ namespaces])
-AC_LANG_SAVE
-AC_LANG_CPLUSPLUS
-AC_CACHE_VAL(ac_cv_feature_namespaces,
-[
-    AC_TRY_COMPILE(
-    [
-        namespace foo { int i; }
-        namespace bar { int i; }
-        namespace baz { int i; }
-
-        using namespace foo;
-        using bar::i;
-    ],
-    [
-        foo::i = 1;
-        bar::i = 2;
-        baz::i = 3;
-    ],
-    [
-        ac_cv_feature_namespaces=yes
-    ],
-    [
-        ac_cv_feature_namespaces=no
-    ])
-])
-
-if test "$ac_cv_feature_namespaces" = yes ; then
-    AC_MSG_RESULT(yes)
-else
-    AC_MSG_RESULT(no)
-fi
-
-AC_LANG_RESTORE
-
-dnl Test for C++ exception handling
-
-AC_MSG_CHECKING([for C++ exception handling])
-AC_LANG_SAVE
-AC_LANG_CPLUSPLUS
-AC_CACHE_VAL(ac_cv_feature_exceptions,
-[
-    AC_TRY_COMPILE(,
-    [
-			try
-			{
-			    throw 17;
-			}
-			catch (int i)
-			{
-			}
-			catch (...)
-			{
-			}
-		        ],
-    [
-        ac_cv_feature_exceptions=yes
-    ],
-    [
-        ac_cv_feature_exceptions=no
-    ])
-])
-
-if test "$ac_cv_feature_exceptions" = yes ; then
-    AC_MSG_RESULT(yes)
-else
-    AC_MSG_RESULT(no)
-fi
-
-AC_LANG_RESTORE
+AC_LANG_PUSH(C++)
 
 dnl Test for C++ Standard Library
 
-AC_LANG_SAVE
-AC_LANG_CPLUSPLUS
 AC_CHECK_HEADERS(cstdio iostream string)
 
-AC_LANG_RESTORE
-
 dnl Test for mingw32
-
-AC_LANG_SAVE
-AC_LANG_CPLUSPLUS
 
 # There might be a better way to do this.
 AC_MSG_CHECKING(for mingw32)
@@ -184,15 +82,11 @@ LIBS="$LIBS -lws2_32 -lwsock32"
 SKSTREAM_EXTRA_LIBS="$SKSTREAM_EXTRA_LIBS -lws2_32 -lwsock32"
 ])
 
-AC_LANG_RESTORE
-
 dnl Test for types
 
 AC_MSG_CHECKING([for socket type])
 SKSTREAM_SOCKET_TYPE=int;
 SKSTREAM_SOCKET_HEADER="#include <unistd.h>"
-AC_LANG_SAVE
-AC_LANG_CPLUSPLUS
 AC_CACHE_VAL(ac_cv_socket_type,
 [
     AC_TRY_COMPILE([#include <ws2tcpip.h>],
@@ -214,12 +108,8 @@ AC_MSG_RESULT($ac_cv_socket_type)
 AC_SUBST(SKSTREAM_SOCKET_TYPE)
 AC_SUBST(SKSTREAM_SOCKET_HEADER)
 
-AC_LANG_RESTORE
-
 AC_MSG_CHECKING([for socket address length type])
 SKSTREAM_SOCKLEN_TYPE=int;
-AC_LANG_SAVE
-AC_LANG_CPLUSPLUS
 AC_CACHE_VAL(ac_cv_socklen_type,
 [
     AC_TRY_COMPILE([#include <unistd.h>
@@ -239,11 +129,7 @@ AC_CACHE_VAL(ac_cv_socklen_type,
 AC_MSG_RESULT($ac_cv_socklen_type)
 AC_SUBST(SKSTREAM_SOCKLEN_TYPE)
 
-AC_LANG_RESTORE
-
 AC_MSG_CHECKING([for unix domain sockets])
-AC_LANG_SAVE
-AC_LANG_CPLUSPLUS
 AC_TRY_COMPILE([#include <sys/types.h>
                 #include <sys/socket.h>
                 #include <sys/un.h>],
@@ -262,8 +148,6 @@ AC_TRY_COMPILE([#include <sys/types.h>
     AC_MSG_RESULT(no)
 ])
 
-AC_LANG_RESTORE
-
 AC_SUBST(SKSTREAM_UNIX_PC)
 AC_SUBST(SKSTREAM_UNIX_PC_IN)
 
@@ -272,8 +156,6 @@ SKSTREAM_TIMEVAL_HEADER="#include <sys/time.h>"
 SKSTREAM_UNIX_HEADER_FLAG=0
 SKSTREAM_BEOS_HEADER_FLAG=0
 SKSTREAM_WINDOWS_HEADER_FLAG=0
-AC_LANG_SAVE
-AC_LANG_CPLUSPLUS
 AC_CACHE_VAL(ac_cv_timeval_header,
 [
     AC_TRY_COMPILE([#include <winsock2.h>],
@@ -318,12 +200,8 @@ AC_SUBST(SKSTREAM_UNIX_HEADER_FLAG)
 AC_SUBST(SKSTREAM_BEOS_HEADER_FLAG)
 AC_SUBST(SKSTREAM_WINDOWS_HEADER_FLAG)
 
-AC_LANG_RESTORE
-
 dnl Test for socket block error value
 
-AC_LANG_SAVE
-AC_LANG_CPLUSPLUS
 AC_MSG_CHECKING([for socket block error value])
 AC_TRY_COMPILE([#include <errno.h>],
 [
@@ -348,12 +226,8 @@ AC_TRY_COMPILE([#include <errno.h>],
 AC_MSG_RESULT($SKSTREAM_BLOCK_ERROR_VAL)
 AC_SUBST(SKSTREAM_BLOCK_ERROR_VAL)
 
-AC_LANG_RESTORE
-
 dnl Test for IPv6 socket addresses
 
-AC_LANG_SAVE
-AC_LANG_CPLUSPLUS
 AC_MSG_CHECKING([for IPv6 socket address])
 AC_TRY_COMPILE([#include <sys/types.h>
                 #include <sys/socket.h>
@@ -381,12 +255,8 @@ AC_TRY_COMPILE([#include <sys/types.h>
     ])
 ])
 
-AC_LANG_RESTORE
-
 dnl Test for in_addr_t
 
-AC_LANG_SAVE
-AC_LANG_CPLUSPLUS
 AC_MSG_CHECKING([for in_addr_t])
 AC_TRY_COMPILE([#include <sys/types.h>
                 #include <sys/socket.h>
@@ -412,12 +282,8 @@ AC_TRY_COMPILE([#include <sys/types.h>
     ])
 ])
 
-AC_LANG_RESTORE
-
 dnl Test for nsl library
 
-AC_LANG_SAVE
-AC_LANG_CPLUSPLUS
 AC_CHECK_FUNC(gethostbyname,,
 [
     AC_MSG_CHECKING([for gethostbyname in ws2tcpip.h])
@@ -444,12 +310,8 @@ AC_CHECK_FUNC(gethostbyname,,
     ])
 ])
 
-AC_LANG_RESTORE
-
 dnl Test for socket library
 
-AC_LANG_SAVE
-AC_LANG_CPLUSPLUS
 AC_CHECK_FUNC(connect,,
 [
     AC_MSG_CHECKING([for connect in ws2tcpip.h])
@@ -476,13 +338,9 @@ AC_CHECK_FUNC(connect,,
     ])
 ])
 
-AC_LANG_RESTORE
-
 dnl Test for closesocket
 
 AC_MSG_CHECKING([for closesocket])
-AC_LANG_SAVE
-AC_LANG_CPLUSPLUS
 AC_TRY_COMPILE([#include <ws2tcpip.h>],
 [
     closesocket(0);
@@ -495,12 +353,8 @@ AC_TRY_COMPILE([#include <ws2tcpip.h>],
     AC_MSG_RESULT(no)
 ])
 
-AC_LANG_RESTORE
-
 dnl Test for getaddrinfo
 
-AC_LANG_SAVE
-AC_LANG_CPLUSPLUS
 AC_CHECK_FUNC(getaddrinfo,
 [
     AC_DEFINE(HAVE_GETADDRINFO, 1, "Define to 1 if you have the `getaddrinfo' function.")
@@ -523,26 +377,19 @@ AC_CHECK_FUNC(getaddrinfo,
     ])
 ])
 
-AC_LANG_RESTORE
-
 dnl Test for C library functions
 
-AC_LANG_SAVE
-AC_LANG_CPLUSPLUS
 AC_CHECK_FUNCS([inet_aton])
-
-AC_LANG_RESTORE
 
 dnl Test for Libraries
 
-AC_LANG_SAVE
-AC_LANG_CPLUSPLUS
 found_cppunit=yes
 AM_PATH_CPPUNIT(1.6.1,, 
     AC_MSG_WARN(Couldn't Find CppUnit - Tests will not work)
     found_cppunit=no
 )
-AC_LANG_RESTORE
+
+AC_LANG_POP(C++)
 
 AM_CONDITIONAL(USE_CPPUNIT, test "$found_cppunit" = "yes")
 
@@ -554,9 +401,6 @@ AM_CONDITIONAL(HAVE_PROG_ZIP, test x$ac_cv_prog_SK_ZIP = xzip)
 AC_SUBST(SKSTREAM_LIB_SUFFIX)
 AC_SUBST(SKSTREAM_LIBS)
 AC_SUBST(SKSTREAM_EXTRA_LIBS)
-
-SKSTREAM_CFLAGS=""
-AC_SUBST(SKSTREAM_CFLAGS)
 
 AC_DEFINE(CONFIG_H_INCLUDED, 1, true if config.h was included)
 
