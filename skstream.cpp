@@ -23,7 +23,12 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.7  2002-06-12 00:27:40  rsteinke
+ * Revision 1.8  2002-06-12 01:21:47  rsteinke
+ *     -Added an optional "milliseconds" argument to
+ *      tcp_socket_stream::is_ready(), to take advantage
+ *      of the timeout in select()
+ *
+ * Revision 1.7  2002/06/12 00:27:40  rsteinke
  *     -Fixed many bugs in nonblocking tcp socket connect code
  *
  * Revision 1.6  2002/05/21 07:29:36  malcolm
@@ -526,18 +531,18 @@ void tcp_socket_stream::close()
   basic_socket_stream::close();
 }
 
-bool tcp_socket_stream::is_ready()
+bool tcp_socket_stream::is_ready(unsigned int milliseconds)
 {
   if(_connecting_socket == INVALID_SOCKET)
     return true;
 
   fd_set fds;
-  struct timeval zero_time = {0, 0};
+  struct timeval wait_time = {milliseconds / 1000, (milliseconds % 1000) * 1000};
 
   FD_ZERO(&fds);
   FD_SET(_connecting_socket, &fds);
 
-  if(select(_connecting_socket + 1, 0, &fds, 0, &zero_time) != 1
+  if(select(_connecting_socket + 1, 0, &fds, 0, &wait_time) != 1
     || !FD_ISSET(_connecting_socket, &fds))
     return false;
 

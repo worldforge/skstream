@@ -23,7 +23,12 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.17  2002-06-12 00:38:24  rsteinke
+ * Revision 1.18  2002-06-12 01:21:47  rsteinke
+ *     -Added an optional "milliseconds" argument to
+ *      tcp_socket_stream::is_ready(), to take advantage
+ *      of the timeout in select()
+ *
+ * Revision 1.17  2002/06/12 00:38:24  rsteinke
  *     -Modified getSocket() so you can poll on the writability
  *      of a tcp_socket_stream during a nonblocking connect,
  *      instead of calling is_ready() in a timeout. You still
@@ -585,11 +590,13 @@ public:
   }
 
   void open(const std::string& address, int service, bool nonblock = false);
+  void open(const std::string& address, int service, unsigned int milliseconds)
+    {open(address, service, true); if(!is_ready(milliseconds)) close();}
   virtual void close();
   virtual SOCKET_TYPE getSocket() {return (_connecting_socket == INVALID_SOCKET)
     ? basic_socket_stream::getSocket() : _connecting_socket;}
 
-  bool is_ready();
+  bool is_ready(unsigned int milliseconds = 0);
 };
 
 /////////////////////////////////////////////////////////////////////////////
