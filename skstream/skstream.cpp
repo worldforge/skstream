@@ -23,7 +23,11 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.38  2003-09-25 01:17:10  alriddoch
+ * Revision 1.39  2003-09-25 16:39:50  alriddoch
+ *  2003-09-25 Al Riddoch <alriddoch@zepler.org>
+ *     - Remove messy attempt to handle IPv6 addresses without getaddrinfo
+ *
+ * Revision 1.38  2003/09/25 01:17:10  alriddoch
  *  2003-09-25 James Turner <james@worldforge.org>
  *     - skstream/skstream.cpp: Fully qualify all libc and system calls as
  *       being explicitly in the global namespace.
@@ -622,29 +626,12 @@ bool dgram_socketbuf::setTarget(const std::string& address, unsigned port,
 
   hostent * he = ::gethostbyname(address.c_str());
   if (he != 0) {
-    // If gethostbyname succeeded, we now have an address which
-    // may be in either IPv4 or IPv6 form, depending on how
-    // good gethostbyname is.
-
+    // If gethostbyname succeeded, we now have an address
     out_peer.ss_family = he->h_addrtype;
- #ifndef HAVE_IPV6
     ::memcpy(&((sockaddr_in&)out_peer).sin_addr, he->h_addr_list[0],
-                                               he->h_length);
+                                                 he->h_length);
     out_p_size = sizeof(sockaddr_in);
     ((sockaddr_in &)out_peer).sin_port = htons(port);
- #else // HAVE_IPV6
-    if (out_peer.ss_family == AF_INET6) {
-      ::memcpy(&((sockaddr_in6&)out_peer).sin6_addr, he->h_addr_list[0],
-                                                   he->h_length);
-      out_p_size = sizeof(sockaddr_in6);
-      ((sockaddr_in6 &)out_peer).sin6_port = htons(port);
-    } else {
-      ::memcpy(&((sockaddr_in&)out_peer).sin_addr, he->h_addr_list[0],
-                                                 he->h_length);
-      out_p_size = sizeof(sockaddr_in);
-      ((sockaddr_in &)out_peer).sin_port = htons(port);
-    }
- #endif // HAVE_IPV6
   } else {
     // If gethostbyname failed then our last chance is to assume
     // the string contains an IPv4 address in dotted quad form.
@@ -1023,29 +1010,12 @@ void tcp_socket_stream::open(const std::string & address,
   SOCKLEN sa_size;
   hostent * he = ::gethostbyname(address.c_str());
   if (he != 0) {
-    // If gethostbyname succeeded, we now have an address which
-    // may be in either IPv4 or IPv6 form, depending on how
-    // good gethostbyname is.
-
+    // If gethostbyname succeeded, we now have an address
     sa.ss_family = he->h_addrtype;
- #ifndef HAVE_IPV6
     ::memcpy(&((sockaddr_in&)sa).sin_addr, he->h_addr_list[0],
-                                               he->h_length);
+                                           he->h_length);
     sa_size = sizeof(sockaddr_in);
     ((sockaddr_in &)sa).sin_port = htons(service);
- #else // HAVE_IPV6
-    if (sa.ss_family == AF_INET6) {
-      ::memcpy(&((sockaddr_in6&)sa).sin6_addr, he->h_addr_list[0],
-                                                   he->h_length);
-      sa_size = sizeof(sockaddr_in6);
-      ((sockaddr_in6 &)sa).sin6_port = htons(service);
-    } else {
-      ::memcpy(&((sockaddr_in&)sa).sin_addr, he->h_addr_list[0],
-                                                 he->h_length);
-      sa_size = sizeof(sockaddr_in);
-      ((sockaddr_in &)sa).sin_port = htons(service);
-    }
- #endif // HAVE_IPV6
   } else {
     // If gethostbyname failed then our last chance is to assume
     // the string contains an IPv4 address in dotted quad form.
