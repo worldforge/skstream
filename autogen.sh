@@ -42,6 +42,8 @@ echo autoconf...
 
 autoconf
 
-./configure $@
+if "x$NOCONFIGURE" = "x" ; then
+    ./configure $@
+fi
 
 exit 0

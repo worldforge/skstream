@@ -1,3 +1,7 @@
+ 20/28/2002 Michael Koch <konqueror@gmx.de>
+    - Added support for GNU/Hurd.
+    - Added man page for skstream-config.
+    - Added support for NOCONFIGURE in autogen.sh
  10/14/2002 Malcolm Walker <malcolm@worldforge.org>
     - Added call to Sleep(0) in win32 nonblocking connect
  07/22/2002 Ron Steinke <rsteinke@w-link.net>,

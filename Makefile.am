@@ -9,6 +9,9 @@ libskstreaminclude_HEADERS = skstream.h skserver.h sasproto.h
 m4datadir = $(datadir)/aclocal
 m4data_DATA = skstream.m4
 
+manpagedir = $(mandir)/man1
+manpage_DATA = skstream-config.1
+
 bin_SCRIPTS = skstream-config
 
 if HAVE_PROG_ZIP

@@ -23,7 +23,13 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.22  2002-07-15 21:21:17  alriddoch
+ * Revision 1.23  2002-10-28 10:57:24  mkoch
+ *  20/28/2002 Michael Koch <konqueror@gmx.de>
+ *     - Added support for GNU/Hurd.
+ *     - Added man page for skstream-config.
+ *     - Added support for NOCONFIGURE in autogen.sh
+ *
+ * Revision 1.22  2002/07/15 21:21:17  alriddoch
  *  07/15/2002 Al Riddoch <alriddoch@zepler.org>,
  *     - skstream.cpp: Handle nonblocking connect in win32
  *     - skstream.h: Include correct streambuf header on Linux.
@@ -342,6 +348,28 @@
 
   typedef int SOCKET_TYPE;
 #endif
+
+#ifdef __GNU__
+#ifndef __linux__
+  #include <sys/types.h>
+  #include <sys/socket.h>
+  #include <arpa/inet.h>
+  #include <netdb.h>
+  #include <unistd.h>
+  #include <errno.h>
+
+  #define SOCKLEN socklen_t
+
+  #define INVALID_SOCKET (SOCKET_TYPE)(~0)
+  #define SOCKET_ERROR -1
+
+  #define IPPORT_RESERVED 1024
+
+  #define closesocket(x) close(x)
+ 
+  typedef int SOCKET_TYPE;
+#endif // __linux__
+#endif // __GNU__
 
 #ifndef SOCKLEN
   #error "no support for target os"
