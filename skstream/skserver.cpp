@@ -23,7 +23,13 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.18  2004-11-23 01:22:24  alriddoch
+ * Revision 1.19  2004-12-06 01:29:41  alriddoch
+ * 2004-12-06  Al Riddoch  <alriddoch@zepler.org>
+ *
+ * 	* skstream/skstream.cpp, skstream/skserver.cpp: Fix an issue with
+ * 	  shutdown arguments being different in windows.
+ *
+ * Revision 1.18  2004/11/23 01:22:24  alriddoch
  * 2004-11-23  Al Riddoch  <alriddoch@zepler.org>
  *
  * 	* skstream/skserver.cpp, skstream/skserver.h,
@@ -224,6 +230,12 @@
 #endif // _WIN32
 
 #include <cstdio>
+
+#ifdef _WIN32
+#define SHUT_RD SD_RECEIVE
+#define SHUT_WR SD_SEND
+#define SHUT_RDWR SD_BOTH
+#endif
 
 static inline int getSystemError()
 {

@@ -1,7 +1,7 @@
 2004-12-06  Al Riddoch  <alriddoch@zepler.org>
 
-	* skstream/skstream.cpp: Fix an issue with shutdown arguments being
-	  different in windows.
+	* skstream/skstream.cpp, skstream/skserver.cpp: Fix an issue with
+	  shutdown arguments being different in windows.
 
 2004-11-30  Al Riddoch  <alriddoch@zepler.org>
 
