@@ -23,7 +23,11 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.14  2002-05-21 07:29:36  malcolm
+ * Revision 1.15  2002-05-27 10:53:09  mkoch
+ * 05/27/2002 Michael Koch <konqueror@gmx.de>
+ *     -Add support for FreeBSD.
+ *
+ * Revision 1.14  2002/05/21 07:29:36  malcolm
  * Added rsteinke's nonblocking connect patch.  Works on linux; does not break API
  * (I bumped version to 0.2.3 anyway).  May not work on win32, though I did test it
  * and socket communication does happen.
@@ -256,6 +260,28 @@
 //will handle the socket.  Currently, they all use an integer file descriptor
 //type thing, but windows is not to be trusted.  SOCKET_TYPE does *NOT* stand
 //for the various 'types' of socket connections (SOCK_STREAM, SOCK_DGRAM, etc)
+  typedef int SOCKET_TYPE;
+#endif
+
+#ifdef __FreeBSD__
+  #include <sys/types.h>
+  #include <sys/socket.h>
+  #include <sys/time.h>
+  #include <unistd.h>
+  #include <netinet/in.h>
+  #include <arpa/inet.h>
+  #include <netdb.h>
+  #include <errno.h>
+
+  #define INVALID_SOCKET (SOCKET_TYPE)(~0)
+  #define SOCKET_ERROR   -1
+
+  #define SOCKLEN socklen_t
+
+  #define IPPORT_RESERVED 1024
+
+  #define closesocket(x) close(x)
+
   typedef int SOCKET_TYPE;
 #endif
 

@@ -1,3 +1,5 @@
+ 05/27/2002 Michael Koch <konqueror@gmx.de>
+    -Add support for FreeBSD.
  05/20/2002 Ron Steinke <rsteinke@w-link.net>,
             Malcolm Walker <malcolm@worldforge.org>
     -Add code to support noblocking connect for TCP socket streams.
