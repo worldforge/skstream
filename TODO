@@ -1,3 +1,8 @@
+tcp_socket_stream is passing a reference up to the next class to be
+constructed before the stream buffer object referred to has been constructed.
+This results in a "Conditional jump or move depends on uninitialised value"
+error from valgrind.
+
 Remove deprecated calls from API (is_ready)
 
 Remove virtual function definitions from the headers, and put in .cpp file.
