@@ -23,7 +23,15 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.34  2003-07-30 23:17:55  alriddoch
+ * Revision 1.35  2003-08-23 20:19:46  alriddoch
+ *  2003-08-23 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skstream.h, skstream/skstream.cpp: Modify udp_socket_stream
+ *       constructor so that it does not create the socket immediatly.
+ *     - skstream/skstream.cpp: Re-write dgram_socketbuf::setTarget() so it
+ *       uses getaddrinfo to create the socket, and get the address in
+ *       a protocol independant way.
+ *
+ * Revision 1.34  2003/07/30 23:17:55  alriddoch
  *  2003-07-30 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skserver.cpp, skstream/skserver.h, skstream/skstream.cpp,
  *       skstream/skstream.h, skstream/skstream_unix.h: Move virtual
@@ -645,12 +653,7 @@ private:
   dgram_socketbuf dgram_sockbuf;
 
 public:
-  udp_socket_stream(FreeSockets::IP_Protocol proto=FreeSockets::proto_UDP) :
-  basic_socket_stream(dgram_sockbuf), dgram_sockbuf(INVALID_SOCKET) {
-    protocol = proto; 
-    SOCKET_TYPE _socket = ::socket(AF_INET, SOCK_DGRAM, protocol);
-    _sockbuf.setSocket(_socket);
-  }
+  udp_socket_stream();
 
   virtual ~udp_socket_stream();
 

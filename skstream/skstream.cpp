@@ -23,7 +23,15 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.30  2003-08-23 01:14:44  alriddoch
+ * Revision 1.31  2003-08-23 20:19:46  alriddoch
+ *  2003-08-23 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skstream.h, skstream/skstream.cpp: Modify udp_socket_stream
+ *       constructor so that it does not create the socket immediatly.
+ *     - skstream/skstream.cpp: Re-write dgram_socketbuf::setTarget() so it
+ *       uses getaddrinfo to create the socket, and get the address in
+ *       a protocol independant way.
+ *
+ * Revision 1.30  2003/08/23 01:14:44  alriddoch
  *  2003-08-23 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skstream.cpp: Use getaddrinfo to handle the port number.
  *
@@ -501,6 +509,11 @@ int stream_socketbuf::underflow() {
 // setTarget() - set the target socket address
 bool dgram_socketbuf::setTarget(const std::string& address, unsigned port)
 {
+  if (_socket != INVALID_SOCKET) {
+    ::closesocket(_socket);
+    _socket = INVALID_SOCKET;
+  }
+
 #ifdef HAVE_GETADDRINFO
   struct addrinfo req, *ans;
   char portName[32];
@@ -521,12 +534,23 @@ bool dgram_socketbuf::setTarget(const std::string& address, unsigned port)
     return false;
   }
 
+  SOCKET_TYPE newSock = ::socket(ans->ai_family,
+                                 ans->ai_socktype,
+                                 ans->ai_protocol);
+  if(newSock == INVALID_SOCKET) {
+    ::freeaddrinfo(ans);
+    return false;
+  }
+
+  _socket = newSock;
+
   memcpy(&out_peer, ans->ai_addr, ans->ai_addrlen);
   out_p_size = ans->ai_addrlen;
   ::freeaddrinfo(ans);
 
   return true;
 #else // HAVE_GETADDRINFO
+
   hostent * he = ::gethostbyname(address.c_str());
   if (he != 0) {
     // If gethostbyname succeeded, we now have an address which
@@ -577,6 +601,13 @@ bool dgram_socketbuf::setTarget(const std::string& address, unsigned port)
     out_peer_in.sin_port = htons(port);
     out_p_size = sizeof(sockaddr_in);
   }
+
+  SOCKET_TYPE newSock = ::socket(out_peer.ss_family, SOCK_DGRAM, protocol);
+  if(newSock == INVALID_SOCKET) {
+    return false;
+  }
+  _socket = newSock;
+
   return true;
 #endif // HAVE_GETADDRINFO
 }
@@ -1058,6 +1089,16 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
     _sockbuf.setSocket(_socket);
 
   return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// class udp_socket_stream implementation
+/////////////////////////////////////////////////////////////////////////////
+
+udp_socket_stream::udp_socket_stream() : basic_socket_stream(dgram_sockbuf),
+                                         dgram_sockbuf(INVALID_SOCKET)
+{
+  protocol = FreeSockets::proto_UDP; 
 }
 
 udp_socket_stream::~udp_socket_stream()

@@ -1,4 +1,10 @@
  2003-08-23 Al Riddoch <alriddoch@zepler.org>
+    - skstream/skstream.h, skstream/skstream.cpp: Modify udp_socket_stream
+      constructor so that it does not create the socket immediatly.
+    - skstream/skstream.cpp: Re-write dgram_socketbuf::setTarget() so it
+      uses getaddrinfo to create the socket, and get the address in
+      a protocol independant way.
+ 2003-08-23 Al Riddoch <alriddoch@zepler.org>
     - skstream/skserver.h, skstream/skserver_unix.h: Add default constructor
       to tcp_socket_server, and make single argument constructors explicit.
     - skstream/skserver.cpp: Use AI_PASSIVE with getaddrinfo() to make listen
