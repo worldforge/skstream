@@ -1,3 +1,5 @@
+ 2003-08-09 Al Riddoch <alriddoch@zepler.org>
+    - Fix conditional building of tests.
  2003-08-08 Al Riddoch <alriddoch@zepler.org>
     - skstream/skstream.cpp, skstream/skstream_unix.h: Include skstream
       header with its fully qualified name for compatability, and move
