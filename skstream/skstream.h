@@ -23,7 +23,10 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.15  2002-05-27 10:53:09  mkoch
+ * Revision 1.16  2002-06-12 00:27:40  rsteinke
+ *     -Fixed many bugs in nonblocking tcp socket connect code
+ *
+ * Revision 1.15  2002/05/27 10:53:09  mkoch
  * 05/27/2002 Michael Koch <konqueror@gmx.de>
  *     -Add support for FreeBSD.
  *
@@ -555,19 +558,19 @@ private:
   SOCKET_TYPE _connecting_socket;
 
 public:
-  tcp_socket_stream() : basic_socket_stream(), _connecting_socket(0) {
+  tcp_socket_stream() : basic_socket_stream(), _connecting_socket(INVALID_SOCKET) {
     protocol = FreeSockets::proto_TCP;
   }
 
   tcp_socket_stream(const std::string& address, int service, bool nonblock = false) : 
-      basic_socket_stream() {
+      basic_socket_stream(), _connecting_socket(INVALID_SOCKET) {
     protocol = FreeSockets::proto_TCP;
     open(address, service, nonblock);
   }
 
   virtual ~tcp_socket_stream() { 
       shutdown(); 
-      if(_connecting_socket)
+      if(_connecting_socket != INVALID_SOCKET)
 #ifndef _WIN32
         ::close(_connecting_socket);
 #else

@@ -23,7 +23,10 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.6  2002-05-21 07:29:36  malcolm
+ * Revision 1.7  2002-06-12 00:27:40  rsteinke
+ *     -Fixed many bugs in nonblocking tcp socket connect code
+ *
+ * Revision 1.6  2002/05/21 07:29:36  malcolm
  * Added rsteinke's nonblocking connect patch.  Works on linux; does not break API
  * (I bumped version to 0.2.3 anyway).  May not work on win32, though I did test it
  * and socket communication does happen.
@@ -405,7 +408,7 @@ void basic_socket_stream::close() {
 // class tcp_socket_stream implementation
 /////////////////////////////////////////////////////////////////////////////
 void tcp_socket_stream::open(const std::string& address, int service, bool nonblock) {
-  if(is_open() || _connecting_socket) close();
+  if(is_open() || _connecting_socket != INVALID_SOCKET) close();
 
   // Create socket
   SOCKET_TYPE _socket = ::socket(AF_INET, SOCK_STREAM, protocol);
@@ -511,13 +514,13 @@ void tcp_socket_stream::open(const std::string& address, int service, bool nonbl
 
 void tcp_socket_stream::close()
 {
-  if(_connecting_socket) {
+  if(_connecting_socket != INVALID_SOCKET) {
 #ifndef _WIN32
     ::close(_connecting_socket);
 #else
 		::closesocket(_connecting_socket);
 #endif
-    _connecting_socket = 0;
+    _connecting_socket = INVALID_SOCKET;
   }
 
   basic_socket_stream::close();
@@ -525,7 +528,7 @@ void tcp_socket_stream::close()
 
 bool tcp_socket_stream::is_ready()
 {
-  if(!_connecting_socket)
+  if(_connecting_socket == INVALID_SOCKET)
     return true;
 
   fd_set fds;
@@ -542,7 +545,7 @@ bool tcp_socket_stream::is_ready()
 
   // We're no longer connecting, put the socket in a tmp variable
   SOCKET_TYPE _socket = _connecting_socket;
-  _connecting_socket = 0;
+  _connecting_socket = INVALID_SOCKET;
 
   int errnum;
   socklen_t errsize = sizeof(errnum);
@@ -586,7 +589,9 @@ bool tcp_socket_stream::is_ready()
 #endif
 
   // set socket for underlying socketbuf
-    _sockbuf.setSocket(_connecting_socket); 
+    _sockbuf.setSocket(_socket);
+
+  return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////
