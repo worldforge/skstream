@@ -23,7 +23,11 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.3  2002-04-08 20:02:00  xmp
+ * Revision 1.4  2002-06-22 15:16:14  alriddoch
+ *  06/22/2002 Al Riddoch <alriddoch@zepler.org>,
+ *     -Removed "using namespace std" from header.
+ *
+ * Revision 1.3  2002/04/08 20:02:00  xmp
  * Just a few fixes to MSVC support, removing a few unnessesary std::'s and shifting a default argument to a header.
  *
  * Revision 1.2  2002/02/24 03:15:41  grimicus
@@ -73,8 +77,6 @@
 
 #include "skstream.h" // FreeSockets classes are needed
 #include "freethrd.h" // FreeThreads is needed for multithreading support
-
-using namespace std;
 
 class basic_protocol : public basic_thread {
 private:
