@@ -1,3 +1,8 @@
+ 07/16/2002 Dan Tomalesky <grim@xynesis.com>
+    - skstream.cpp: added a small fix to a bug with is_ready.  wasn't
+      compiling on linux and seems code was wrong in the select because it was
+      doing |= to the select() instead of != (i.e., if it doesn't return 1,
+      there is no ready socket or an error)
  07/15/2002 Al Riddoch <alriddoch@zepler.org>,
             Malcolm Walker <malcolm@worldforge.org>
     - skstream.cpp: Handle nonblocking connect in win32

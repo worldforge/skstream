@@ -23,7 +23,14 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.11  2002-07-16 01:12:19  malcolm
+ * Revision 1.12  2002-07-16 18:14:25  grimicus
+ * 2002-07-16 Dan Tomalesky <grim@xynesis.com>
+ *     * skstream.cpp: added a small fix to a bug with is_ready.  wasn't
+ *       compiling on linux and seems code was wrong in the select because it was
+ *       doing |= to the select() instead of != (i.e., if it doesn't return 1,
+ *       there is no ready socket or an error)
+ *
+ * Revision 1.11  2002/07/16 01:12:19  malcolm
  * Fixed call for win32 cases with is_ready() - it was failing before with
  * WSAEFAULT - bad pointer.  Works now.  Tested with uclient; all is good.
  *
@@ -561,7 +568,7 @@ bool tcp_socket_stream::is_ready(unsigned int milliseconds)
   FD_ZERO(&fds);
   FD_SET(_connecting_socket, &fds);
 
-  if (select(_connecting_socket + 1, 0, &fds, 0, &wait_time) |= 1 
+  if (select(_connecting_socket + 1, 0, &fds, 0, &wait_time) != 1
       || !FD_ISSET(_connecting_socket, &fds)) {
     return false;
   }
