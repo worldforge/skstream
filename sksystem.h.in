@@ -39,6 +39,8 @@ typedef @SKSTREAM_SOCKET_TYPE@ SOCKET_TYPE;
   #include <unistd.h>
   #include <netdb.h>
   #include <errno.h>
+
+  #define closesocket(x) close(x)
 #endif
 #if @SKSTREAM_BEOS_HEADERS@
   #include <net/socket.h>
@@ -53,5 +55,9 @@ typedef @SKSTREAM_SOCKET_TYPE@ SOCKET_TYPE;
 #ifndef SOCKET_ERROR
 #define SOCKET_ERROR   -1
 #endif // SOCKET_ERROR
+
+#ifndef INADDR_NONE
+#define INADDR_NONE   0xFFFFFFFF
+#endif // INADDR_NONE
 
 #endif // RGJ_FREE_SOCKET_SYS_H_
