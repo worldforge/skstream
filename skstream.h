@@ -23,7 +23,10 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.11  2002-04-08 20:02:00  xmp
+ * Revision 1.12  2002-04-14 22:50:46  xmp
+ * one liner change to define sorting out cygwin compiles
+ *
+ * Revision 1.11  2002/04/08 20:02:00  xmp
  * Just a few fixes to MSVC support, removing a few unnessesary std::'s and shifting a default argument to a header.
  *
  * Revision 1.10  2002/04/08 19:47:12  malcolm
@@ -150,7 +153,7 @@
 #include <string>
 #include <stdexcept>
 
-#ifdef _WIN32
+#if defined( _WIN32 ) || defined( __CYGWIN32__ )
   #ifdef _MSC_VER
     #include <streambuf>
   #else
