@@ -23,7 +23,15 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.3  2002-02-26 20:33:55  grimicus
+ * Revision 1.4  2002-03-01 14:00:09  grimicus
+ * 03/01/2002 Dan Tomalesky <grim@xynesis.com>
+ *     * Changed can_accept's timeval to be all 0, so that it is just a quick
+ *       poll and returns immediately (Thanks to alriddoch for the suggestion)
+ *
+ *     * Modified the ugly switch block I was using to print out error message
+ *       names to use strerror (Thanks to James for that one)
+ *
+ * Revision 1.3  2002/02/26 20:33:55  grimicus
  * 02/26/2002 Dan Tomalesky <grim@xynesis.com>
  *     * Added test cases for skserver and friends
  *
@@ -173,7 +181,7 @@ bool tcp_socket_server::can_accept() {
   struct timeval tv;
 
   tv.tv_sec=0;
-  tv.tv_usec=100000;
+  tv.tv_usec=0;
 
   FD_ZERO(&sock_fds);
   FD_SET(_socket, &sock_fds);

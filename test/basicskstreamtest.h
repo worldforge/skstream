@@ -22,7 +22,15 @@
 //  Created: 2002-02-19 by Dan Tomalesky
 //
 // $Log$
-// Revision 1.3  2002-02-26 20:33:55  grimicus
+// Revision 1.4  2002-03-01 14:00:09  grimicus
+// 03/01/2002 Dan Tomalesky <grim@xynesis.com>
+//     * Changed can_accept's timeval to be all 0, so that it is just a quick
+//       poll and returns immediately (Thanks to alriddoch for the suggestion)
+//
+//     * Modified the ugly switch block I was using to print out error message
+//       names to use strerror (Thanks to James for that one)
+//
+// Revision 1.3  2002/02/26 20:33:55  grimicus
 // 02/26/2002 Dan Tomalesky <grim@xynesis.com>
 //     * Added test cases for skserver and friends
 //
@@ -209,21 +217,8 @@ class basicskstreamtest : public CppUnit::TestCase
             if(!skstream->setBroadcast(true))
             {
                 cout << endl;
-                switch(skstream->getLastError()) 
-                {
-                    case EBADF:
-                       cout << "Error with broadcast: EBADF" << endl;
-                       break;
-                    case ENOTSOCK:
-                       cout << "Error with broadcast: ENOTSOCK" << endl;
-                       break;
-                    case ENOPROTOOPT:
-                       cout << "Error with broadcast: ENOPROTOOPT" << endl;
-                       break;
-                    case EFAULT:
-                       cout << "Error with broadcast: EFAULT" << endl;
-                       break;
-                }
+                cout << "Error with broadcast: " << 
+                    strerror(skstream->getLastError()) << endl;
 
                 CPPUNIT_ASSERT(false);
             }
@@ -249,7 +244,7 @@ class basicskstreamtest : public CppUnit::TestCase
             if(skstream->is_open())
             {
                 cout << endl << "Last Error: " << 
-                     skstream->getLastError() << endl;
+                     strerror(skstream->getLastError()) << endl;
             }
             */
 

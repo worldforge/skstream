@@ -46,6 +46,11 @@ Future Work:
   - A multi-threaded TCP server class.
 
 Change Log:
+ 03/01/2002 Dan Tomalesky <grim@xynesis.com>
+    -changed can_accept's timeval to be all 0, so that it is just a quick
+     poll and returns immediately (Thanks to alriddoch for the suggestion)
+    -modified the ugly switch block I was using to print out error message
+     names to use strerror (Thanks to James for that one)
  02/26/2002 Dan Tomalesky <grim@xynesis.com>
     -added test cases for skserver and friends
     -adding .cvsignore files so that it doesn't mess with non-cvs files anymore
