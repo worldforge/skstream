@@ -6,12 +6,12 @@ dnl Initialise automake
 
 SKSTREAM_MAJOR=0
 SKSTREAM_MINOR=2
-SKSTREAM_MICRO=3
+SKSTREAM_MICRO=4
 SKSTREAM_VERSION=$SKSTREAM_MAJOR.$SKSTREAM_MINOR.$SKSTREAM_MICRO
 
 AC_SUBST(SKSTREAM_VERSION)
 
-SKSTREAM_CURRENT=2
+SKSTREAM_CURRENT=3
 SKSTREAM_REVISION=0
 SKSTREAM_AGE=0
 SKSTREAM_VERSION_INFO=$SKSTREAM_CURRENT:$SKSTREAM_REVISION:$SKSTREAM_AGE
@@ -31,6 +31,19 @@ AM_PROG_LIBTOOL
 dnl Test for C++ compiler
 
 AC_PROG_CXX
+
+AC_ARG_ENABLE(debug,
+    [  --enable-debug          enable debug information [default=no]],
+    [
+        if test "$enableval" = "yes"; then
+            CXXFLAGS="$CXXFLAGS -Wall -DDEBUG"
+        else
+            CXXFLAGS="$CXXFLAGS -Wall -DNDEBUG"
+        fi
+    ],[
+        CXXFLAGS="$CXXFLAGS -Wall -DNDEBUG"
+    ]
+)
 
 dnl Test for socklen_t and define it to int if it's not there.
 dnl socklen_t should be used with functions like getpeername and recvfrom because
