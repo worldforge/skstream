@@ -20,7 +20,7 @@ mkinstalldirs
 skstream-0.3.pc
 skstream-unix-0.3.pc
 skstream.spec
-skstream-*.*.*.tar.gz
+skstream-*.tar.gz
 stamp-h
 stamp-h[0-9]*
 stamp-h.in
