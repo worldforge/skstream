@@ -1,3 +1,6 @@
+ 2003-03-16 Al Riddoch <alriddoch@zepler.org>,
+    - skstream.cpp: Fix problem with virtual method being called
+      after destructor.
  2003-03-14 Al Riddoch <alriddoch@zepler.org>,
     - skstream.h, skstream.cpp: Re-work sockbuf class so it is
       not specific to any one type of socket. Remove inet

@@ -23,7 +23,12 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.18  2003-03-14 19:33:11  alriddoch
+ * Revision 1.19  2003-03-16 12:27:40  alriddoch
+ *  2003-03-16 Al Riddoch <alriddoch@zepler.org>,
+ *     - skstream.cpp: Fix problem with virtual method being called
+ *       after destructor.
+ *
+ * Revision 1.18  2003/03/14 19:33:11  alriddoch
  *  2003-03-14 Al Riddoch <alriddoch@zepler.org>,
  *     - skstream.h, skstream.cpp: Re-work sockbuf class so it is
  *       not specific to any one type of socket. Remove inet
@@ -240,7 +245,6 @@ socketbuf::socketbuf(SOCKET_TYPE sock, char* buf, int length)
 
 // Destructor
 socketbuf::~socketbuf(){
-  sync();
   delete [] _buffer;
   _buffer = NULL;
 }
@@ -253,7 +257,10 @@ stream_socketbuf::stream_socketbuf(SOCKET_TYPE sock,
 stream_socketbuf::stream_socketbuf(SOCKET_TYPE sock, char* buf, int length)
     : socketbuf(sock, buf, length) { }
 
-stream_socketbuf::~stream_socketbuf() { }
+stream_socketbuf::~stream_socketbuf()
+{
+  sync();
+}
 
 dgram_socketbuf::dgram_socketbuf(SOCKET_TYPE sock,
                                  unsigned insize,
@@ -263,7 +270,10 @@ dgram_socketbuf::dgram_socketbuf(SOCKET_TYPE sock,
 dgram_socketbuf::dgram_socketbuf(SOCKET_TYPE sock, char* buf, int length)
     : socketbuf(sock, buf, length) { }
 
-dgram_socketbuf::~dgram_socketbuf() { }
+dgram_socketbuf::~dgram_socketbuf()
+{
+  sync();
+}
 
 // FIXME - AJR 20030314
 // This is inapropriate here. It is meaningless in the context of
