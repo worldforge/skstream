@@ -1,3 +1,6 @@
+ 06/26/2002 Michael Koch <konqueror@gmx.de>
+    -Install headers into $(includedir)/skstream
+    -Simplified installation of doc files
  06/22/2002 Al Riddoch <alriddoch@zepler.org>,
     -Removed "using namespace std" from header.
  06/11/2002 Ron Steinke <rsteinke@w-link.net>,

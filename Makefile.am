@@ -3,7 +3,7 @@ libskstream_la_LDFLAGS = -version-info @SKSTREAM_VERSION_INFO@
 
 libskstream_la_SOURCES = skstream.cpp skserver.cpp
 
-libskstreamincludedir = $(includedir)
+libskstreamincludedir = $(includedir)/skstream
 libskstreaminclude_HEADERS = skstream.h skserver.h sasproto.h
 
 m4datadir = $(datadir)/aclocal
@@ -29,9 +29,5 @@ VisualC.zip:
 
 SUBDIRS = . test
 
-install-data-local:
-	mkdir -p $(DESTDIR)$(datadir)/doc/skstream-$(VERSION)
-	$(INSTALL_DATA) README $(DESTDIR)$(datadir)/doc/skstream-$(VERSION)
-	$(INSTALL_DATA) COPYING $(DESTDIR)$(datadir)/doc/skstream-$(VERSION)
-	$(INSTALL_DATA) AUTHORS $(DESTDIR)$(datadir)/doc/skstream-$(VERSION)
-	$(INSTALL_DATA) NEWS $(DESTDIR)$(datadir)/doc/skstream-$(VERSION)
+docdatadir = $(datadir)/doc/skstream-$(VERSION)
+docdata_DATA = README COPYING AUTHORS NEWS
