@@ -23,7 +23,12 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.9  2003-08-08 23:56:26  alriddoch
+ * Revision 1.10  2003-08-23 12:14:39  alriddoch
+ *  2003-08-23 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skserver.cpp: Use getaddrinfo to create server sockets
+ *       in a protocol independant way.
+ *
+ * Revision 1.9  2003/08/08 23:56:26  alriddoch
  *  2003-08-08 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skstream.cpp, skstream/skstream_unix.h: Include skstream
  *       header with its fully qualified name for compatability, and move
@@ -275,9 +280,59 @@ SOCKET_TYPE tcp_socket_server::accept() {
 }
 
 // start tcp server and put it in listen state
-void tcp_socket_server::open(int service) {
-  if(is_open()) close();
+void tcp_socket_server::open(int service)
+{
+  if (is_open()) {
+    close();
+  }
 
+#ifdef HAVE_GETADDRINFO
+  struct addrinfo req, *ans;
+  char serviceName[32];
+
+  sprintf(serviceName, "%d", service);
+
+  req.ai_flags = 0;
+  req.ai_family = PF_UNSPEC;
+  req.ai_socktype = SOCK_STREAM;
+  req.ai_protocol = 0;
+  req.ai_addrlen = 0;
+  req.ai_addr = 0;
+  req.ai_canonname = 0;
+  req.ai_next = 0;
+
+  int ret;
+  if ((ret = ::getaddrinfo(0, serviceName, &req, &ans)) != 0) {
+    std::cout << "skstream: " << gai_strerror(ret)
+              << std::endl << std::flush;
+    setLastError();
+    return;
+  }
+
+  _socket = ::socket(ans->ai_family, ans->ai_socktype, ans->ai_protocol);
+  if (_socket == INVALID_SOCKET) {
+    setLastError();
+    return;
+  }
+
+  sockaddr_storage iaddr;
+  memcpy(&iaddr, ans->ai_addr, ans->ai_addrlen);
+  SOCKLEN iaddrlen = ans->ai_addrlen;
+  ::freeaddrinfo(ans);
+
+  if (::bind(_socket, (sockaddr*)&iaddr, iaddrlen) == SOCKET_ERROR) {
+    setLastError();
+    close();
+    return;
+  }
+
+  // Listen
+  if(::listen(_socket, 5) == SOCKET_ERROR) { // max backlog
+    setLastError();
+    close();
+    return;
+  }
+#else
   // create socket
   _socket = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   if(_socket == INVALID_SOCKET) {
@@ -302,6 +357,7 @@ void tcp_socket_server::open(int service) {
     close();
     return;
   }
+#endif // HAVE_GETADDRINFO
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -318,8 +374,51 @@ SOCKET_TYPE udp_socket_server::accept()
 }
 
 // create a UDP socket binded to a given port
-void udp_socket_server::open(int service) {
-  if(is_open()) close();
+void udp_socket_server::open(int service)
+{
+  if(is_open()) {
+    close();
+  }
+#ifdef HAVE_GETADDRINFO
+  struct addrinfo req, *ans;
+  char serviceName[32];
+
+  sprintf(serviceName, "%d", service);
+
+  req.ai_flags = 0;
+  req.ai_family = PF_UNSPEC;
+  req.ai_socktype = SOCK_DGRAM;
+  req.ai_protocol = 0;
+  req.ai_addrlen = 0;
+  req.ai_addr = 0;
+  req.ai_canonname = 0;
+  req.ai_next = 0;
+
+  int ret;
+  if ((ret = ::getaddrinfo(0, serviceName, &req, &ans)) != 0) {
+    std::cout << "skstream: " << gai_strerror(ret)
+              << std::endl << std::flush;
+    setLastError();
+    return;
+  }
+
+  _socket = ::socket(ans->ai_family, ans->ai_socktype, ans->ai_protocol);
+  if (_socket == INVALID_SOCKET) {
+    setLastError();
+    return;
+  }
+
+  sockaddr_storage iaddr;
+  memcpy(&iaddr, ans->ai_addr, ans->ai_addrlen);
+  SOCKLEN iaddrlen = ans->ai_addrlen;
+  ::freeaddrinfo(ans);
+
+  if (::bind(_socket, (sockaddr*)&iaddr, iaddrlen) == SOCKET_ERROR) {
+    setLastError();
+    close();
+    return;
+  }
+#else // HAVE_GETADDRINFO
   // Create socket
   _socket = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
   if(_socket == INVALID_SOCKET) {
@@ -338,6 +437,7 @@ void udp_socket_server::open(int service) {
     close();
     return;
   }
+#endif // HAVE_GETADDRINFO
 }
 
 #ifdef SKSTREAM_UNIX_SOCKETS

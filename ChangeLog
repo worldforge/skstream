@@ -1,4 +1,7 @@
  2003-08-23 Al Riddoch <alriddoch@zepler.org>
+    - skstream/skserver.cpp: Use getaddrinfo to create server sockets
+      in a protocol independant way.
+ 2003-08-23 Al Riddoch <alriddoch@zepler.org>
     - skstream/skstream.cpp: Use getaddrinfo to handle the port number.
  2003-08-23 Al Riddoch <alriddoch@zepler.org>
     - skstream/skstream.cpp: Formating changes for clarity.
