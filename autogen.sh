@@ -43,6 +43,7 @@ echo autoconf...
 autoconf
 
 if test "x$NOCONFIGURE" = "x" ; then
+    echo Running: configure $@
     ./configure $@
 fi
 
