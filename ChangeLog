@@ -1,11 +1,13 @@
- 2003-09-27 Al Riddoch <alriddoch@zepler.org>
+ 2003-09-29 Al Riddoch <alriddoch@zepler.org>
+    - Add arch dependent header to rpm spec.
+ 2003-09-29 Al Riddoch <alriddoch@zepler.org>
     - Add libws2_32 which is required for getaddrinfo and friends under
       windows.
     - ping/ping.cpp: Move signal.h so it is available in windows build.
     - test/skstreamtestrunner.cpp: Make the test always return success so
       that distcheck rule works. The test only succeeds if its run as root
       and the echo service is running, both of which are undesirable.
- 2003-09-27 Al Riddoch <alriddoch@zepler.org>
+ 2003-09-28 Al Riddoch <alriddoch@zepler.org>
     - skstream/skstream.h: Add accessors so address sizes in buffer class
       are accessible from outside stream class.
     - ping/ping.cpp: Re-work code for handling conversion of addresses
