@@ -22,7 +22,10 @@
 //  Created: 2002-02-19 by Dan Tomalesky
 //
 // $Log$
-// Revision 1.4  2002-03-01 14:00:09  grimicus
+// Revision 1.5  2002-06-12 20:48:40  xmp
+// The usual std namespace stuff.  IE this was made on gcc-2.95, and gcc-3.1 is stricter.
+//
+// Revision 1.4  2002/03/01 14:00:09  grimicus
 // 03/01/2002 Dan Tomalesky <grim@xynesis.com>
 //     * Changed can_accept's timeval to be all 0, so that it is just a quick
 //       poll and returns immediately (Thanks to alriddoch for the suggestion)
@@ -114,6 +117,7 @@
 
 #include <cppunit/TestCase.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <iostream>
 
 class basicskstreamtest : public CppUnit::TestCase
 {
@@ -216,9 +220,9 @@ class basicskstreamtest : public CppUnit::TestCase
         {
             if(!skstream->setBroadcast(true))
             {
-                cout << endl;
-                cout << "Error with broadcast: " << 
-                    strerror(skstream->getLastError()) << endl;
+                std::cout << std::endl;
+                std::cout << "Error with broadcast: " << 
+                    strerror(skstream->getLastError()) << std::endl;
 
                 CPPUNIT_ASSERT(false);
             }
@@ -243,8 +247,8 @@ class basicskstreamtest : public CppUnit::TestCase
             /*
             if(skstream->is_open())
             {
-                cout << endl << "Last Error: " << 
-                     strerror(skstream->getLastError()) << endl;
+                std::cout << endl << "Last Error: " << 
+                     strerror(skstream->getLastError()) << std::endl;
             }
             */
 
