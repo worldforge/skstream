@@ -1,3 +1,5 @@
+ 2003-04-16 Al Riddoch <alriddoch@zepler.org>,
+    - Move source into subdir for portability
  2003-04-09 Al Riddoch <alriddoch@zepler.org>,
     - Fix problem caused by ending variable name with _HEADERS.
  2003-03-18 Al Riddoch <alriddoch@zepler.org>,

@@ -1,9 +1,8 @@
 .deps
-.libs
 Makefile
 Makefile.in
 aclocal.m4
-autom4te.cache
+autom4te*.cache
 config.cache
 config.guess
 config.h
@@ -13,15 +12,11 @@ config.status
 config.sub
 configure
 install-sh
-libskstream.la
 libtool
 ltmain.sh
 missing
 mkinstalldirs
-skpoll.lo
-skserver.lo
-skstream-config
-skstream.lo
+skstream-0.3.pc
 skstream.spec
 stamp-h
 stamp-h[0-9]*

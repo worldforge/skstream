@@ -1,6 +1,6 @@
 dnl Initialise autoconf
 
-AC_INIT(skstream.cpp)
+AC_INIT(skstream/skstream.cpp)
 
 dnl Initialise automake
 
@@ -355,8 +355,9 @@ dnl Generate files
 
 AC_OUTPUT([
 	Makefile
+	skstream/Makefile
 	test/Makefile
 	skstream.spec
 	skstream-0.3.pc
-	sksystem.h
+	skstream/sksystem.h
 ])
