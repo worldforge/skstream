@@ -1,3 +1,7 @@
+ 2003-04-18 Al Riddoch <alriddoch@zepler.org>,
+    - Add Skstream.pbproj to distribution
+    - Reset interface version due to lib name change, increment version,
+      add news item and release 0.2.4
  2003-04-17 James Turner <james@worldforge.org>
     - Add ProjectBuilder files for the stable branch. Incldues a
       target to build the 'ping' test utility, though it doesn't
@@ -34,7 +38,7 @@
  07/21/2002 Al Riddoch <alriddoch@zepler.org>,
     - configure.in: Added --enable-debug option for debug build,
       increment version and interface version due to changes, add
-      news item, and release.
+      news item, and release 0.2.4.
  07/16/2002 Dan Tomalesky <grim@xynesis.com>
     - skstream.cpp: added a small fix to a bug with is_ready.  wasn't
       compiling on linux and seems code was wrong in the select because it was

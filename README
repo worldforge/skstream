@@ -20,7 +20,7 @@
 
 (This file was created from the original CHANGELOG's header.)
 
-Latest Release Version: 0.2.3
+Latest Release Version: 0.2.5
 
 REMAINING BUGS:
   - Setting the size of the underlying buffer is not yet working.
