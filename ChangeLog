@@ -1,3 +1,5 @@
+ 2002-11-04 Al Riddoch <alriddoch@zepler.org>,
+    - Add doxygen docs.
  20/28/2002 Michael Koch <konqueror@gmx.de>
     - Added support for GNU/Hurd.
     - Added man page for skstream-config.

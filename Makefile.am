@@ -34,3 +34,8 @@ SUBDIRS = . test
 
 docdatadir = $(datadir)/doc/skstream-$(VERSION)
 docdata_DATA = README COPYING AUTHORS NEWS
+
+docs:
+	@echo "running doxygen..."
+	@doxygen Doxyfile
+	@echo "documentation is in doc/."

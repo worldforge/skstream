@@ -18,12 +18,16 @@
 
 **************************************************************************/
 
-/**
+/*
  * This software package has been modified by the Worldforge Project 
  * in the following ways:
  *
  * $Log$
- * Revision 1.15  2002-10-14 05:05:45  malcolm
+ * Revision 1.16  2002-11-04 22:49:15  alriddoch
+ *  2002-11-04 Al Riddoch <alriddoch@zepler.org>,
+ *     - Add doxygen docs.
+ *
+ * Revision 1.15  2002/10/14 05:05:45  malcolm
  * Added a Sleep(0) call during check for getsockopt() that appears to be needed
  * to circumvent a bug during nonblocking connect.  See MS KB Q165989.
  *

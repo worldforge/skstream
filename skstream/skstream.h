@@ -23,7 +23,11 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.23  2002-10-28 10:57:24  mkoch
+ * Revision 1.24  2002-11-04 22:49:15  alriddoch
+ *  2002-11-04 Al Riddoch <alriddoch@zepler.org>,
+ *     - Add doxygen docs.
+ *
+ * Revision 1.23  2002/10/28 10:57:24  mkoch
  *  20/28/2002 Michael Koch <konqueror@gmx.de>
  *     - Added support for GNU/Hurd.
  *     - Added man page for skstream-config.
@@ -394,12 +398,19 @@ private:
   bool Timeout;
 
 public:
-  // Contructors
+  /** Make a new socket buffer from an existing socket, with optional
+   *  buffer sizes.
+   */
   socketbuf(SOCKET_TYPE sock, unsigned insize=0x8000, unsigned outsize=0x8000);
+  /** Make a new socket buffer from an existing socket, with an existing
+   *  buffer.
+   */
   socketbuf(SOCKET_TYPE sock, char* buf, int length);
 
+  /// Destroy the socket buffer.
   virtual ~socketbuf();
 
+  ///
   bool setOutpeer(const std::string& address, unsigned port);
 
   bool setOutpeer(const sockaddr_in& peer) { 
@@ -415,6 +426,7 @@ public:
     return in_peer; 
   }
 
+  /// Set the existing socket that this buffer should use.
   void setSocket(SOCKET_TYPE sock) {
     _socket = sock;
     int size = sizeof(sockaddr);
@@ -422,23 +434,32 @@ public:
     in_peer = out_peer;
   }
 
+  /// Get the socket that this buffer uses.
   SOCKET_TYPE getSocket() const {
       return _socket; 
   }
 
+  /** Set up a timeout value after which an error flag is set if the socket
+   *  is not ready for a read or write. THING
+   *  ejrogejrgo boei rgseogpeorigseporigeposrigseporigjseorg erg esrg oiserg epr g
+   */
   void setTimeout(unsigned sec, unsigned usec=0) {
     _timeout.tv_sec  = sec;
     _timeout.tv_usec = usec;
   }
 
+  /// Return the flag indicating whether a timeout has occured.
   bool timeout() const {
     return Timeout;
   }
 
 protected:
+  /// Handle writing data from the buffer to the socket.
   virtual int overflow(int nCh=EOF);
+  /// Handle reading data from the socket to the buffer.
   virtual int underflow();
 
+  /// Flush the output buffer.
   virtual int sync() {
     if(overflow() == EOF) // traits::eof()
       return EOF;	// ios will set the fail bit // traits::eof()
@@ -451,6 +472,9 @@ protected:
     }
   }
 
+  /** Set the buffer area this stream buffer uses. Only works if not already
+   *  set.
+   */
   virtual std::streambuf* setbuf(char* buf, long len) {
     if((buf != NULL) && (len > 0)) {
       _buffer = buf;
@@ -518,11 +542,14 @@ protected:
   void setLastError() const;
 
 public:
-  // Constructors
+  /// Make a socket stream.
   basic_socket_stream();
+  /// Make a socket stream with a buffer with specified sizes.
   basic_socket_stream(unsigned insize,unsigned outsize,
                       int proto=FreeSockets::proto_IP);
+  /// Make a socket stream using an existing socket.
   basic_socket_stream(SOCKET_TYPE sock);
+  /// Make a socket stream with a buffer with specified sizes using an existing socket.
   basic_socket_stream(SOCKET_TYPE sock,
 		  unsigned insize,unsigned outsize);
 
