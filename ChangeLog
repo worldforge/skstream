@@ -1,4 +1,8 @@
  2003-09-23 Al Riddoch <alriddoch@zepler.org>
+    - skstream/skserver.cpp: Modify bind code that uses getaddrinfo
+      so it tries each of the results in turn until one works, instead
+      of bailing out on the first failure.
+ 2003-09-23 Al Riddoch <alriddoch@zepler.org>
     - ping/ping.cpp: Add include required since headers were simplified.
  2003-09-23 Al Riddoch <alriddoch@zepler.org>
     - skstream/skserver.h: Make service an int in setService() as it always

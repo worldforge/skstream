@@ -23,7 +23,13 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.13  2003-09-23 21:51:44  alriddoch
+ * Revision 1.14  2003-09-23 22:45:32  alriddoch
+ *  2003-09-23 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skserver.cpp: Modify bind code that uses getaddrinfo
+ *       so it tries each of the results in turn until one works, instead
+ *       of bailing out on the first failure.
+ *
+ * Revision 1.13  2003/09/23 21:51:44  alriddoch
  *  2003-09-23 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skserver.h: Make service an int in setService() as it always
  *       is elsewhere.
@@ -313,24 +319,30 @@ bool ip_socket_server::bindToIpService(int service, int type, int protocol)
     return false;
   }
 
-  _socket = ::socket(ans->ai_family, ans->ai_socktype, ans->ai_protocol);
-  if (_socket == INVALID_SOCKET) {
-    setLastError();
-    return false;
+  bool success = false;
+
+  for(struct addrinfo * i = ans; success == false && i != 0; i = i->ai_next) {
+    _socket = ::socket(i->ai_family, i->ai_socktype, i->ai_protocol);
+    if (_socket == INVALID_SOCKET) {
+      setLastError();
+      continue;
+    }
+
+    sockaddr_storage iaddr;
+    memcpy(&iaddr, i->ai_addr, i->ai_addrlen);
+    SOCKLEN iaddrlen = i->ai_addrlen;
+
+    if (::bind(_socket, (sockaddr*)&iaddr, iaddrlen) == SOCKET_ERROR) {
+      setLastError();
+      close();
+    } else {
+      success = true;
+    }
   }
 
-  sockaddr_storage iaddr;
-  memcpy(&iaddr, ans->ai_addr, ans->ai_addrlen);
-  SOCKLEN iaddrlen = ans->ai_addrlen;
   ::freeaddrinfo(ans);
 
-  if (::bind(_socket, (sockaddr*)&iaddr, iaddrlen) == SOCKET_ERROR) {
-    setLastError();
-    close();
-    return false;
-  }
-
-  return true;
+  return success;
 #else
   // create socket
   _socket = ::socket(AF_INET, type, protocol);
