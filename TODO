@@ -1,3 +1,5 @@
+Fix setTarget to compile on systems that don't have getaddrinfo.
+
 Modify server code to use getaddrinfo. Generally handle the multiple addresses
 that getaddrinfo returns, especially in client software. Made easier
 by the fact that we can give a port number to getaddrinfo as a string.
