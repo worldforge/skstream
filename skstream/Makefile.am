@@ -1,3 +1,5 @@
+INCLUDES = -I$(top_srcdir)
+
 lib_LTLIBRARIES = libskstream-0.2.la
 libskstream_0_2_la_LDFLAGS = -version-info @SKSTREAM_VERSION_INFO@
 

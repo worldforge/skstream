@@ -1,3 +1,7 @@
+ 2003-06-23 Al Riddoch <alriddoch@zepler.org>,
+    - Tweak Makefile.ams to make distcheck work.
+    - test/basicskstreamtest.h, test/childskstreamtest.h, test/skservertest.h,
+      test/socketbuftest.h: Include library headers correctly.
  2003-04-18 Al Riddoch <alriddoch@zepler.org>,
     - Add Skstream.pbproj to distribution
     - Reset interface version due to lib name change, increment version,

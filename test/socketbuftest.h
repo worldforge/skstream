@@ -22,7 +22,13 @@
 //  Created: 2002-02-19 by Dan Tomalesky
 //
 // $Log$
-// Revision 1.4  2002-02-24 03:15:41  grimicus
+// Revision 1.4.2.1  2003-06-23 19:58:42  alriddoch
+//  2003-06-23 Al Riddoch <alriddoch@zepler.org>,
+//     - Tweak Makefile.ams to make distcheck work.
+//     - test/basicskstreamtest.h, test/childskstreamtest.h, test/skservertest.h,
+//       test/socketbuftest.h: Include library headers correctly.
+//
+// Revision 1.4  2002/02/24 03:15:41  grimicus
 // 02/23/2002 Dan Tomalesky <grim@xynesis.com>
 //
 //     * Added in CVS logging variable so that changes show up in modified files
@@ -85,7 +91,7 @@
 #ifndef SOCKETBUFTEST_H
 #define SOCKETBUFTEST_H
 
-#include "skstream.h"
+#include <skstream/skstream.h>
 
 #include <cppunit/TestCase.h>
 #include <cppunit/extensions/HelperMacros.h>

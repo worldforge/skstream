@@ -22,7 +22,13 @@
 //  Created: 2002-02-23 by Dan Tomalesky
 //
 // $Log$
-// Revision 1.3  2002-12-09 22:13:21  rsteinke
+// Revision 1.3.2.1  2003-06-23 19:58:42  alriddoch
+//  2003-06-23 Al Riddoch <alriddoch@zepler.org>,
+//     - Tweak Makefile.ams to make distcheck work.
+//     - test/basicskstreamtest.h, test/childskstreamtest.h, test/skservertest.h,
+//       test/socketbuftest.h: Include library headers correctly.
+//
+// Revision 1.3  2002/12/09 22:13:21  rsteinke
 //     - created basic_socket, a virtual base class
 //       for basic_socket_stream and basic_socket_server,
 //       so that the polling code has a common base
@@ -75,7 +81,7 @@
 #ifndef CHILDSKSTREAMTEST_H
 #define CHILDSKSTREAMTEST_H
 
-#include "skstream.h"
+#include <skstream/skstream.h>
 
 #include <cppunit/TestCase.h>
 #include <cppunit/extensions/HelperMacros.h>
