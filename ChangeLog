@@ -1,4 +1,14 @@
  2003-08-23 Al Riddoch <alriddoch@zepler.org>
+    - skstream/skstreamconfig.h.in, skstream/skstream_unix.h,
+      skstream/skstream.h, skstream/skstream.cpp,
+      skstream/skserver_unix.h, skstream/skserver.h, skstream/skserver.cpp:
+      Remove as much platform sensitive code from the headers as possible,
+      and simplify the generated header. Improve formatting and header
+      guards for readability.
+    - skstream/skserver_unix.h: Add a new constructor for unix_socket_server
+      so it can be instanced without already knowing the details of the
+      service.
+ 2003-08-23 Al Riddoch <alriddoch@zepler.org>
     - skstream/skstream.h, skstream/skstream.cpp: Modify udp_socket_stream
       constructor so that it does not create the socket immediatly.
     - skstream/skstream.cpp: Re-write dgram_socketbuf::setTarget() so it

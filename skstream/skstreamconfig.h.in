@@ -1,6 +1,7 @@
 /**************************************************************************
  FreeSockets - Portable C++ classes for IP(sockets) applications. (v0.3)
  Copyright (C) 2000-2001 Rafael Guterres Jeffman
+               2002-2003 Al Riddoch <alriddoch@zepler.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,18 +29,12 @@
   // No windows headers required yet.
 #endif
 #if @SKSTREAM_UNIX_HEADER_FLAG@
-  #include <sys/types.h>
   #include <sys/socket.h>
   #include <netinet/in.h>
-  #include <arpa/inet.h>
-  #include <unistd.h>
-  #include <netdb.h>
-  #include <errno.h>
 #endif
 #if @SKSTREAM_BEOS_HEADER_FLAG@
   #include <net/socket.h>
   #include <net/netdb.h>
-  #include <errno.h>
 #endif
 
 typedef @SKSTREAM_SOCKLEN_TYPE@ SOCKLEN;

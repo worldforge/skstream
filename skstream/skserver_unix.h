@@ -40,6 +40,9 @@ protected:
   }
 
 public:
+  unix_socket_server() {
+  }
+
   explicit unix_socket_server(const std::string & service) :
                                      basic_socket_server() { 
     setService(service); 
@@ -59,8 +62,7 @@ public:
       return _service;
   }
 
-
   virtual void open(const std::string & service);
 };
 
-#endif
+#endif // RGJ_FREE_THREADS_SERVER_UNIX_H_

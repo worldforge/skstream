@@ -36,16 +36,23 @@ private:
   stream_socketbuf stream_sockbuf;
 
 public:
-  unix_socket_stream() : basic_socket_stream(stream_sockbuf), _connecting_socket(INVALID_SOCKET), stream_sockbuf(INVALID_SOCKET) {
+  unix_socket_stream() : basic_socket_stream(stream_sockbuf),
+                         _connecting_socket(INVALID_SOCKET),
+                         stream_sockbuf(INVALID_SOCKET) {
   }
 
-  explicit unix_socket_stream(const std::string& address, bool nonblock = false) : 
-      basic_socket_stream(stream_sockbuf), _connecting_socket(INVALID_SOCKET), stream_sockbuf(INVALID_SOCKET) {
+  explicit unix_socket_stream(const std::string& address,
+                              bool nonblock = false) : 
+          basic_socket_stream(stream_sockbuf),
+          _connecting_socket(INVALID_SOCKET),
+          stream_sockbuf(INVALID_SOCKET) {
     open(address, nonblock);
   }
 
-  unix_socket_stream(const std::string& address, unsigned int milliseconds)
-      : basic_socket_stream(stream_sockbuf), _connecting_socket(INVALID_SOCKET), stream_sockbuf(INVALID_SOCKET) {
+  unix_socket_stream(const std::string& address, unsigned int milliseconds) :
+              basic_socket_stream(stream_sockbuf),
+              _connecting_socket(INVALID_SOCKET),
+              stream_sockbuf(INVALID_SOCKET) {
     open(address, milliseconds);
   }
 
@@ -63,8 +70,6 @@ public:
   virtual void close();
   virtual SOCKET_TYPE getSocket() const;
 
-  // is_ready() is deprecated in favor of isReady()
-  bool is_ready(unsigned int milliseconds = 0) {return isReady(milliseconds);}
   bool isReady(unsigned int milliseconds = 0);
 };
 

@@ -23,7 +23,19 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.11  2003-08-23 14:01:57  alriddoch
+ * Revision 1.12  2003-08-23 22:13:55  alriddoch
+ *  2003-08-23 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skstreamconfig.h.in, skstream/skstream_unix.h,
+ *       skstream/skstream.h, skstream/skstream.cpp,
+ *       skstream/skserver_unix.h, skstream/skserver.h, skstream/skserver.cpp:
+ *       Remove as much platform sensitive code from the headers as possible,
+ *       and simplify the generated header. Improve formatting and header
+ *       guards for readability.
+ *     - skstream/skserver_unix.h: Add a new constructor for unix_socket_server
+ *       so it can be instanced without already knowing the details of the
+ *       service.
+ *
+ * Revision 1.11  2003/08/23 14:01:57  alriddoch
  *  2003-08-23 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skserver.h, skstream/skserver_unix.h: Add default constructor
  *       to tcp_socket_server, and make single argument constructors explicit.
@@ -155,6 +167,11 @@
 #endif // HAVE_CONFIG_H
 
 #include <skstream/skserver.h>
+
+#ifndef _WIN32
+#include <sys/types.h>
+#include <netdb.h>
+#endif // _WIN32
 
 static inline int getSystemError()
 {

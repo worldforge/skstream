@@ -23,7 +23,19 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.35  2003-08-23 20:19:46  alriddoch
+ * Revision 1.36  2003-08-23 22:13:55  alriddoch
+ *  2003-08-23 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skstreamconfig.h.in, skstream/skstream_unix.h,
+ *       skstream/skstream.h, skstream/skstream.cpp,
+ *       skstream/skserver_unix.h, skstream/skserver.h, skstream/skserver.cpp:
+ *       Remove as much platform sensitive code from the headers as possible,
+ *       and simplify the generated header. Improve formatting and header
+ *       guards for readability.
+ *     - skstream/skserver_unix.h: Add a new constructor for unix_socket_server
+ *       so it can be instanced without already knowing the details of the
+ *       service.
+ *
+ * Revision 1.35  2003/08/23 20:19:46  alriddoch
  *  2003-08-23 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skstream.h, skstream/skstream.cpp: Modify udp_socket_stream
  *       constructor so that it does not create the socket immediatly.
@@ -362,12 +374,7 @@ public:
   }
 
   /// Set the existing socket that this buffer should use.
-  void setSocket(SOCKET_TYPE sock) {
-    _socket = sock;
-    SOCKLEN size = sizeof(sockaddr);
-    ::getpeername(sock,(sockaddr*)&out_peer,&size);
-    in_peer = out_peer;
-  }
+  void setSocket(SOCKET_TYPE sock);
 
   /// Get the socket that this buffer uses.
   SOCKET_TYPE getSocket() const {
@@ -570,14 +577,7 @@ public:
     return protocol; 
   }
 
-  bool setBroadcast(bool opt=false) {
-    int ok = opt?1:0;
-    ok = setsockopt(_sockbuf.getSocket(),
-                    SOL_SOCKET,SO_BROADCAST,(char*)&ok,sizeof(ok));
-    bool ret = (ok != SOCKET_ERROR);
-    if(!ret) setLastError();
-    return ret;
-  }
+  bool setBroadcast(bool opt=false);
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -593,22 +593,30 @@ private:
   stream_socketbuf stream_sockbuf;
 
 public:
-  tcp_socket_stream() : basic_socket_stream(stream_sockbuf), _connecting_socket(INVALID_SOCKET), stream_sockbuf(INVALID_SOCKET) {
+  tcp_socket_stream() : basic_socket_stream(stream_sockbuf),
+                        _connecting_socket(INVALID_SOCKET),
+                        stream_sockbuf(INVALID_SOCKET) {
     protocol = FreeSockets::proto_TCP;
   }
 
-  tcp_socket_stream(SOCKET_TYPE socket) : basic_socket_stream(stream_sockbuf), _connecting_socket(INVALID_SOCKET), stream_sockbuf(socket) {
+  tcp_socket_stream(SOCKET_TYPE socket) : basic_socket_stream(stream_sockbuf),
+                                          _connecting_socket(INVALID_SOCKET),
+                                          stream_sockbuf(socket) {
     protocol = FreeSockets::proto_TCP;
   }
 
-  tcp_socket_stream(const std::string& address, int service, bool nonblock = false) : 
-      basic_socket_stream(stream_sockbuf), _connecting_socket(INVALID_SOCKET), stream_sockbuf(INVALID_SOCKET) {
+  tcp_socket_stream(const std::string& address, int service,
+                    bool nonblock = false):basic_socket_stream(stream_sockbuf),
+                                           _connecting_socket(INVALID_SOCKET),
+                                           stream_sockbuf(INVALID_SOCKET) {
     protocol = FreeSockets::proto_TCP;
     open(address, service, nonblock);
   }
 
-  tcp_socket_stream(const std::string& address, int service, unsigned int milliseconds) : 
-      basic_socket_stream(stream_sockbuf), _connecting_socket(INVALID_SOCKET), stream_sockbuf(INVALID_SOCKET) {
+  tcp_socket_stream(const std::string& address, int service,
+              unsigned int milliseconds) : basic_socket_stream(stream_sockbuf),
+                                           _connecting_socket(INVALID_SOCKET),
+                                           stream_sockbuf(INVALID_SOCKET) {
     protocol = FreeSockets::proto_TCP;
     open(address, service, milliseconds);
   }
@@ -616,7 +624,8 @@ public:
   virtual ~tcp_socket_stream();
 
   void open(const std::string& address, int service, bool nonblock = false);
-  void open(const std::string& address, int service, unsigned int milliseconds) {
+  void open(const std::string& address, int service,
+            unsigned int milliseconds) {
     open(address, service, true);
     if(!isReady(milliseconds)) {
       close();
@@ -627,16 +636,8 @@ public:
   virtual void close();
   virtual SOCKET_TYPE getSocket() const;
 
-  std::string getRemoteHost() const {
-    return std::string(::inet_ntoa(((const sockaddr_in&)getInpeer()).sin_addr));
-  }
-
-  unsigned short getRemotePort() const {
-    return ntohs(((const sockaddr_in&)getInpeer()).sin_port);
-  }
-
-  // is_ready() is deprecated in favor of isReady()
-  bool is_ready(unsigned int milliseconds = 0) {return isReady(milliseconds);}
+  std::string getRemoteHost() const;
+  unsigned short getRemotePort() const;
   bool isReady(unsigned int milliseconds = 0);
 };
 
@@ -678,20 +679,10 @@ protected:
   dgram_socketbuf dgram_sockbuf;
 
 public:
-  raw_socket_stream(FreeSockets::IP_Protocol proto=FreeSockets::proto_RAW) 
-    : basic_socket_stream(dgram_sockbuf), dgram_sockbuf(INVALID_SOCKET) {
-    protocol = proto;
-    SOCKET_TYPE _socket = ::socket(AF_INET, SOCK_RAW, protocol);
-    _sockbuf.setSocket(_socket);
-  }
+  raw_socket_stream(FreeSockets::IP_Protocol proto=FreeSockets::proto_RAW);
 
   raw_socket_stream(unsigned insize,unsigned outsize,
-                    FreeSockets::IP_Protocol proto=FreeSockets::proto_RAW)
-    : basic_socket_stream(dgram_sockbuf, proto), dgram_sockbuf(INVALID_SOCKET,insize,outsize) {
-    protocol = proto;
-    SOCKET_TYPE _socket = ::socket(AF_INET, SOCK_RAW, protocol);
-    _sockbuf.setSocket(_socket);
-  }
+                    FreeSockets::IP_Protocol proto=FreeSockets::proto_RAW);
 
   virtual ~raw_socket_stream();
 
@@ -707,5 +698,5 @@ public:
 };
 #endif // SOCK_RAW
 
-#endif
+#endif // RGJ_FREE_SOCKET_H_
 
