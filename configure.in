@@ -216,9 +216,11 @@ SKSTREAM_UNIX_PC_IN=
 AC_MSG_CHECKING([for unix domain sockets])
 AC_LANG_SAVE
 AC_LANG_CPLUSPLUS
-AC_TRY_COMPILE([#include <sys/un.h>],
+AC_TRY_COMPILE([#include <sys/socket.h>
+                #include <sys/un.h>],
 [
     sockaddr_un sa;
+    sa.sun_family = AF_UNIX;
 ],
 [
     AC_MSG_RESULT(yes)
@@ -345,7 +347,8 @@ dnl Test for IPv6 socket addresses
 AC_LANG_SAVE
 AC_LANG_CPLUSPLUS
 AC_MSG_CHECKING([for IPv6 socket address])
-AC_TRY_COMPILE([#include <netinet/in.h>],
+AC_TRY_COMPILE([#include <sys/socket.h>
+                #include <netinet/in.h>],
 [
     sockaddr_in6 sin6;
     sin6.sin6_family = AF_INET6;

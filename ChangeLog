@@ -1,4 +1,6 @@
  2003-05-04 Al Riddoch <alriddoch@zepler.org>,
+    - Fix unix and IPv6 checks so they include the right headers.
+ 2003-05-04 Al Riddoch <alriddoch@zepler.org>,
     - skstream/skstream.cpp: Add a check to detect IPv6 sockaddr in
       headers, and treat address explicitly as an IPv6 address if
       it is.
