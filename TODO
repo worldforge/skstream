@@ -1,21 +1,16 @@
-Fix setTarget to compile on systems that don't have getaddrinfo.
+Reformat all the code according to the standard WF style.
 
-Modify server code to use getaddrinfo. Generally handle the multiple addresses
-that getaddrinfo returns, especially in client software. Made easier
-by the fact that we can give a port number to getaddrinfo as a string.
+Check in files other that skstream.cpp that they use :: in front of
+library and system calls.
 
-It may be apropriate to write a test to see if
-getaddrinfo(0, "", &req, &ans);
-reliably gives us a general purpose listen socket, given AI_PASSIVE.
+It may well be pointless to attempt IPv6 support without using
+getaddrinfo. Probably cleaner just to remove the IPv6 stuff from the
+non- getaddrinfo case.
 
 tcp_socket_stream is passing a reference up to the next class to be
 constructed before the stream buffer object referred to has been constructed.
 This results in a "Conditional jump or move depends on uninitialised value"
 error from valgrind.
-
-Remove deprecated calls from API (is_ready)
-
-Remove virtual function definitions from the headers, and put in .cpp file.
 
 - convert the linux detection code in skstream.h to use configure tests
 
