@@ -23,7 +23,19 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.44  2003-09-26 22:26:44  alriddoch
+ * Revision 1.45  2004-11-23 01:22:24  alriddoch
+ * 2004-11-23  Al Riddoch  <alriddoch@zepler.org>
+ *
+ * 	* skstream/skserver.cpp, skstream/skserver.h,
+ * 	  skstream/skstream.cpp, skstream/skstream.h:
+ * 	  Re-purpose the shutdown() method of various classes
+ * 	  so it no longer closes the socket. This makes it more consistent
+ * 	  and sorts out some issues with using epoll() with skstream.
+ * 	  Make sure close() is called in the right places in destructors.
+ * 	  Fix a bug in the Win32 build where WSACleanup() was getting
+ * 	  called at utterly the wrong time.
+ *
+ * Revision 1.44  2003/09/26 22:26:44  alriddoch
  *  2003-09-26 Al Riddoch <alriddoch@zepler.org>
  *     - Add option to get streams remote details as reverse lookup, rather
  *       than just presentation form.
@@ -832,45 +844,46 @@ basic_socket_stream::basic_socket_stream(socketbuf & buffer,
 
 basic_socket_stream::~basic_socket_stream()
 {
-    shutdown();
+  if(is_open()) {
+    ::shutdown(_sockbuf.getSocket(), SHUT_RDWR);
+    ::closesocket(_sockbuf.getSocket());
+  }
 }
 
 bool basic_socket_stream::operator!()
 {
-    return fail();
+  return fail();
 }
 
 bool basic_socket_stream::timeout() const
 {
-    return _sockbuf.timeout();
+  return _sockbuf.timeout();
 }
 
 SOCKET_TYPE basic_socket_stream::getSocket() const
 {
-    return _sockbuf.getSocket();
+  return _sockbuf.getSocket();
 }
 
 // System dependant initialization
 bool basic_socket_stream::startup() {
-  #ifdef _WIN32
-    const unsigned wMinVer = 0x0101;	// request WinSock v1.1 (at least)
-    WSADATA wsaData;
-    LastError = WSAStartup(wMinVer, &wsaData);
-    return (LastError == 0);
-  #else // _WIN32
-    return true;
-  #endif // _WIN32
+#ifdef _WIN32
+  const unsigned wMinVer = 0x0101;	// request WinSock v1.1 (at least)
+  WSADATA wsaData;
+  LastError = WSAStartup(wMinVer, &wsaData);
+  return (LastError == 0);
+#else // _WIN32
+  return true;
+#endif // _WIN32
 }
 
 // System dependant finalization
-bool basic_socket_stream::shutdown() {
-  if(is_open()) close();
-  #ifdef _WIN32
-    LastError = WSACleanup();
-    return (LastError == 0);
-  #else // _WIN32
-    return true;
-  #endif // _WIN32
+void basic_socket_stream::shutdown() {
+  if(is_open()) {
+    if(::shutdown(_sockbuf.getSocket(), SHUT_RDWR) == SOCKET_ERROR) {
+      setLastError();
+    }
+  }
 }
 
 // private function that sets the internal variable LastError
@@ -881,12 +894,11 @@ void basic_socket_stream::setLastError() const {
 // closes a socket connection
 void basic_socket_stream::close() {
   if(is_open()) {
-    if(::shutdown(_sockbuf.getSocket(),0) == SOCKET_ERROR) {
+    if(::shutdown(_sockbuf.getSocket(), SHUT_RDWR) == SOCKET_ERROR) {
       setLastError();
       //not necessarily a returning offense because there could be a socket
       //open that has never connected to anything and hence, does not need
       //to be shutdown.
-      //return;
     }
 
     if(::closesocket(_sockbuf.getSocket()) == SOCKET_ERROR) {
@@ -925,8 +937,8 @@ bool basic_socket_stream::setBroadcast(bool opt)
 /////////////////////////////////////////////////////////////////////////////
 
 tcp_socket_stream::~tcp_socket_stream() { 
-  shutdown(); 
   if(_connecting_socket != INVALID_SOCKET) {
+    ::shutdown(_connecting_socket, SHUT_RDWR);
     ::closesocket(_connecting_socket);
 #ifdef HAVE_GETADDRINFO
     ::freeaddrinfo(_connecting_addrlist);
@@ -1300,7 +1312,8 @@ udp_socket_stream::udp_socket_stream() : basic_socket_stream(dgram_sockbuf),
 
 udp_socket_stream::~udp_socket_stream()
 {
-    shutdown();
+  // Don't close the main socket, that is done in the basic_socket_stream
+  // destructor
 }
 
 #ifdef SKSTREAM_UNIX_SOCKETS
@@ -1313,11 +1326,14 @@ udp_socket_stream::~udp_socket_stream()
 // class unix_socket_stream implementation
 /////////////////////////////////////////////////////////////////////////////
 
-unix_socket_stream::~unix_socket_stream() { 
-    shutdown(); 
-    if (_connecting_socket != INVALID_SOCKET) {
-        ::close(_connecting_socket);
-    }
+unix_socket_stream::~unix_socket_stream()
+{ 
+  // Don't close the main socket, that is done in the basic_socket_stream
+  // destructor
+  if(_connecting_socket != INVALID_SOCKET) {
+    ::shutdown(_connecting_socket, SHUT_RDWR);
+    ::closesocket(_connecting_socket);
+  }
 }
 
 
@@ -1501,7 +1517,8 @@ void raw_socket_stream::setProtocol(FreeSockets::IP_Protocol proto) {
 
 raw_socket_stream::~raw_socket_stream()
 {
-    shutdown();
+  // Don't close the main socket, that is done in the basic_socket_stream
+  // destructor
 }
 
 #endif // SOCK_RAW

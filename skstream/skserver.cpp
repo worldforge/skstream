@@ -23,7 +23,19 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.17  2003-12-08 18:27:06  alriddoch
+ * Revision 1.18  2004-11-23 01:22:24  alriddoch
+ * 2004-11-23  Al Riddoch  <alriddoch@zepler.org>
+ *
+ * 	* skstream/skserver.cpp, skstream/skserver.h,
+ * 	  skstream/skstream.cpp, skstream/skstream.h:
+ * 	  Re-purpose the shutdown() method of various classes
+ * 	  so it no longer closes the socket. This makes it more consistent
+ * 	  and sorts out some issues with using epoll() with skstream.
+ * 	  Make sure close() is called in the right places in destructors.
+ * 	  Fix a bug in the Win32 build where WSACleanup() was getting
+ * 	  called at utterly the wrong time.
+ *
+ * Revision 1.17  2003/12/08 18:27:06  alriddoch
  *  2003-12-08 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skserver.cpp: Correctly use SOCKET_ERROR instead of
  *       INVALID_SOCKET when checking return value of syscalls.
@@ -233,7 +245,7 @@ static inline int closesocket(SOCKET_TYPE sock)
 // class basic_socket_server implementation
 /////////////////////////////////////////////////////////////////////////////
 // sistem dependant initialization
-bool basic_socket_server::startup(){
+bool basic_socket_server::startup() {
   #ifdef _WIN32
     const unsigned wMinVer = 0x0101;	// request WinSock v1.1 (at least)
     WSADATA wsaData;
@@ -245,14 +257,12 @@ bool basic_socket_server::startup(){
 }
 
 // sistem dependant finalization
-bool basic_socket_server::shutdown() {
-  if(is_open()) close();
-  #ifdef _WIN32
-    LastError = WSACleanup();
-    return (LastError == 0);
-  #else
-    return true;
-  #endif
+void basic_socket_server::shutdown() {
+  if(is_open()) {
+    if(::shutdown(_socket, SHUT_RDWR) == SOCKET_ERROR) {
+      setLastError();
+    }
+  }
 }
 
 // sistem dependant error verification
@@ -260,27 +270,23 @@ void basic_socket_server::setLastError() {
     LastError = getSystemError();
 }
 
-basic_socket_server::~basic_socket_server()
-{
-    close();
-    shutdown();
+basic_socket_server::~basic_socket_server() {
+  basic_socket_server::close();
 }
 
-SOCKET_TYPE basic_socket_server::getSocket() const
-{
-    return _socket;
+SOCKET_TYPE basic_socket_server::getSocket() const {
+  return _socket;
 }
 
 // close server's underlying socket
 //   The shutdown is a little rude... -  RGJ
 void basic_socket_server::close() {
   if(is_open()) {
-    if(::shutdown(_socket,0) == SOCKET_ERROR) {
+    if(::shutdown(_socket, SHUT_RDWR) == SOCKET_ERROR) {
       setLastError();
       //not necessarily a returning offense because there could be a socket
       //open that has never connected to anything and hence, does not need
       //to be shutdown.
-      //return;
     }
 
     if(::closesocket(_socket) == SOCKET_ERROR) {

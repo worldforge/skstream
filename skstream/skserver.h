@@ -23,7 +23,19 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.12  2003-09-26 14:38:43  alriddoch
+ * Revision 1.13  2004-11-23 01:22:24  alriddoch
+ * 2004-11-23  Al Riddoch  <alriddoch@zepler.org>
+ *
+ * 	* skstream/skserver.cpp, skstream/skserver.h,
+ * 	  skstream/skstream.cpp, skstream/skstream.h:
+ * 	  Re-purpose the shutdown() method of various classes
+ * 	  so it no longer closes the socket. This makes it more consistent
+ * 	  and sorts out some issues with using epoll() with skstream.
+ * 	  Make sure close() is called in the right places in destructors.
+ * 	  Fix a bug in the Win32 build where WSACleanup() was getting
+ * 	  called at utterly the wrong time.
+ *
+ * Revision 1.12  2003/09/26 14:38:43  alriddoch
  *  2003-09-26 Al Riddoch <alriddoch@zepler.org>
  *     - Write some tests to pick up the socket and name resolver libs on
  *       System V.
@@ -187,7 +199,7 @@ private:
   basic_socket_server& operator=(const basic_socket_server&);
 
   bool startup();
-  bool shutdown();
+  void shutdown();
 
 protected:
   explicit basic_socket_server(SOCKET_TYPE _sock = INVALID_SOCKET)

@@ -1,3 +1,6 @@
+Need to sort for once and for all the issue of streambuf objects
+being part of the superclass.
+
 Fix up ping.cpp to use provided features to do low level stuff, adding
 features to the library if necessary.
 

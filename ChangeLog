@@ -1,3 +1,14 @@
+2004-11-23  Al Riddoch  <alriddoch@zepler.org>
+
+	* skstream/skserver.cpp, skstream/skserver.h,
+	  skstream/skstream.cpp, skstream/skstream.h:
+	  Re-purpose the shutdown() method of various classes
+	  so it no longer closes the socket. This makes it more consistent
+	  and sorts out some issues with using epoll() with skstream.
+	  Make sure close() is called in the right places in destructors.
+	  Fix a bug in the Win32 build where WSACleanup() was getting
+	  called at utterly the wrong time.
+
 2004-09-29  Al Riddoch  <alriddoch@zepler.org>
 
 	* Move to using configure.ac with updated contents.

@@ -23,7 +23,19 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.43  2003-09-28 00:53:54  alriddoch
+ * Revision 1.44  2004-11-23 01:22:24  alriddoch
+ * 2004-11-23  Al Riddoch  <alriddoch@zepler.org>
+ *
+ * 	* skstream/skserver.cpp, skstream/skserver.h,
+ * 	  skstream/skstream.cpp, skstream/skstream.h:
+ * 	  Re-purpose the shutdown() method of various classes
+ * 	  so it no longer closes the socket. This makes it more consistent
+ * 	  and sorts out some issues with using epoll() with skstream.
+ * 	  Make sure close() is called in the right places in destructors.
+ * 	  Fix a bug in the Win32 build where WSACleanup() was getting
+ * 	  called at utterly the wrong time.
+ *
+ * Revision 1.43  2003/09/28 00:53:54  alriddoch
  *  2003-09-27 Al Riddoch <alriddoch@zepler.org>
  *     - skstream/skstream.h: Add accessors so address sizes in buffer class
  *       are accessible from outside stream class.
@@ -572,7 +584,7 @@ protected:
   mutable int LastError;
 
   bool startup();
-  bool shutdown();
+  void shutdown();
 
   void setLastError() const;
 
