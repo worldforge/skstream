@@ -22,7 +22,12 @@
 //  Created: 2002-02-23 by Dan Tomalesky
 //
 // $Log$
-// Revision 1.5  2003-09-27 21:15:03  alriddoch
+// Revision 1.6  2004-12-01 16:48:04  alriddoch
+// 2004-11-30  Al Riddoch  <alriddoch@zepler.org>
+//
+// 	* Release 0.3.3, interface version 1.0.0.
+//
+// Revision 1.5  2003/09/27 21:15:03  alriddoch
 //  2003-09-27 Al Riddoch <alriddoch@zepler.org>
 //     - test/childskstreamtest.h: Get rid of some of the java-isms, and
 //       handle some failures a little more cleanly. Fix the udp test.
@@ -96,6 +101,8 @@
 
 #include <cppunit/TestCase.h>
 #include <cppunit/extensions/HelperMacros.h>
+
+#include <errno.h>
 
 class tcpskstreamtest : public CppUnit::TestCase
 {
