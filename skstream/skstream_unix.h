@@ -35,21 +35,19 @@ private:
   unix_socket_stream& operator=(const unix_socket_stream& socket);
 
   SOCKET_TYPE _connecting_socket;
+  stream_socketbuf stream_sockbuf;
 
 public:
-  unix_socket_stream() : basic_socket_stream(), _connecting_socket(INVALID_SOCKET) {
-    protocol = FreeSockets::proto_TCP;
+  unix_socket_stream() : basic_socket_stream(stream_sockbuf), _connecting_socket(INVALID_SOCKET), stream_sockbuf(INVALID_SOCKET) {
   }
 
-  unix_socket_stream(const std::string& address, bool nonblock = false) : 
-      basic_socket_stream(), _connecting_socket(INVALID_SOCKET) {
-    protocol = FreeSockets::proto_TCP;
+  explicit unix_socket_stream(const std::string& address, bool nonblock = false) : 
+      basic_socket_stream(stream_sockbuf), _connecting_socket(INVALID_SOCKET), stream_sockbuf(INVALID_SOCKET) {
     open(address, nonblock);
   }
 
   unix_socket_stream(const std::string& address, unsigned int milliseconds)
-      : basic_socket_stream(), _connecting_socket(INVALID_SOCKET) {
-    protocol = FreeSockets::proto_TCP;
+      : basic_socket_stream(stream_sockbuf), _connecting_socket(INVALID_SOCKET), stream_sockbuf(INVALID_SOCKET) {
     open(address, milliseconds);
   }
 

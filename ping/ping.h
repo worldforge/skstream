@@ -1,7 +1,7 @@
 #ifndef RGJ_FREE_SOCKETS_PING_EXAMPLE
 #define RGJ_FREE_SOCKETS_PING_EXAMPLE
 
-#include "skstream.h"
+#include <skstream/skstream.h>
 
 #define ICMP_ECHOREPLY	0
 #define ICMP_ECHOREQ	8

@@ -22,7 +22,16 @@
 //  Created: 2002-02-24 by Dan Tomalesky
 //
 // $Log$
-// Revision 1.1  2002-02-26 20:33:55  grimicus
+// Revision 1.2  2003-05-06 21:53:11  alriddoch
+//  2003-05-06 Al Riddoch <alriddoch@zepler.org>
+//     - skstream/skstream.h, skstream/skstream.cpp, skstream_unix.h:
+//       Re-work basic_socket_stream so it can have either stream or datagram
+//       buffers.
+//     - ping/ping.cpp, ping/ping.h, test/basicskstreamtest.h,
+//       test/childskstreamtest.h, test/skservertest.h: Get the tests and examples
+//       building again.
+//
+// Revision 1.1  2002/02/26 20:33:55  grimicus
 // 02/26/2002 Dan Tomalesky <grim@xynesis.com>
 //     * Added test cases for skserver and friends
 //
@@ -58,7 +67,7 @@
 #ifndef SKSERVERTEST_H
 #define SKSERVERTEST_H
 
-#include "skserver.h"
+#include <skstream/skserver.h>
 
 #include <cppunit/TestCase.h>
 #include <cppunit/extensions/HelperMacros.h>

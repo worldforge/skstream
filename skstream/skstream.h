@@ -23,7 +23,16 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.30  2003-05-04 00:34:30  alriddoch
+ * Revision 1.31  2003-05-06 21:53:11  alriddoch
+ *  2003-05-06 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skstream.h, skstream/skstream.cpp, skstream_unix.h:
+ *       Re-work basic_socket_stream so it can have either stream or datagram
+ *       buffers.
+ *     - ping/ping.cpp, ping/ping.h, test/basicskstreamtest.h,
+ *       test/childskstreamtest.h, test/skservertest.h: Get the tests and examples
+ *       building again.
+ *
+ * Revision 1.30  2003/05/04 00:34:30  alriddoch
  *  2003-05-04 Al Riddoch <alriddoch@zepler.org>,
  *     - Add a second pkgconfig file for apps that need unix socket support.
  *     - Rename sksystem.h as skstreamconfig.h, and put it in an architecture
@@ -462,9 +471,6 @@ public:
   /// Destroy the socket buffer.
   virtual ~socketbuf();
 
-  /// FIXME Meaningless in the address neutral base class
-  // bool setOutpeer(const std::string& address, unsigned port);
-
   bool setOutpeer(const sockaddr_storage & peer) { 
     out_peer = peer; 
     return true; 
@@ -575,6 +581,8 @@ public:
   /// Destroy the socket buffer.
   virtual ~dgram_socketbuf();
 
+  bool setTarget(const std::string& address, unsigned port);
+
 protected:
   /// Handle writing data from the buffer to the socket.
   virtual int overflow(int nCh=EOF);
@@ -636,7 +644,7 @@ public:
 /////////////////////////////////////////////////////////////////////////////
 class basic_socket_stream : public basic_socket, public std::iostream {
 protected:
-  stream_socketbuf _sockbuf;
+  socketbuf & _sockbuf;
   int protocol;
 
   mutable int LastError;
@@ -648,14 +656,7 @@ protected:
 
 public:
   /// Make a socket stream.
-  basic_socket_stream();
-  /// Make a socket stream with a buffer with specified sizes.
-  basic_socket_stream(unsigned insize,unsigned outsize,
-                      int proto = FreeSockets::proto_IP);
-  /// Make a socket stream using an existing socket.
-  explicit basic_socket_stream(SOCKET_TYPE sock);
-  /// Make a socket stream with a buffer with specified sizes using an existing socket.
-  basic_socket_stream(SOCKET_TYPE sock, unsigned insize,unsigned outsize);
+  basic_socket_stream(socketbuf & buffer, int proto = FreeSockets::proto_IP);
 
   // Destructor
   virtual ~basic_socket_stream() {
@@ -671,12 +672,6 @@ public:
   virtual bool timeout() const {
     return _sockbuf.timeout();
   }
-
-#if 0
-  bool setOutpeer(const std::string& address, unsigned port) { 
-    return _sockbuf.setOutpeer(address,port); 
-  }
-#endif
 
   bool setOutpeer(const sockaddr_storage& peer) { 
     /*%NOTE(Grimicus, skstream2, FYI)
@@ -733,54 +728,34 @@ public:
 };
 
 /////////////////////////////////////////////////////////////////////////////
-// manipulator set_host
-/////////////////////////////////////////////////////////////////////////////
-class remote_host {
-protected:
-  std::string _host;
-  unsigned _port;
-public:
-  remote_host(const std::string& host,unsigned port)
-    : _host(host), _port(port) {}
-  friend
-    basic_socket_stream& operator<<(basic_socket_stream&, const remote_host&);
-};
-
-#if 0
-// FIXME AJR 20030314 Meaningless for base socket class
-inline
-basic_socket_stream& operator<<(basic_socket_stream& out,const remote_host& host)
-{
-  out.setOutpeer(host._host,host._port);
-  return out;
-}
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
 // class tcp_socket_stream
 /////////////////////////////////////////////////////////////////////////////
 class tcp_socket_stream : public basic_socket_stream {
 private:
   tcp_socket_stream(const tcp_socket_stream&);
-  tcp_socket_stream(SOCKET_TYPE socket);
 
   tcp_socket_stream& operator=(const tcp_socket_stream& socket);
 
   SOCKET_TYPE _connecting_socket;
+  stream_socketbuf stream_sockbuf;
 
 public:
-  tcp_socket_stream() : basic_socket_stream(), _connecting_socket(INVALID_SOCKET) {
+  tcp_socket_stream() : basic_socket_stream(stream_sockbuf), _connecting_socket(INVALID_SOCKET), stream_sockbuf(INVALID_SOCKET) {
+    protocol = FreeSockets::proto_TCP;
+  }
+
+  tcp_socket_stream(SOCKET_TYPE socket) : basic_socket_stream(stream_sockbuf), _connecting_socket(INVALID_SOCKET), stream_sockbuf(socket) {
     protocol = FreeSockets::proto_TCP;
   }
 
   tcp_socket_stream(const std::string& address, int service, bool nonblock = false) : 
-      basic_socket_stream(), _connecting_socket(INVALID_SOCKET) {
+      basic_socket_stream(stream_sockbuf), _connecting_socket(INVALID_SOCKET), stream_sockbuf(INVALID_SOCKET) {
     protocol = FreeSockets::proto_TCP;
     open(address, service, nonblock);
   }
 
   tcp_socket_stream(const std::string& address, int service, unsigned int milliseconds) : 
-      basic_socket_stream(), _connecting_socket(INVALID_SOCKET) {
+      basic_socket_stream(stream_sockbuf), _connecting_socket(INVALID_SOCKET), stream_sockbuf(INVALID_SOCKET) {
     protocol = FreeSockets::proto_TCP;
     open(address, service, milliseconds);
   }
@@ -823,10 +798,11 @@ private:
 
   udp_socket_stream& operator=(const udp_socket_stream& socket);
 
+  dgram_socketbuf dgram_sockbuf;
 
 public:
-  udp_socket_stream(FreeSockets::IP_Protocol proto=FreeSockets::proto_UDP)
-     : basic_socket_stream() {
+  udp_socket_stream(FreeSockets::IP_Protocol proto=FreeSockets::proto_UDP) :
+  basic_socket_stream(dgram_sockbuf), dgram_sockbuf(INVALID_SOCKET) {
     protocol = proto; 
     SOCKET_TYPE _socket = ::socket(AF_INET, SOCK_DGRAM, protocol);
     _sockbuf.setSocket(_socket);
@@ -834,6 +810,10 @@ public:
 
   virtual ~udp_socket_stream() {
     shutdown(); 
+  }
+
+  bool setTarget(const std::string& address, unsigned port) { 
+    return dgram_sockbuf.setTarget(address,port); 
   }
 };
 
@@ -850,10 +830,11 @@ private:
 
 protected:
   sockaddr_storage local_host;
+  dgram_socketbuf dgram_sockbuf;
 
 public:
   raw_socket_stream(FreeSockets::IP_Protocol proto=FreeSockets::proto_RAW) 
-    : basic_socket_stream() {
+    : basic_socket_stream(dgram_sockbuf), dgram_sockbuf(INVALID_SOCKET) {
     protocol = proto;
     SOCKET_TYPE _socket = ::socket(AF_INET, SOCK_RAW, protocol);
     _sockbuf.setSocket(_socket);
@@ -861,7 +842,7 @@ public:
 
   raw_socket_stream(unsigned insize,unsigned outsize,
                     FreeSockets::IP_Protocol proto=FreeSockets::proto_RAW)
-    : basic_socket_stream(insize,outsize) {
+    : basic_socket_stream(dgram_sockbuf, proto), dgram_sockbuf(INVALID_SOCKET,insize,outsize) {
     protocol = proto;
     SOCKET_TYPE _socket = ::socket(AF_INET, SOCK_RAW, protocol);
     _sockbuf.setSocket(_socket);
@@ -872,6 +853,10 @@ public:
   }
 
   void setProtocol(FreeSockets::IP_Protocol proto);
+
+  bool setTarget(const std::string& address, unsigned port) { 
+    return dgram_sockbuf.setTarget(address,port); 
+  }
 
   sockaddr_storage getLocalHost() const { 
     return local_host; 

@@ -1,3 +1,7 @@
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif // HAVE_CONFIG_H
+
 #include <cstdlib>
 #include <iostream>
 #include <string>
@@ -8,24 +12,24 @@
 
 #include <signal.h> // to trap Ctrl+C : SIGINT
 
-#include "skstream.h"
+#include <skstream/skstream.h>
 
 #include "ping.h"
 
-using namespace std;
+// using namespace std;
 
 //---------------------------------------------------------------------------
 // globals
-typedef map<string,pair<unsigned, unsigned> > stat_type;
+typedef std::map<std::string,std::pair<unsigned, unsigned> > stat_type;
 stat_type statistics;
 unsigned Ping_Count, transmitted_packets;
 bool Terminate;
 //---------------------------------------------------------------------------
 // Prototypes
 unsigned short in_cksum(unsigned short*, int);
-void ping(const string&);
-void send_request(basic_socket_stream&, const string&);
-bool recv_reply(basic_socket_stream&, ECHO_REPLY&);
+void ping(const std::string&);
+void send_request(raw_socket_stream&, const std::string&);
+bool recv_reply(raw_socket_stream&, ECHO_REPLY&);
 void print_statistics(const ECHO_REPLY&);
 void print_final_statistics();
 bool is_broadcast_address();
@@ -35,10 +39,10 @@ void CTLRC(int);
 //---------------------------------------------------------------------------
 int main(int argc, char** argv) {
   Ping_Count = 4;
-  string host("");
+  std::string host("");
 
   if (argc < 2) {
-    cerr << "Usage: ping [-n NUM] host" << endl;
+    std::cerr << "Usage: ping [-n NUM] host" << std::endl;
     return 1;
   }
 
@@ -47,16 +51,16 @@ int main(int argc, char** argv) {
   transmitted_packets=0;
 
   for(int i=1; i < argc; i++) {
-    if(string(argv[i]).compare("-n")==0) {
+    if(std::string(argv[i]).compare("-n")==0) {
       if(i == argc-1) {
-        cerr << "Usage: ping [-n NUM] host" << endl;
+        std::cerr << "Usage: ping [-n NUM] host" << std::endl;
         return 1;
       }
       i++;
       char **error = NULL;
       Ping_Count = strtoul(argv[i],error,0);
       if((Ping_Count==0)||(error != NULL)) {
-        cerr << "Usage: ping [-n NUM] host" << endl;
+        std::cerr << "Usage: ping [-n NUM] host" << std::endl;
         return 1;
       }
     } else {
@@ -64,7 +68,7 @@ int main(int argc, char** argv) {
     }
   }
   if(host.size() == 0){
-    cerr << "Usage: ping [-n NUM] host" << endl;
+    std::cerr << "Usage: ping [-n NUM] host" << std::endl;
     return 1;
   }
 
@@ -76,28 +80,28 @@ int main(int argc, char** argv) {
   #else
     #define CLOCKS_DIV 1.0/(CLOCKS_PER_SEC*1.0)
   #endif
-  cout << "Time resolution: " << CLOCKS_DIV*1000.0 << " msec." << endl;
+  std::cout << "Time resolution: " << CLOCKS_DIV*1000.0 << " msec." << std::endl;
 
   ping(host);
 
   return 0;
 }
 //---------------------------------------------------------------------------
-void ping(const string& host) {
+void ping(const std::string& host) {
   raw_socket_stream ping_socket(FreeSockets::proto_ICMP);
   if(!ping_socket) {
-    cerr << "Could not create raw socket." << endl;
+    std::cerr << "Could not create raw socket." << std::endl;
     exit(0);
   }
 
   if(is_broadcast_address()) {
     if(!ping_socket.setBroadcast(true)) {
-      cerr << "Could not set broadcast socket." << endl;
+      std::cerr << "Could not set broadcast socket." << std::endl;
       exit(0);
     }
   }
 
-  ping_socket.setOutpeer(host,FreeSockets::echo);
+  ping_socket.setTarget(host,FreeSockets::echo);
 
   unsigned nRet;
 
@@ -118,7 +122,7 @@ void ping(const string& host) {
   print_final_statistics();
 }
 //---------------------------------------------------------------------------
-void send_request(basic_socket_stream& sock, const string& host) {
+void send_request(raw_socket_stream& sock, const std::string& host) {
   static ECHO_REQUEST echoReq;
   static int nId = 1;
   static int nSeq = 1;
@@ -139,8 +143,28 @@ void send_request(basic_socket_stream& sock, const string& host) {
   echoReq.icmpHdr.Checksum =
       in_cksum((unsigned short*)&echoReq,sizeof(ECHO_REQUEST));
 
-  cout << "Pinging "<<host<<"["<<inet_ntoa(sock.getOutpeer().sin_addr);
-  cout << "] with " << REQ_DATASIZE << " bytes of data." << endl;
+  const sockaddr_storage & sst = sock.getOutpeer();
+#ifndef HAVE_IPV6
+  std::cout << "Pinging "<<host<<"["<<inet_ntoa(((sockaddr_in &)sst).sin_addr);
+#else // HAVE_IPV6
+  void * adr = 0;
+  if (sst.ss_family == AF_INET) {
+    adr = &((sockaddr_in&)sst).sin_addr;
+  } else if (sst.ss_family == AF_INET6) {
+    adr = &((sockaddr_in6&)sst).sin6_addr;
+  }
+  char buf[INET6_ADDRSTRLEN];
+  const char * address = 0;
+  if (adr != 0) {
+    address = ::inet_ntop(sst.ss_family, adr, buf, INET6_ADDRSTRLEN);
+  }
+  if (address == 0) {
+    perror("inet_ntop");
+    address = "unknown";
+  }
+  std::cout << "Pinging "<<host<<"["<<address;
+#endif // HAVE_IPV6
+  std::cout << "] with " << REQ_DATASIZE << " bytes of data." << std::endl;
 
   sock.setTimeout(3,0);
   sock.write((char*)&echoReq,sizeof(ECHO_REQUEST));
@@ -149,12 +173,12 @@ void send_request(basic_socket_stream& sock, const string& host) {
   // Check for timeout
   if(sock.fail()) {
     if(sock.timeout()) {
-      cerr << "Timeout sending ICMP request." << endl;
+      std::cerr << "Timeout sending ICMP request." << std::endl;
     } else {
       unsigned error = sock.getLastError();
-      cerr << "SEND: Ping Error #" << error << endl;
+      std::cerr << "SEND: Ping Error #" << error << std::endl;
       #ifdef __linux__
-        cerr << strerror(error) << endl;
+        std::cerr << strerror(error) << std::endl;
       #endif
     }
     exit(0);
@@ -162,7 +186,7 @@ void send_request(basic_socket_stream& sock, const string& host) {
 }
 
 //---------------------------------------------------------------------------
-bool recv_reply(basic_socket_stream& sock, ECHO_REPLY& reply)
+bool recv_reply(raw_socket_stream& sock, ECHO_REPLY& reply)
 {
   sock.setTimeout(3,0);
   sock.read((char*)&reply,sizeof(ECHO_REPLY));
@@ -173,10 +197,10 @@ bool recv_reply(basic_socket_stream& sock, ECHO_REPLY& reply)
   // Check for errors
   if(sock.fail()) {
     unsigned error = sock.getLastError();
-    cerr << "RECV: Ping Error #" << error << endl;
+    std::cerr << "RECV: Ping Error #" << error << std::endl;
 
     #ifdef __linux__
-      cerr << strerror(error) << endl;
+      std::cerr << strerror(error) << std::endl;
     #endif
 
     exit(0);
@@ -190,33 +214,33 @@ void print_statistics(const ECHO_REPLY& reply) {
   // again: portability vs. precision
   clock_t elapsed = clock() - reply.echoRequest.dwTime;
 
-  string replier(inet_ntoa(reply.ipHdr.iaSrc));
+  std::string replier(inet_ntoa(reply.ipHdr.iaSrc));
 
   stat_type::iterator iter = statistics.find(replier);
   if(iter == statistics.end())
-    iter = statistics.insert(make_pair(replier,make_pair(0,0))).first;
+    iter = statistics.insert(std::pair<std::string, std::pair<unsigned, unsigned> >(replier,std::pair<unsigned, unsigned>(0,0))).first;
 
   (*iter).second.first++;
   (*iter).second.second += elapsed;
 
-  cout << "Reply from: " << replier;
-  cout << " : bytes=" << REQ_DATASIZE << " time=" << elapsed << "ms";
-  cout << " TTL=" << int(reply.ipHdr.TTL) << endl;
+  std::cout << "Reply from: " << replier;
+  std::cout << " : bytes=" << REQ_DATASIZE << " time=" << elapsed << "ms";
+  std::cout << " TTL=" << int(reply.ipHdr.TTL) << std::endl;
 }
 //---------------------------------------------------------------------------
 void print_final_statistics() {
   stat_type::iterator iter = statistics.begin();
 
-  cout << "\nTransmitted Packets: " << transmitted_packets << endl;
+  std::cout << "\nTransmitted Packets: " << transmitted_packets << std::endl;
 
   while(iter != statistics.end()) {
-    cout << "\nStatistics for host " << (*iter).first << ":" << endl;
-    cout << "\tPackets received: " << (*iter).second.first << endl;
+    std::cout << "\nStatistics for host " << (*iter).first << ":" << std::endl;
+    std::cout << "\tPackets received: " << (*iter).second.first << std::endl;
     double mean = (*iter).second.second/((*iter).second.first*1.0);
-    cout << "\tMean ping time: " << mean*CLOCKS_DIV << " msec." << endl;
+    std::cout << "\tMean ping time: " << mean*CLOCKS_DIV << " msec." << std::endl;
     unsigned lost_packets = transmitted_packets - (*iter).second.first;
-    cout << "\tLost Packets: " << lost_packets << endl;
-    cout << "\tPacket loss: "<< double(lost_packets/(transmitted_packets*1.0))*100.0 << "%" << endl;
+    std::cout << "\tLost Packets: " << lost_packets << std::endl;
+    std::cout << "\tPacket loss: "<< double(lost_packets/(transmitted_packets*1.0))*100.0 << "%" << std::endl;
     iter++;
   }
 
@@ -224,7 +248,7 @@ void print_final_statistics() {
 
 //---------------------------------------------------------------------------
 void CTLRC(int) {
-  cout << "Stopping service..." << endl;
+  std::cout << "Stopping service..." << std::endl;
   Terminate=true;
 }
 //---------------------------------------------------------------------------

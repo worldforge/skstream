@@ -1,7 +1,4 @@
-TESTS = skstreamtestrunner
-check_PROGRAMS = $(TESTS)
-
-INCLUDES = -I$(top_srcdir) 
+check_PROGRAMS = skstreamtestrunner
 
 skstreamtestrunner_SOURCES = skstreamtestrunner.cpp \
         basicskstreamtest.h \
@@ -11,5 +8,5 @@ skstreamtestrunner_SOURCES = skstreamtestrunner.cpp \
 
 skstreamtestrunner_LDADD= \
     @CPPUNIT_LIBS@ \
-    $(top_builddir)/libskstream-0.2.la
+    $(top_builddir)/skstream/libskstream-0.3.la
 

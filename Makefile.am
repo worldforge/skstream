@@ -17,7 +17,7 @@ dist-hook: $(MSVC_SUPPORT)
 VisualC.zip:
 	@SK_ZIP@ -r VisualC.zip VisualC/ -x '*CVS/*'
 
-SUBDIRS = skstream test
+SUBDIRS = skstream ping test
 
 docdatadir = $(datadir)/doc/skstream-$(VERSION)
 docdata_DATA = README COPYING AUTHORS NEWS

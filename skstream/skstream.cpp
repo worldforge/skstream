@@ -23,7 +23,16 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.24  2003-05-04 01:14:07  alriddoch
+ * Revision 1.25  2003-05-06 21:53:11  alriddoch
+ *  2003-05-06 Al Riddoch <alriddoch@zepler.org>
+ *     - skstream/skstream.h, skstream/skstream.cpp, skstream_unix.h:
+ *       Re-work basic_socket_stream so it can have either stream or datagram
+ *       buffers.
+ *     - ping/ping.cpp, ping/ping.h, test/basicskstreamtest.h,
+ *       test/childskstreamtest.h, test/skservertest.h: Get the tests and examples
+ *       building again.
+ *
+ * Revision 1.24  2003/05/04 01:14:07  alriddoch
  *  2003-05-04 Al Riddoch <alriddoch@zepler.org>,
  *     - skstream/skstream.cpp: Add a check to detect IPv6 sockaddr in
  *       headers, and treat address explicitly as an IPv6 address if
@@ -318,30 +327,6 @@ dgram_socketbuf::~dgram_socketbuf()
   sync();
 }
 
-// FIXME - AJR 20030314
-// This is inapropriate here. It is meaningless in the context of
-// stream based sockets, and assumes that an inet address is
-// required.
-// set the other side host
-#if 0
-bool socketbuf::setOutpeer(const string& address, unsigned port) {
-  unsigned long iaddr;
-  hostent *he = ::gethostbyname(address.c_str());
-  if(he!=NULL) {
-    iaddr = *(unsigned long *)(he->h_addr_list[0]);
-  } else {
-    iaddr = ::inet_addr(address.c_str());
-  }
-  if(iaddr == INADDR_NONE)
-    return false;
-  // Fill host information
-  out_peer.sin_family = AF_INET;
-  out_peer.sin_addr.s_addr = iaddr;
-  out_peer.sin_port = htons(port);
-  return true;
-}
-#endif
-
 // The next function are those who do the dirt work
 
 // overflow() - handles output to a connected socket.
@@ -448,6 +433,56 @@ int stream_socketbuf::underflow() {
   setg(eback(), egptr()-size, egptr());
 
   return (int)(unsigned char)(*gptr()); // traits::not_eof(...)
+}
+
+// setTarget() - set the target socket address
+bool dgram_socketbuf::setTarget(const std::string& address, unsigned port)
+{
+#ifdef HAVE_GETADDRINFO
+  struct addrinfo req, *ans;
+
+  req.ai_flags = 0;
+  req.ai_family = PF_UNSPEC;
+  req.ai_socktype = SOCK_DGRAM;
+  req.ai_protocol = 0;
+
+  int ret;
+  if ((ret = ::getaddrinfo(address.c_str(), NULL, &req, &ans)) != 0) {
+    return false;
+  }
+
+  memcpy(&out_peer, ans->ai_addr, ans->ai_addrlen);
+  out_p_size = ans->ai_addrlen;
+  ::freeaddrinfo(ans);
+
+#ifndef HAVE_IPV6
+  ((sockaddr_in &)out_peer).sin_port = htons(port);
+#else // HAVE_IPV6
+  if (out_peer.ss_family == AF_INET6) {
+    ((sockaddr_in6 &)out_peer).sin6_port = htons(port);
+  } else {
+    ((sockaddr_in &)out_peer).sin_port = htons(port);
+  }
+#endif // HAVE_IPV6
+  return true;
+#else // HAVE_GETADDRINFO
+  unsigned long iaddr;
+  hostent *he = ::gethostbyname(address.c_str());
+  if(he!=NULL) {
+    iaddr = *(unsigned long *)(he->h_addr_list[0]);
+  } else {
+    iaddr = ::inet_addr(address.c_str());
+  }
+  if(iaddr == INADDR_NONE)
+    return false;
+  // Fill host information
+  sockaddr_in & out_peer_in = (sockaddr_in &)out_peer;
+  out_peer_in.sin_family = AF_INET;
+  out_peer_in.sin_addr.s_addr = iaddr;
+  out_peer_in.sin_port = htons(port);
+  out_p_size = sizeof(sockaddr_in);
+  return true;
+#endif // HAVE_GETADDRINFO
 }
 
 // overflow() - handles output to a connected socket.
@@ -561,36 +596,17 @@ int dgram_socketbuf::underflow() {
 /////////////////////////////////////////////////////////////////////////////
 // class basic_socket_stream implementation
 /////////////////////////////////////////////////////////////////////////////
-// Constructors
-  basic_socket_stream::basic_socket_stream()
-      : std::iostream(&_sockbuf), _sockbuf(INVALID_SOCKET), protocol(FreeSockets::proto_IP), LastError(0)
-  {
-    startup();
-    init(&_sockbuf); // initialize underlying streambuf
-  }
 
-  basic_socket_stream::basic_socket_stream(unsigned insize,unsigned outsize,
-                      int proto)
-      : std::iostream(&_sockbuf), _sockbuf(INVALID_SOCKET,insize,outsize),
-        protocol(proto), LastError(0)
-  {
-    startup();
-    init(&_sockbuf); // initialize underlying streambuf
-  }
+// Constructor
 
-  basic_socket_stream::basic_socket_stream(SOCKET_TYPE sock)
-      : std::iostream(&_sockbuf), _sockbuf(sock), protocol(FreeSockets::proto_IP), LastError(0) {
-    startup();
-    init(&_sockbuf); // initialize underlying streambuf
-  }
-
-  basic_socket_stream::basic_socket_stream(SOCKET_TYPE sock,
-                      unsigned insize,unsigned outsize)
-      : std::iostream(&_sockbuf), _sockbuf(sock,insize,outsize),
-        protocol(FreeSockets::proto_IP), LastError(0) {
-    startup();
-    init(&_sockbuf); // initialize underlying streambuf
-  }
+basic_socket_stream::basic_socket_stream(socketbuf & buffer,
+                                                 int proto)
+    : std::iostream(&_sockbuf), _sockbuf(buffer),
+      protocol(proto), LastError(0)
+{
+  startup();
+  init(&_sockbuf); // initialize underlying streambuf
+}
 
 // System dependant initialization
 bool basic_socket_stream::startup() {

@@ -22,7 +22,16 @@
 //  Created: 2002-02-19 by Dan Tomalesky
 //
 // $Log$
-// Revision 1.6  2003-05-04 21:30:16  alriddoch
+// Revision 1.7  2003-05-06 21:53:11  alriddoch
+//  2003-05-06 Al Riddoch <alriddoch@zepler.org>
+//     - skstream/skstream.h, skstream/skstream.cpp, skstream_unix.h:
+//       Re-work basic_socket_stream so it can have either stream or datagram
+//       buffers.
+//     - ping/ping.cpp, ping/ping.h, test/basicskstreamtest.h,
+//       test/childskstreamtest.h, test/skservertest.h: Get the tests and examples
+//       building again.
+//
+// Revision 1.6  2003/05/04 21:30:16  alriddoch
 //  2003-05-04 Al Riddoch <alriddoch@zepler.org>
 //     - Sort out nasty hard tabs from address checks.
 //     - Start work on updating the checks.
@@ -132,10 +141,8 @@ class basicskstreamtest : public CppUnit::TestCase
     CPPUNIT_TEST(testConstructor_2);
     CPPUNIT_TEST(testConstructor_3);
     CPPUNIT_TEST(testConstructor_4);
-    CPPUNIT_TEST(testSetOutpeer);
     CPPUNIT_TEST(testSetSocket);
     CPPUNIT_TEST(testSetBroadcast);
-    CPPUNIT_TEST(testRemoteHost);
     CPPUNIT_TEST(testClose);
     CPPUNIT_TEST_SUITE_END();
 
@@ -151,15 +158,18 @@ class basicskstreamtest : public CppUnit::TestCase
 
         void testConstructor_1()
         {
-            basic_socket_stream *sks = new basic_socket_stream();
+            stream_socketbuf *skb = new stream_socketbuf(INVALID_SOCKET);
+            basic_socket_stream *sks = new basic_socket_stream(*skb);
 
             CPPUNIT_ASSERT(sks);
 
             delete sks;
+            delete skb;
         }
 
         void testConstructor_2()
         {
+            stream_socketbuf *skb;
             basic_socket_stream *sks;
             unsigned insize, outsize;
 
@@ -169,18 +179,22 @@ class basicskstreamtest : public CppUnit::TestCase
                 insize = i * 3;
                 outsize = i * 2;
 
-                sks = new basic_socket_stream(insize, outsize, i);
+                skb = new stream_socketbuf(INVALID_SOCKET, insize, outsize);
+                sks = new basic_socket_stream(*skb, i);
 
                 CPPUNIT_ASSERT(sks);
                 CPPUNIT_ASSERT(sks->getProtocol() == i);
 
                 delete sks;
+                delete skb;
             }
             
             //test with crumby settings...should this fail?
-            sks = new basic_socket_stream((unsigned)0, 0, 0);
+            skb = new stream_socketbuf(INVALID_SOCKET, 0, 0);
+            sks = new basic_socket_stream(*skb, (unsigned)0);
             CPPUNIT_ASSERT(sks);
             delete sks;
+            delete skb;
         }
 
         void testConstructor_3()
@@ -193,26 +207,12 @@ class basicskstreamtest : public CppUnit::TestCase
             unsigned insize = 5, outsize = 6;
             SOCKET_TYPE sock = skstream->getSocket();
 
-            basic_socket_stream sks(sock, insize, outsize);
+            stream_socketbuf skb(sock, insize, outsize);
+            basic_socket_stream sks(skb);
 
             CPPUNIT_ASSERT(sks);
 
             CPPUNIT_ASSERT(sks.getSocket() == sock);
-        }
-
-        void testSetOutpeer()
-        {
-            CPPUNIT_ASSERT(skstream->setOutpeer(*hostname, port));
-            sockaddr_in sain = skstream->getOutpeer();
-
-            //check the port was set
-            CPPUNIT_ASSERT(sain.sin_port);
-
-            //check the address was set
-            CPPUNIT_ASSERT(sain.sin_addr.s_addr);
-
-            //now test other setOutpeer method
-            CPPUNIT_ASSERT(skstream->setOutpeer(sain));
         }
 
         void testSetSocket()
@@ -235,16 +235,6 @@ class basicskstreamtest : public CppUnit::TestCase
             CPPUNIT_ASSERT(skstream->setBroadcast(false));
         }
 
-        void testRemoteHost()
-        {
-            remote_host rh(*hostname, port);
-
-            *skstream << rh;
-            sockaddr_in sain = skstream->getOutpeer();
-            CPPUNIT_ASSERT(sain.sin_port);
-            CPPUNIT_ASSERT(sain.sin_addr.s_addr);
-        }
-
         void testClose()
         {
             skstream->close();
@@ -263,7 +253,8 @@ class basicskstreamtest : public CppUnit::TestCase
         void setUp()
         {
             socket = ::socket(AF_INET, SOCK_DGRAM, FreeSockets::proto_UDP);
-            skstream = new basic_socket_stream(socket);
+            stream_socketbuf * skb = new stream_socketbuf(socket);
+            skstream = new basic_socket_stream(*skb);
             
             //echo service must be running (check inetd settings or if you
             //are a winders user, you have to install it)

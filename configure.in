@@ -424,6 +424,7 @@ dnl Generate files
 AC_OUTPUT([
 	Makefile
 	skstream/Makefile
+	ping/Makefile
 	test/Makefile
 	skstream.spec
 	skstream-0.3.pc

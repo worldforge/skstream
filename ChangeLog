@@ -1,3 +1,10 @@
+ 2003-05-06 Al Riddoch <alriddoch@zepler.org>
+    - skstream/skstream.h, skstream/skstream.cpp, skstream_unix.h:
+      Re-work basic_socket_stream so it can have either stream or datagram
+      buffers.
+    - ping/ping.cpp, ping/ping.h, test/basicskstreamtest.h,
+      test/childskstreamtest.h, test/skservertest.h: Get the tests and examples
+      building again.
  2003-05-04 James Turner <james@worldforge.org>
     - Updated OS-X projectbuilder files, including adding an
       skstreamconfig.h.pbx config file, which is copied to

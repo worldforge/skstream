@@ -22,7 +22,16 @@
 //  Created: 2002-02-23 by Dan Tomalesky
 //
 // $Log$
-// Revision 1.3  2002-12-09 22:13:21  rsteinke
+// Revision 1.4  2003-05-06 21:53:11  alriddoch
+//  2003-05-06 Al Riddoch <alriddoch@zepler.org>
+//     - skstream/skstream.h, skstream/skstream.cpp, skstream_unix.h:
+//       Re-work basic_socket_stream so it can have either stream or datagram
+//       buffers.
+//     - ping/ping.cpp, ping/ping.h, test/basicskstreamtest.h,
+//       test/childskstreamtest.h, test/skservertest.h: Get the tests and examples
+//       building again.
+//
+// Revision 1.3  2002/12/09 22:13:21  rsteinke
 //     - created basic_socket, a virtual base class
 //       for basic_socket_stream and basic_socket_server,
 //       so that the polling code has a common base
@@ -75,7 +84,7 @@
 #ifndef CHILDSKSTREAMTEST_H
 #define CHILDSKSTREAMTEST_H
 
-#include "skstream.h"
+#include <skstream/skstream.h>
 
 #include <cppunit/TestCase.h>
 #include <cppunit/extensions/HelperMacros.h>
