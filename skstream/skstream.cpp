@@ -23,7 +23,15 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.46  2004-11-24 00:50:36  alriddoch
+ * Revision 1.47  2004-11-29 22:47:30  alriddoch
+ * 2004-11-29  Al Riddoch  <alriddoch@zepler.org>
+ *
+ * 	* skstream/skstream.h, skstream/skstream.cpp: Inline operator!
+ * 	  and timeout as they don't need to be virtual. Don't inline
+ * 	  open() as its too big. Make setOutpeer return void, as the returned
+ * 	  bool value was useless and ignored.
+ *
+ * Revision 1.46  2004/11/24 00:50:36  alriddoch
  * 2004-11-24  Al Riddoch  <alriddoch@zepler.org>
  *
  * 	* skstream/skstream.cpp, skstream/skstream.h, skstream/skstream_unix.h:
@@ -864,16 +872,6 @@ basic_socket_stream::~basic_socket_stream()
   delete &_sockbuf;
 }
 
-bool basic_socket_stream::operator!()
-{
-  return fail();
-}
-
-bool basic_socket_stream::timeout() const
-{
-  return _sockbuf.timeout();
-}
-
 SOCKET_TYPE basic_socket_stream::getSocket() const
 {
   return _sockbuf.getSocket();
@@ -1184,6 +1182,16 @@ void tcp_socket_stream::open(const std::string & address,
 
   // set socket for underlying socketbuf
   _sockbuf.setSocket(_socket);
+}
+
+void tcp_socket_stream::open(const std::string & address, int service,
+                             unsigned int milliseconds)
+{
+  open(address, service, true);
+  if(!isReady(milliseconds)) {
+    close();
+    fail();
+  }
 }
 
 void tcp_socket_stream::close()

@@ -1,3 +1,10 @@
+2004-11-29  Al Riddoch  <alriddoch@zepler.org>
+
+	* skstream/skstream.h, skstream/skstream.cpp: Inline operator!
+	  and timeout as they don't need to be virtual. Don't inline
+	  open() as its too big. Make setOutpeer return void, as the returned
+	  bool value was useless and ignored.
+
 2004-11-24  Al Riddoch  <alriddoch@zepler.org>
 
 	* skstream/skstream.cpp, skstream/skstream.h, skstream/skstream_unix.h:

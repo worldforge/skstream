@@ -23,7 +23,15 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.45  2004-11-24 00:50:37  alriddoch
+ * Revision 1.46  2004-11-29 22:47:30  alriddoch
+ * 2004-11-29  Al Riddoch  <alriddoch@zepler.org>
+ *
+ * 	* skstream/skstream.h, skstream/skstream.cpp: Inline operator!
+ * 	  and timeout as they don't need to be virtual. Don't inline
+ * 	  open() as its too big. Make setOutpeer return void, as the returned
+ * 	  bool value was useless and ignored.
+ *
+ * Revision 1.45  2004/11/24 00:50:37  alriddoch
  * 2004-11-24  Al Riddoch  <alriddoch@zepler.org>
  *
  * 	* skstream/skstream.cpp, skstream/skstream.h, skstream/skstream_unix.h:
@@ -433,9 +441,8 @@ public:
   /// Destroy the socket buffer.
   virtual ~socketbuf();
 
-  bool setOutpeer(const sockaddr_storage & peer) { 
+  void setOutpeer(const sockaddr_storage & peer) { 
     out_peer = peer; 
-    return true; 
   }
 
   const sockaddr_storage & getOutpeer() const {
@@ -607,19 +614,17 @@ public:
   // Destructor
   virtual ~basic_socket_stream();
 
-  virtual bool fail();
+  bool fail();
 
-  virtual bool operator!();
+  bool operator!() {
+    return fail();
+  }
 
-  // FIXME Why is this virtual?
-  // If its not virtual, it should be inlined.
-  virtual bool timeout() const;
+  bool timeout() const {
+    return _sockbuf.timeout();
+  }
 
-  bool setOutpeer(const sockaddr_storage& peer) { 
-    /*%NOTE(Grimicus, skstream2, FYI)
-     * removed a ! right before _socketbuf because it
-     *didn't seem to be consistent with the other setOutpeer()
-     */
+  void setOutpeer(const sockaddr_storage& peer) { 
     return _sockbuf.setOutpeer(peer); 
   }
 
@@ -701,14 +706,7 @@ public:
   virtual ~tcp_socket_stream();
 
   void open(const std::string& address, int service, bool nonblock = false);
-  void open(const std::string& address, int service,
-            unsigned int milliseconds) {
-    open(address, service, true);
-    if(!isReady(milliseconds)) {
-      close();
-      fail();
-    }
-  }
+  void open(const std::string& address, int service, unsigned int milliseconds);
 
   virtual void close();
   virtual SOCKET_TYPE getSocket() const;
