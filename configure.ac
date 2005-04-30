@@ -1,21 +1,16 @@
 dnl Initialise autoconf
 
-AC_INIT()
+AC_INIT(skstream, 0.3.3, alriddoch@zepler.org)
 AC_CONFIG_SRCDIR(skstream/skstream.cpp)
+AC_CONFIG_HEADERS([config.h])
 
-dnl Detect the canonical host and target environment
+dnl Detect the canonical host environment
 
-AC_CANONICAL_SYSTEM
+AC_CANONICAL_HOST
 
 dnl Initialise automake
 
-SKSTREAM_MAJOR=0
-SKSTREAM_MINOR=3
-SKSTREAM_MICRO=3
-SKSTREAM_VERSION=$SKSTREAM_MAJOR.$SKSTREAM_MINOR.$SKSTREAM_MICRO
-
-AM_INIT_AUTOMAKE(skstream, $SKSTREAM_VERSION)
-AM_CONFIG_HEADER(config.h)
+AM_INIT_AUTOMAKE([dist-bzip2 check-news])
 
 SKSTREAM_CURRENT=1
 SKSTREAM_REVISION=0
@@ -29,15 +24,14 @@ SKSTREAM_LIB_SUFFIX="-0.3"
 SKSTREAM_LIBS="-lskstream$SKSTREAM_LIB_SUFFIX"
 SKSTREAM_EXTRA_LIBS=
 
-AC_SUBST(SKSTREAM_VERSION)
 AC_SUBST(SKSTREAM_CURRENT)
 AC_SUBST(SKSTREAM_VERSION_INFO)
 AC_SUBST(SKSTREAM_VERSION_NO)
 
 dnl Test for GNU libtool
 
-AM_DISABLE_STATIC
-AM_PROG_LIBTOOL
+AC_DISABLE_STATIC
+AC_PROG_LIBTOOL
 
 dnl Test for C++ compiler
 
@@ -60,7 +54,7 @@ dnl Test for ANSI standard language features
 
 dnl Test for C++ bool keyword
 
-AC_LANG_PUSH(C++)
+AC_LANG(C++)
 
 dnl Test for C++ Standard Library
 
@@ -388,8 +382,6 @@ AM_PATH_CPPUNIT(1.6.1,,
     found_cppunit=no
 )
 
-AC_LANG_POP(C++)
-
 AM_CONDITIONAL(USE_CPPUNIT, test "$found_cppunit" = "yes")
 
 dnl test for support programs
@@ -405,7 +397,7 @@ AC_DEFINE(CONFIG_H_INCLUDED, 1, true if config.h was included)
 
 dnl Generate files
 
-AC_OUTPUT([
+AC_CONFIG_FILES([
 	Makefile
 	skstream/Makefile
 	ping/Makefile
@@ -415,3 +407,4 @@ AC_OUTPUT([
 	skstream-unix-0.3.pc
 	skstream/skstreamconfig.h
 ])
+AC_OUTPUT
