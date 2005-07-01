@@ -1,3 +1,11 @@
+2005-07-01  Al Riddoch  <alriddoch@zepler.org>
+
+	* skstream/skstream.h, skstream/skstream.cpp: Make functions
+	  non-virtual if they don't require it. Get rid of unused return
+	  value for setbuf(). Move some functionality into
+	  socketbuf::setSocket(). Make sure socket is valid before getting
+	  its peer name.
+
 2005-04-30  Al Riddoch  <alriddoch@zepler.org>
 
 	* configure.ac: Update autoconf usage to be more correct.

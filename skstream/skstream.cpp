@@ -23,7 +23,16 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.49  2005-03-03 15:46:05  alriddoch
+ * Revision 1.50  2005-07-01 23:35:54  alriddoch
+ * 2005-07-01  Al Riddoch  <alriddoch@zepler.org>
+ *
+ * 	* skstream/skstream.h, skstream/skstream.cpp: Make functions
+ * 	  non-virtual if they don't require it. Get rid of unused return
+ * 	  value for setbuf(). Move some functionality into
+ * 	  socketbuf::setSocket(). Make sure socket is valid before getting
+ * 	  its peer name.
+ *
+ * Revision 1.49  2005/03/03 15:46:05  alriddoch
  * 2004-03-03  Al Riddoch  <alriddoch@zepler.org>
  *
  * 	* skstream/skstream.h, skstream/skstream.cpp: Add a virtual
@@ -460,15 +469,12 @@ socketbuf::socketbuf(SOCKET_TYPE sock, unsigned insize, unsigned outsize)
   char* buffer = new char[bufsize];
   ::memset(buffer,0,bufsize);
   // Setup the buffer
-  if(this != setbuf(buffer, bufsize)) {
-    _buffer = NULL;
-  }
+  setbuf(buffer, bufsize);
+
   _timeout.tv_sec  = 0;
   _timeout.tv_usec = 0;
 
-  ::getpeername(sock,(sockaddr*)&out_peer, &out_p_size);
-  in_peer = out_peer;
-  in_p_size = out_p_size;
+  setSocket(sock);
 }
 
 // Constructor
@@ -478,15 +484,12 @@ socketbuf::socketbuf(SOCKET_TYPE sock, char* buf, int length)
       Timeout(false)
 {
   _buffer = NULL;
-  if(this != setbuf(buf,length)) {
-    _buffer = NULL;
-  }
+  setbuf(buf, length);
+
   _timeout.tv_sec  = 0;
   _timeout.tv_usec = 0;
 
-  ::getpeername(sock,(sockaddr*)&out_peer, &out_p_size);
-  in_peer = out_peer;
-  in_p_size = out_p_size;
+  setSocket(sock);
 }
 
 // Destructor
@@ -498,10 +501,12 @@ socketbuf::~socketbuf(){
 void socketbuf::setSocket(SOCKET_TYPE sock)
 {
   _socket = sock;
-  out_p_size = sizeof(sockaddr);
-  ::getpeername(sock, (sockaddr*)&out_peer, &out_p_size);
-  in_peer = out_peer;
-  in_p_size = out_p_size;
+  out_p_size = sizeof(out_peer);
+  if(sock != INVALID_SOCKET) {
+    ::getpeername(sock, (sockaddr*)&out_peer, &out_p_size);
+    in_peer = out_peer;
+    in_p_size = out_p_size;
+  }
 }
 
 
@@ -519,14 +524,13 @@ int socketbuf::sync()
     }
 }
 
-std::streambuf* socketbuf::setbuf(char* buf, long len)
+void socketbuf::setbuf(char* buf, long len)
 {
     if((buf != NULL) && (len > 0)) {
       _buffer = buf;
       setp(_buffer, _buffer+(len >> 1));
       setg(_buffer+(len >> 1), _buffer+len, _buffer+len);
     }
-    return this;
 }
 
 stream_socketbuf::stream_socketbuf(SOCKET_TYPE sock,

@@ -23,7 +23,16 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.47  2005-03-03 15:46:05  alriddoch
+ * Revision 1.48  2005-07-01 23:35:54  alriddoch
+ * 2005-07-01  Al Riddoch  <alriddoch@zepler.org>
+ *
+ * 	* skstream/skstream.h, skstream/skstream.cpp: Make functions
+ * 	  non-virtual if they don't require it. Get rid of unused return
+ * 	  value for setbuf(). Move some functionality into
+ * 	  socketbuf::setSocket(). Make sure socket is valid before getting
+ * 	  its peer name.
+ *
+ * Revision 1.47  2005/03/03 15:46:05  alriddoch
  * 2004-03-03  Al Riddoch  <alriddoch@zepler.org>
  *
  * 	* skstream/skstream.h, skstream/skstream.cpp: Add a virtual
@@ -495,12 +504,12 @@ protected:
   virtual int underflow() = 0;
 
   /// Flush the output buffer.
-  virtual int sync();
+  int sync();
 
   /** Set the buffer area this stream buffer uses. Only works if not already
    *  set.
    */
-  virtual std::streambuf* setbuf(char* buf, long len);
+  void setbuf(char* buf, long len);
 };
 
 class stream_socketbuf : public socketbuf {
