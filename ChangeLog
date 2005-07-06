@@ -1,3 +1,13 @@
+2005-07-07  Al Riddoch  <alriddoch@zepler.org>
+
+	* skstream.spec.in: Clean up spec.
+
+	* NEWS: Update news.
+
+	* configure.ac: Increment version.
+
+	* Release 0.3.4, interface version 2.0.0.
+
 2005-07-01  Al Riddoch  <alriddoch@zepler.org>
 
 	* skstream/skstream.h, skstream/skstream.cpp: Make functions

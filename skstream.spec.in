@@ -13,10 +13,8 @@ URL: http://www.worldforge.org/dev/eng/libraries/skstream
 Packager: Al Riddoch <alriddoch@zepler.org>
 Vendor: WorldForge
 Distribution: Mason
-Source: %{name}-%{version}.tar.gz
-Requires: libstdc++
-BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
-BuildRequires: libstdc++-devel
+Source: %{name}-%{version}.tar.bz2
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 
 %description
 %{name} is an iostream based socket library in C++. It is based on
