@@ -1,3 +1,9 @@
+2005-09-06  Al Riddoch  <alriddoch@zepler.org>
+
+	* skstream/skstream.h, skstream/skstream.cpp: Fix arguments to
+	  socketbuf::setbuf so they really match the function it should
+	  be overloading. Add the required return value, and return this.
+
 2005-07-07  Al Riddoch  <alriddoch@zepler.org>
 
 	* skstream.spec.in: Clean up spec.

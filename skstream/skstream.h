@@ -23,7 +23,17 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.48  2005-07-01 23:35:54  alriddoch
+ * Revision 1.49  2005-09-06 16:51:20  alriddoch
+ * 2005-09-06  Al Riddoch  <alriddoch@zepler.org>
+ *
+ * 	* skstream/skstream.h, skstream/skstream.cpp: Fix arguments to
+ * 	  socketbuf::setbuf so they really match the function it should
+ * 	  be overloading. Add the required return value, and return this.
+ *
+ * Thanks to Jonathan Phenix for originally reporting the bug, and for
+ * providing the initial patch to fix it.
+ *
+ * Revision 1.48  2005/07/01 23:35:54  alriddoch
  * 2005-07-01  Al Riddoch  <alriddoch@zepler.org>
  *
  * 	* skstream/skstream.h, skstream/skstream.cpp: Make functions
@@ -509,7 +519,7 @@ protected:
   /** Set the buffer area this stream buffer uses. Only works if not already
    *  set.
    */
-  void setbuf(char* buf, long len);
+  std::streambuf * setbuf(std::streambuf::char_type * buf, std::streamsize len);
 };
 
 class stream_socketbuf : public socketbuf {

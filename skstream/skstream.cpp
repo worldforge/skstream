@@ -23,7 +23,17 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.50  2005-07-01 23:35:54  alriddoch
+ * Revision 1.51  2005-09-06 16:51:20  alriddoch
+ * 2005-09-06  Al Riddoch  <alriddoch@zepler.org>
+ *
+ * 	* skstream/skstream.h, skstream/skstream.cpp: Fix arguments to
+ * 	  socketbuf::setbuf so they really match the function it should
+ * 	  be overloading. Add the required return value, and return this.
+ *
+ * Thanks to Jonathan Phenix for originally reporting the bug, and for
+ * providing the initial patch to fix it.
+ *
+ * Revision 1.50  2005/07/01 23:35:54  alriddoch
  * 2005-07-01  Al Riddoch  <alriddoch@zepler.org>
  *
  * 	* skstream/skstream.h, skstream/skstream.cpp: Make functions
@@ -524,13 +534,16 @@ int socketbuf::sync()
     }
 }
 
-void socketbuf::setbuf(char* buf, long len)
+std::streambuf * socketbuf::setbuf(std::streambuf::char_type * buf,
+                                   std::streamsize len)
 {
     if((buf != NULL) && (len > 0)) {
       _buffer = buf;
       setp(_buffer, _buffer+(len >> 1));
       setg(_buffer+(len >> 1), _buffer+len, _buffer+len);
     }
+
+    return this;
 }
 
 stream_socketbuf::stream_socketbuf(SOCKET_TYPE sock,
