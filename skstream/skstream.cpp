@@ -23,7 +23,13 @@
  * in the following ways:
  *
  * $Log$
- * Revision 1.51  2005-09-06 16:51:20  alriddoch
+ * Revision 1.52  2005-09-07 00:22:16  alriddoch
+ * 2005-09-07  Al Riddoch  <alriddoch@zepler.org>
+ *
+ * 	* skstream/skstream.cpp: Fix a uninitialised reference being passed
+ * 	  to the std::iostream parent contructor of basic_socket_stream.
+ *
+ * Revision 1.51  2005/09/06 16:51:20  alriddoch
  * 2005-09-06  Al Riddoch  <alriddoch@zepler.org>
  *
  * 	* skstream/skstream.h, skstream/skstream.cpp: Fix arguments to
@@ -899,7 +905,7 @@ basic_socket::~basic_socket()
 
 basic_socket_stream::basic_socket_stream(socketbuf & buffer,
                                                  int proto)
-    : std::iostream(&_sockbuf), _sockbuf(buffer),
+    : std::iostream(&buffer), _sockbuf(buffer),
       protocol(proto), LastError(0)
 {
   startup();

@@ -1,3 +1,8 @@
+2005-09-07  Al Riddoch  <alriddoch@zepler.org>
+
+	* skstream/skstream.cpp: Fix a uninitialised reference being passed
+	  to the std::iostream parent contructor of basic_socket_stream.
+
 2005-09-06  Al Riddoch  <alriddoch@zepler.org>
 
 	* skstream/skstream.h, skstream/skstream.cpp: Fix arguments to
