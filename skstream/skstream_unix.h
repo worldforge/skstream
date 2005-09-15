@@ -1,5 +1,5 @@
 /****************************************************************************
- Copyright (C) 2003 Al Riddoch
+ Copyright (C) 2003 Al Riddoch <alriddoch@zepler.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,6 +17,13 @@
 
 ****************************************************************************/
 
+/**
+ * This software package has been extensively modified by members of the
+ * Worldforge Project. See the file ChangeLog for details.
+ *
+ * $Id$
+ *
+ */
 #ifndef SKSTREAM_UNIX_H_
 #define SKSTREAM_UNIX_H_
 

@@ -1,3 +1,14 @@
+2005-09-15  Al Riddoch  <alriddoch@zepler.org>
+
+	* skstream/sasproto.h, skstream/skpoll.cpp, skstream/skpoll.h,
+	  skstream/skserver.cpp, skstream/skserver.h,
+	  skstream/skserver_unix.h, skstream/skstream.cpp,
+	  skstream/skstream.h, skstream/skstream_unix.h,
+	  skstream/skstreamconfig.h.in: Remove duplicated changelog from
+	  the source files, and add a reference to this file instead.
+
+	* Increment version to 0.3.5 and interface version to 3.0.0.
+
 2005-09-07  Al Riddoch  <alriddoch@zepler.org>
 
 	* skstream/skstream.cpp: Fix a uninitialised reference being passed

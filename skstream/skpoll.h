@@ -19,26 +19,10 @@
 **************************************************************************/
 
 /**
- * This software package has been modified by the Worldforge Project 
- * in the following ways:
+ * This software package has been extensively modified by members of the
+ * Worldforge Project. See the file ChangeLog for details.
  *
- * $Log$
- * Revision 1.3  2003-04-16 14:02:35  alriddoch
- *  2003-04-16 Al Riddoch <alriddoch@zepler.org>,
- *     - Fix up includes so they work properlly
- *
- * Revision 1.2  2002/12/09 23:18:44  rsteinke
- *     Added a 'const' in the definition of basic_socket_poll::socket_map
- *
- * Revision 1.1  2002/12/09 22:13:21  rsteinke
- *     - created basic_socket, a virtual base class
- *       for basic_socket_stream and basic_socket_server,
- *       so that the polling code has a common base
- *       with getSocket() to access
- *     - created basic_socket_poll polling class
- *     - changed tcp_socket_stream::is_ready() to isReady()
- *       to match standards for function naming, left is_ready()
- *       as a wrapper of isReady() for compatibility
+ * $Id$
  *
  */
 #ifndef RGJ_FREE_SOCKET_POLL_H_

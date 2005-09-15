@@ -19,6 +19,13 @@
 
 **************************************************************************/
 
+/**
+ * This software package has been extensively modified by members of the
+ * Worldforge Project. See the file ChangeLog for details.
+ *
+ * $Id$
+ *
+ */
 #ifndef RGJ_FREE_THREADS_SERVER_UNIX_H_
 #define RGJ_FREE_THREADS_SERVER_UNIX_H_
 
