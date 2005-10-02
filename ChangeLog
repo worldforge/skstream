@@ -1,5 +1,9 @@
 2005-09-15  Al Riddoch  <alriddoch@zepler.org>
 
+	* Release 0.3.5, interface version 3.0.0.
+
+2005-09-15  Al Riddoch  <alriddoch@zepler.org>
+
 	* skstream/sasproto.h, skstream/skpoll.cpp, skstream/skpoll.h,
 	  skstream/skserver.cpp, skstream/skserver.h,
 	  skstream/skserver_unix.h, skstream/skstream.cpp,
