@@ -50,6 +50,19 @@ AC_ARG_ENABLE(debug,
     ]
 )
 
+AC_ARG_ENABLE(getaddrinfo,
+    [  --enable-getaddrinfo    enable getaddrinfo for hostname lookups [default=yes]],
+    [
+        if test "$enableval" = "yes"; then
+            ac_enable_getaddrinfo="yes"
+        else
+            ac_enable_getaddrinfo="no"
+        fi
+    ],[
+        ac_enable_getaddrinfo="yes"
+    ]
+)
+
 dnl Test for ANSI standard language features
 
 dnl Test for C++ bool keyword
@@ -85,6 +98,7 @@ AC_CACHE_VAL(ac_cv_socket_type,
     AC_TRY_COMPILE([#include <ws2tcpip.h>],
     [
         SOCKET foo;
+        return foo; /* Avoids warning */
     ],
     [
         ac_cv_socket_type=SOCKET
@@ -108,7 +122,8 @@ AC_CACHE_VAL(ac_cv_socklen_type,
     AC_TRY_COMPILE([#include <unistd.h>
                     #include <sys/socket.h>],
     [
-        socklen_t foo;
+        socklen_t foo = 0;
+        return foo != 0; /* Avoids warning */
     ],
     [
         ac_cv_socklen_type=socklen_t
@@ -154,6 +169,7 @@ AC_CACHE_VAL(ac_cv_timeval_header,
     AC_TRY_COMPILE([#include <winsock2.h>],
     [
         timeval foo;
+        return &foo == 0; /* Avoids warning */
     ],
     [
         ac_cv_timeval_header="#include <winsock2.h>"
@@ -164,6 +180,7 @@ AC_CACHE_VAL(ac_cv_timeval_header,
         AC_TRY_COMPILE([#include <sys/time.h>],
         [
             timeval foo;
+            return &foo == 0; /* Avoids warning */
         ],
         [
             ac_cv_timeval_header="#include <sys/time.h>"
@@ -174,6 +191,7 @@ AC_CACHE_VAL(ac_cv_timeval_header,
             AC_TRY_COMPILE([#include <net/socket.h>],
             [
                 timeval foo;
+                return &foo == 0; /* Avoids warning */
             ],
             [
                 ac_cv_timeval_header="#include <net/socket.h>"
@@ -199,6 +217,7 @@ AC_MSG_CHECKING([for socket block error value])
 AC_TRY_COMPILE([#include <errno.h>],
 [
     int i = EINPROGRESS;
+    return i == 0; /* Avoids warning */
 ],
 [
     SKSTREAM_BLOCK_ERROR_VAL=EINPROGRESS
@@ -207,6 +226,7 @@ AC_TRY_COMPILE([#include <errno.h>],
     AC_TRY_COMPILE([#include <windows.h>],
     [
         int i = WSAEWOULDBLOCK;
+        return i == 0; /* Avoids warning */
     ],
     [
         SKSTREAM_BLOCK_ERROR_VAL=WSAEWOULDBLOCK
@@ -256,6 +276,7 @@ AC_TRY_COMPILE([#include <sys/types.h>
                 #include <netinet/in.h>],
 [
     in_addr_t ia;
+    return &ia == 0; /* Avoids warnings */
 ],
 [
     AC_MSG_RESULT(yes)
@@ -265,6 +286,7 @@ AC_TRY_COMPILE([#include <sys/types.h>
     AC_TRY_COMPILE([#include <ws2tcpip.h>],
     [
         in_addr_t ia;
+        return &ia == 0; /* Avoids warnings */
     ],
     [
         AC_MSG_RESULT(yes)
@@ -348,27 +370,29 @@ AC_TRY_COMPILE([#include <ws2tcpip.h>],
 
 dnl Test for getaddrinfo
 
-AC_CHECK_FUNC(getaddrinfo,
-[
-    AC_DEFINE(HAVE_GETADDRINFO, 1, "Define to 1 if you have the `getaddrinfo' function.")
-],
-[
-    AC_MSG_CHECKING([for getaddrinfo in ws2tcpip.h])
-    AC_TRY_COMPILE(
+if test "$ac_enable_getaddrinfo" = "yes"; then
+    AC_CHECK_FUNC(getaddrinfo,
     [
-        #include <ws2tcpip.h>
-    ],
-    [
-        ::getaddrinfo(0, 0, 0, 0);
-    ],
-    [
-        AC_MSG_RESULT(yes)
         AC_DEFINE(HAVE_GETADDRINFO, 1, "Define to 1 if you have the `getaddrinfo' function.")
     ],
     [
-        AC_MSG_RESULT(no)
+        AC_MSG_CHECKING([for getaddrinfo in ws2tcpip.h])
+        AC_TRY_COMPILE(
+        [
+            #include <ws2tcpip.h>
+        ],
+        [
+            ::getaddrinfo(0, 0, 0, 0);
+        ],
+        [
+            AC_MSG_RESULT(yes)
+            AC_DEFINE(HAVE_GETADDRINFO, 1, "Define to 1 if you have the `getaddrinfo' function.")
+        ],
+        [
+            AC_MSG_RESULT(no)
+        ])
     ])
-])
+fi
 
 dnl Test for C library functions
 
