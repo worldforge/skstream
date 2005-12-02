@@ -17,8 +17,6 @@
 			sourceTree = "<group>";
 		};
 		C42E23750465BD8400A800C4 = {
-			buildRules = (
-			);
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -29,8 +27,6 @@
 			name = Development;
 		};
 		C42E23760465BD8400A800C4 = {
-			buildRules = (
-			);
 			buildSettings = {
 				COPY_PHASE_STRIP = YES;
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
