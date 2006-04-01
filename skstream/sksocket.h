@@ -1,7 +1,6 @@
 /**************************************************************************
  FreeSockets - Portable C++ classes for IP(sockets) applications. (v0.3)
  Copyright (C) 2000-2001 Rafael Guterres Jeffman
- Copyright (C) 2003 Alistair Riddoch
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,31 +25,52 @@
  * $Id$
  *
  */
-#ifndef RGJ_FREE_THREADS_SERVER_UNIX_H_
-#define RGJ_FREE_THREADS_SERVER_UNIX_H_
+#ifndef RGJ_FREE_SOCKET_H_
+#define RGJ_FREE_SOCKET_H_
 
-#include <skstream/skserver.h> // FreeSockets are needed
+#include <skstream/skstreamconfig.h>
 
-#include <string>
+// This constant is defined in windows, but not in most other systems
+#ifndef SOCKET_ERROR
+static const int SOCKET_ERROR = -1;
+#endif
+
+// This constant is defined in windows, but not in most other systems
+#ifndef INVALID_SOCKET
+ #define INVALID_SOCKET   (SOCKET_TYPE)~0
+#endif // INVALID_SOCKET
+
+// All systems should define this, but it is here just in case
+#ifndef INADDR_NONE
+ #warning System headers do not define INADDR_NONE
+ #define INADDR_NONE   0xFFFFFFFF
+#endif // INADDR_NONE
 
 /////////////////////////////////////////////////////////////////////////////
-// class unix_socket_server
+// class basic_socket, a virtual base class for use in polling
 /////////////////////////////////////////////////////////////////////////////
-class unix_socket_server : public basic_socket_server {
+class basic_socket {
+protected:
+  mutable int LastError;
+
+  void setLastError() const;
+
+  basic_socket() throw ();
 public:
-  unix_socket_server() {
+  virtual ~basic_socket();
+
+  virtual SOCKET_TYPE getSocket() const = 0;
+
+  int getLastError() const { 
+    return LastError; 
   }
 
-  explicit unix_socket_server(const std::string & service) { 
-    open(service); 
+  bool is_open() const { 
+    return (getSocket() != INVALID_SOCKET); 
   }
 
-  // Destructor
-  virtual ~unix_socket_server();
+  static bool startup();
 
-  SOCKET_TYPE accept();
-
-  void open(const std::string & service);
 };
 
-#endif // RGJ_FREE_THREADS_SERVER_UNIX_H_
+#endif // RGJ_FREE_SOCKET_H_

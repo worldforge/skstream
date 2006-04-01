@@ -1,3 +1,12 @@
+a datagram server and stream are not really separate functions. Try and
+sort out necessary features in the stream. In particular, need to flag
+whether it sould accept for anywhere, or only one particular place.
+It must be necessary to set target v. efficiently, which may require
+an abstraction of network address.
+Use basic_socket_stream constructer argument to initialise protocol.
+
+Clean out in_peer and out_peer. Sort out startup, as it needs to be static.
+
 Need to sort for once and for all the issue of streambuf objects
 being part of the superclass.
 

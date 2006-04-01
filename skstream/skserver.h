@@ -28,7 +28,7 @@
 #ifndef RGJ_FREE_THREADS_SERVER_H_
 #define RGJ_FREE_THREADS_SERVER_H_
 
-#include <skstream/skstream.h> // FreeSockets are needed
+#include <skstream/sksocket.h> // FreeSockets are needed
 
 /////////////////////////////////////////////////////////////////////////////
 // class basic_socket_server
@@ -36,20 +36,14 @@
 class basic_socket_server : public basic_socket {
 protected:
   SOCKET_TYPE _socket;
-  int LastError;
-
-  void setLastError();
 
 private:
   basic_socket_server(const basic_socket_server&);
   basic_socket_server& operator=(const basic_socket_server&);
 
-  bool startup();
-  void shutdown();
-
 protected:
   explicit basic_socket_server(SOCKET_TYPE _sock = INVALID_SOCKET)
-     : _socket(_sock), LastError(0) { 
+     : _socket(_sock) { 
     startup(); 
   }
 
@@ -57,25 +51,14 @@ public:
   // Destructor
   virtual ~basic_socket_server();
 
-  bool is_open() const { 
-    return (_socket != INVALID_SOCKET); 
-  }
-
   virtual SOCKET_TYPE getSocket() const;
 
-  int getLastError() { 
-    setLastError(); 
-    return LastError; 
-  }
-
   void close();
+  void shutdown();
 
-  /**
-   * See if accept() can be called without blocking on it.
-   */
+  /// See if accept() can be called without blocking on it.
   bool can_accept();
 
-  virtual SOCKET_TYPE accept() = 0;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -83,29 +66,13 @@ public:
 /////////////////////////////////////////////////////////////////////////////
 class ip_socket_server : public basic_socket_server {
 protected:
-  int _service;
-
-  void setService(int service) {
-    if(is_open())
-      close();
-
-    _service = service;
-    open(_service);
-  }
-
-  bool bindToIpService(int service, int type, int protocol);
+  int bindToIpService(int service, int type, int protocol);
 
   explicit ip_socket_server(SOCKET_TYPE _sock = INVALID_SOCKET) :
-             basic_socket_server(_sock), _service(0) {
+             basic_socket_server(_sock) {
   }
 public:
   virtual ~ip_socket_server();
-
-  int getService() {
-      return _service;
-  }
-
-  virtual bool open(int service) = 0;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -116,16 +83,16 @@ public:
   tcp_socket_server() {
   }
 
-  explicit tcp_socket_server(int service) : ip_socket_server() { 
-    setService(service); 
+  explicit tcp_socket_server(int service) { 
+    open(service); 
   }
 
   // Destructor
   virtual ~tcp_socket_server();
 
-  virtual SOCKET_TYPE accept();
+  SOCKET_TYPE accept();
 
-  virtual bool open(int service);
+  bool open(int service);
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -133,17 +100,15 @@ public:
 /////////////////////////////////////////////////////////////////////////////
 class udp_socket_server : public ip_socket_server {
 public:
-  explicit udp_socket_server(int service) : ip_socket_server() { 
-    setService(service); 
+  explicit udp_socket_server(int service) { 
+    open(service); 
   }
 
   // Destructor
   virtual ~udp_socket_server();
 
-  // return the socket used to send/recv UDP packets
-  virtual SOCKET_TYPE accept();
+  bool open(int service);
 
-  virtual bool open(int service);
 };
 
 #endif // RGJ_FREE_THREADS_SERVER_H_

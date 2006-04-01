@@ -38,6 +38,7 @@
 #include <errno.h>
 #endif // _WIN32
 
+#include <iostream>
 #include <cstdio>
 
 #ifdef _WIN32
@@ -65,31 +66,6 @@ static inline int closesocket(SOCKET_TYPE sock)
 /////////////////////////////////////////////////////////////////////////////
 // class basic_socket_server implementation
 /////////////////////////////////////////////////////////////////////////////
-// sistem dependant initialization
-bool basic_socket_server::startup() {
-  #ifdef _WIN32
-    const unsigned wMinVer = 0x0101;	// request WinSock v1.1 (at least)
-    WSADATA wsaData;
-    LastError = WSAStartup(wMinVer, &wsaData);
-    return (LastError == 0);
-  #else
-    return true;
-  #endif
-}
-
-// sistem dependant finalization
-void basic_socket_server::shutdown() {
-  if(is_open()) {
-    if(::shutdown(_socket, SHUT_RDWR) == SOCKET_ERROR) {
-      setLastError();
-    }
-  }
-}
-
-// sistem dependant error verification
-void basic_socket_server::setLastError() {
-    LastError = getSystemError();
-}
 
 basic_socket_server::~basic_socket_server() {
   basic_socket_server::close();
@@ -115,6 +91,14 @@ void basic_socket_server::close() {
       return;
     }
     _socket = INVALID_SOCKET;
+  }
+}
+
+void basic_socket_server::shutdown() {
+  if(is_open()) {
+    if(::shutdown(_socket, SHUT_RDWR) == SOCKET_ERROR) {
+      setLastError();
+    }
   }
 }
 
@@ -146,7 +130,7 @@ bool basic_socket_server::can_accept() {
 // class ip_socket_server implementation
 /////////////////////////////////////////////////////////////////////////////
 
-bool ip_socket_server::bindToIpService(int service, int type, int protocol)
+int ip_socket_server::bindToIpService(int service, int type, int protocol)
 {
 #ifdef HAVE_GETADDRINFO
   struct addrinfo req, *ans;
@@ -168,12 +152,12 @@ bool ip_socket_server::bindToIpService(int service, int type, int protocol)
     std::cout << "skstream: " << gai_strerror(ret)
               << std::endl << std::flush;
     setLastError();
-    return false;
+    return -1;
   }
 
-  bool success = false;
+  int success = -1;
 
-  for(struct addrinfo * i = ans; success == false && i != 0; i = i->ai_next) {
+  for(struct addrinfo * i = ans; success == -1 && i != 0; i = i->ai_next) {
     _socket = ::socket(i->ai_family, i->ai_socktype, i->ai_protocol);
     if (_socket == INVALID_SOCKET) {
       setLastError();
@@ -188,13 +172,13 @@ bool ip_socket_server::bindToIpService(int service, int type, int protocol)
       setLastError();
       close();
     } else {
-      success = true;
+      success = 0;
     }
   }
 
   ::freeaddrinfo(ans);
 
-  return success;
+  return 0;
 #else
   // create socket
   _socket = ::socket(AF_INET, type, protocol);
@@ -250,7 +234,7 @@ bool tcp_socket_server::open(int service)
     close();
   }
 
-  if (!bindToIpService(service, SOCK_STREAM, IPPROTO_TCP)) {
+  if (bindToIpService(service, SOCK_STREAM, IPPROTO_TCP) != 0) {
     return false;
   }
 
@@ -272,11 +256,6 @@ udp_socket_server::~udp_socket_server()
 {
 }
 
-SOCKET_TYPE udp_socket_server::accept()
-{
-    return _socket;
-}
-
 // create a UDP socket binded to a given port
 bool udp_socket_server::open(int service)
 {
@@ -284,7 +263,7 @@ bool udp_socket_server::open(int service)
     close();
   }
 
-  if (!bindToIpService(service, SOCK_DGRAM, IPPROTO_UDP)) {
+  if (bindToIpService(service, SOCK_DGRAM, IPPROTO_UDP) != 0) {
     return false;
   }
 

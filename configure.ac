@@ -1,6 +1,6 @@
 dnl Initialise autoconf
 
-AC_INIT(skstream, 0.3.5, alriddoch@zepler.org)
+AC_INIT(skstream, 0.3.6, alriddoch@zepler.org)
 AC_CONFIG_SRCDIR(skstream/skstream.cpp)
 AC_CONFIG_HEADERS([config.h])
 
@@ -12,7 +12,7 @@ dnl Initialise automake
 
 AM_INIT_AUTOMAKE([dist-bzip2 check-news])
 
-SKSTREAM_CURRENT=3
+SKSTREAM_CURRENT=4
 SKSTREAM_REVISION=0
 SKSTREAM_AGE=0
 SKSTREAM_VERSION_INFO=$SKSTREAM_CURRENT:$SKSTREAM_REVISION:$SKSTREAM_AGE

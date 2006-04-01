@@ -1,7 +1,6 @@
 /**************************************************************************
  FreeSockets - Portable C++ classes for IP(sockets) applications. (v0.3)
  Copyright (C) 2000-2001 Rafael Guterres Jeffman
- Copyright (C) 2003 Alistair Riddoch
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,31 +25,55 @@
  * $Id$
  *
  */
-#ifndef RGJ_FREE_THREADS_SERVER_UNIX_H_
-#define RGJ_FREE_THREADS_SERVER_UNIX_H_
 
-#include <skstream/skserver.h> // FreeSockets are needed
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif // HAVE_CONFIG_H
 
-#include <string>
+#include <skstream/sksocket.h>
+
+#ifndef _WIN32
+#include <errno.h>
+#endif
+
+#include <cstdio>
+
+static inline int getSystemError()
+{
+  #ifdef _WIN32
+    return WSAGetLastError();
+  #else
+    return errno;
+  #endif
+}
 
 /////////////////////////////////////////////////////////////////////////////
-// class unix_socket_server
+// class basic_socket implementation
 /////////////////////////////////////////////////////////////////////////////
-class unix_socket_server : public basic_socket_server {
-public:
-  unix_socket_server() {
-  }
 
-  explicit unix_socket_server(const std::string & service) { 
-    open(service); 
-  }
+// private function that sets the internal variable LastError
+void basic_socket::setLastError() const {
+    LastError = getSystemError();
+}
 
-  // Destructor
-  virtual ~unix_socket_server();
+basic_socket::basic_socket() throw () : LastError(0)
+{
+  startup();
+}
 
-  SOCKET_TYPE accept();
 
-  void open(const std::string & service);
-};
+basic_socket::~basic_socket()
+{
+}
 
-#endif // RGJ_FREE_THREADS_SERVER_UNIX_H_
+// System dependant initialization
+bool basic_socket::startup() {
+#ifdef _WIN32
+  const unsigned wMinVer = 0x0101;	// request WinSock v1.1 (at least)
+  WSADATA wsaData;
+  LastError = WSAStartup(wMinVer, &wsaData);
+  return (LastError == 0);
+#else // _WIN32
+  return true;
+#endif // _WIN32
+}

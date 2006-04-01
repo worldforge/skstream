@@ -78,7 +78,6 @@ typedef unsigned long in_addr_t;
 // Constructor
 socketbuf::socketbuf(SOCKET_TYPE sock, unsigned insize, unsigned outsize)
     : std::streambuf(), _socket(sock),
-      out_p_size(sizeof(out_peer)), in_p_size(sizeof(in_peer)),
       Timeout(false)
 {
   _buffer = NULL;
@@ -99,7 +98,6 @@ socketbuf::socketbuf(SOCKET_TYPE sock, unsigned insize, unsigned outsize)
 // Constructor
 socketbuf::socketbuf(SOCKET_TYPE sock, char* buf, int length)
     : std::streambuf(), _socket(sock),
-      out_p_size(sizeof(out_peer)), in_p_size(sizeof(in_peer)),
       Timeout(false)
 {
   _buffer = NULL;
@@ -120,12 +118,6 @@ socketbuf::~socketbuf(){
 void socketbuf::setSocket(SOCKET_TYPE sock)
 {
   _socket = sock;
-  out_p_size = sizeof(out_peer);
-  if(sock != INVALID_SOCKET) {
-    ::getpeername(sock, (sockaddr*)&out_peer, &out_p_size);
-    in_peer = out_peer;
-    in_p_size = out_p_size;
-  }
 }
 
 
@@ -171,10 +163,16 @@ stream_socketbuf::~stream_socketbuf()
 dgram_socketbuf::dgram_socketbuf(SOCKET_TYPE sock,
                                  unsigned insize,
                                  unsigned outsize)
-    : socketbuf(sock, insize, outsize) { }
+    : socketbuf(sock, insize, outsize),
+      out_p_size(sizeof(out_peer)), in_p_size(sizeof(in_peer))
+{
+}
 
 dgram_socketbuf::dgram_socketbuf(SOCKET_TYPE sock, char* buf, int length)
-    : socketbuf(sock, buf, length) { }
+    : socketbuf(sock, buf, length),
+      out_p_size(sizeof(out_peer)), in_p_size(sizeof(in_peer))
+{
+}
 
 dgram_socketbuf::~dgram_socketbuf()
 {
@@ -292,7 +290,7 @@ int stream_socketbuf::underflow()
 
 // setTarget() - set the target socket address
 bool dgram_socketbuf::setTarget(const std::string& address, unsigned port,
-                                int protocol)
+                                int proto)
 {
   if (_socket != INVALID_SOCKET) {
     ::closesocket(_socket);
@@ -308,7 +306,7 @@ bool dgram_socketbuf::setTarget(const std::string& address, unsigned port,
   req.ai_flags = 0;
   req.ai_family = PF_UNSPEC;
   req.ai_socktype = SOCK_DGRAM;
-  req.ai_protocol = 0;
+  req.ai_protocol = proto;
   req.ai_addrlen = 0;
   req.ai_addr = 0;
   req.ai_canonname = 0;
@@ -374,7 +372,7 @@ bool dgram_socketbuf::setTarget(const std::string& address, unsigned port,
     out_p_size = sizeof(sockaddr_in);
   }
 
-  SOCKET_TYPE newSock = ::socket(out_peer.ss_family, SOCK_DGRAM, protocol);
+  SOCKET_TYPE newSock = ::socket(out_peer.ss_family, SOCK_DGRAM, proto);
   if(newSock == INVALID_SOCKET) {
     return false;
   }
@@ -493,14 +491,6 @@ int dgram_socketbuf::underflow() {
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// class basic_socket implementation
-/////////////////////////////////////////////////////////////////////////////
-
-basic_socket::~basic_socket()
-{
-}
-
-/////////////////////////////////////////////////////////////////////////////
 // class basic_socket_stream implementation
 /////////////////////////////////////////////////////////////////////////////
 
@@ -509,7 +499,7 @@ basic_socket::~basic_socket()
 basic_socket_stream::basic_socket_stream(socketbuf & buffer,
                                                  int proto)
     : std::iostream(&buffer), _sockbuf(buffer),
-      protocol(proto), LastError(0)
+      m_protocol(proto)
 {
   startup();
   init(&_sockbuf); // initialize underlying streambuf
@@ -529,30 +519,12 @@ SOCKET_TYPE basic_socket_stream::getSocket() const
   return _sockbuf.getSocket();
 }
 
-// System dependant initialization
-bool basic_socket_stream::startup() {
-#ifdef _WIN32
-  const unsigned wMinVer = 0x0101;	// request WinSock v1.1 (at least)
-  WSADATA wsaData;
-  LastError = WSAStartup(wMinVer, &wsaData);
-  return (LastError == 0);
-#else // _WIN32
-  return true;
-#endif // _WIN32
-}
-
-// System dependant finalization
 void basic_socket_stream::shutdown() {
   if(is_open()) {
     if(::shutdown(_sockbuf.getSocket(), SHUT_RDWR) == SOCKET_ERROR) {
       setLastError();
     }
   }
-}
-
-// private function that sets the internal variable LastError
-void basic_socket_stream::setLastError() const {
-    LastError = getSystemError();
 }
 
 // closes a socket connection
@@ -586,16 +558,6 @@ bool basic_socket_stream::fail() {
   return false;
 }
 
-bool basic_socket_stream::setBroadcast(bool opt)
-{
-  int ok = opt?1:0;
-  ok = ::setsockopt(_sockbuf.getSocket(),
-                  SOL_SOCKET,SO_BROADCAST,(char*)&ok,sizeof(ok));
-  bool ret = (ok != SOCKET_ERROR);
-  if(!ret) setLastError();
-  return ret;
-}
-
 /////////////////////////////////////////////////////////////////////////////
 // class tcp_socket_stream implementation
 /////////////////////////////////////////////////////////////////////////////
@@ -606,7 +568,7 @@ tcp_socket_stream::tcp_socket_stream() :
                   _connecting_address(0),
                   _connecting_addrlist(0),
                   stream_sockbuf((stream_socketbuf&)_sockbuf) {
-  protocol = FreeSockets::proto_TCP;
+  m_protocol = FreeSockets::proto_TCP;
 }
 
 tcp_socket_stream::tcp_socket_stream(SOCKET_TYPE socket) :
@@ -615,7 +577,7 @@ tcp_socket_stream::tcp_socket_stream(SOCKET_TYPE socket) :
                   _connecting_address(0),
                   _connecting_addrlist(0),
                   stream_sockbuf((stream_socketbuf&)_sockbuf) {
-  protocol = FreeSockets::proto_TCP;
+  m_protocol = FreeSockets::proto_TCP;
 }
 
 tcp_socket_stream::tcp_socket_stream(const std::string& address, int service,
@@ -625,7 +587,7 @@ tcp_socket_stream::tcp_socket_stream(const std::string& address, int service,
                   _connecting_address(0),
                   _connecting_addrlist(0),
                   stream_sockbuf((stream_socketbuf&)_sockbuf) {
-  protocol = FreeSockets::proto_TCP;
+  m_protocol = FreeSockets::proto_TCP;
   open(address, service, nonblock);
 }
 
@@ -636,7 +598,7 @@ tcp_socket_stream::tcp_socket_stream(const std::string& address, int service,
                   _connecting_address(0),
                   _connecting_addrlist(0),
                   stream_sockbuf((stream_socketbuf&)_sockbuf) {
-  protocol = FreeSockets::proto_TCP;
+  m_protocol = FreeSockets::proto_TCP;
   open(address, service, milliseconds);
 }
 
@@ -671,7 +633,7 @@ void tcp_socket_stream::open(const std::string & address,
   req.ai_flags = 0;
   req.ai_family = PF_UNSPEC;
   req.ai_socktype = SOCK_STREAM;
-  req.ai_protocol = 0;
+  req.ai_protocol = m_protocol;
   req.ai_addrlen = 0;
   req.ai_addr = 0;
   req.ai_canonname = 0;
@@ -739,7 +701,7 @@ void tcp_socket_stream::open(const std::string & address,
 #warning Using deprecated resolver code because getaddrinfo() is not available
 
   // Create socket
-  SOCKET_TYPE _socket = ::socket(AF_INET, SOCK_STREAM, protocol);
+  SOCKET_TYPE _socket = ::socket(AF_INET, SOCK_STREAM, m_protocol);
   if(_socket == INVALID_SOCKET) {
     fail();
     return;
@@ -864,36 +826,51 @@ SOCKET_TYPE tcp_socket_stream::getSocket() const
 
 const std::string tcp_socket_stream::getRemoteHost(bool lookup) const
 {
+  sockaddr_storage peer;
+  SOCKLEN peer_size;
 #ifdef HAVE_GETADDRINFO
   char hbuf[NI_MAXHOST];
   const int flags = lookup ? 0 : NI_NUMERICHOST;
+#endif
 
-  if (::getnameinfo((const sockaddr*)&getInpeer(),
-                    stream_sockbuf.getInpeerSize(),
+  if (::getpeername(getSocket(), (sockaddr*)&peer, &peer_size) != 0) {
+    return "[unconnected]";
+  }
+
+#ifdef HAVE_GETADDRINFO
+
+  if (::getnameinfo((const sockaddr*)&peer, peer_size,
                     hbuf, sizeof(hbuf), 0, 0, flags) == 0) {
     return std::string(hbuf);
   }
   return "[unknown]";
 #else // HAVE_GETADDRINFO
-  return std::string(::inet_ntoa(((const sockaddr_in&)getInpeer()).sin_addr));
+  return std::string(::inet_ntoa(((const sockaddr_in&)peer).sin_addr));
 #endif // HAVE_GETADDRINFO
 }
 
 const std::string tcp_socket_stream::getRemoteService(bool lookup) const
 {
   char sbuf[NI_MAXSERV];
+  sockaddr_storage peer;
+  SOCKLEN peer_size;
 #ifdef HAVE_GETADDRINFO
   const int flags = lookup ? 0 : NI_NUMERICSERV;
+#endif
 
-  if (::getnameinfo((const sockaddr*)&getInpeer(),
-                    stream_sockbuf.getInpeerSize(),
+  if (::getpeername(getSocket(), (sockaddr*)&peer, &peer_size) != 0) {
+    return "[unconnected]";
+  }
+
+#ifdef HAVE_GETADDRINFO
+  if (::getnameinfo((const sockaddr*)&peer, peer_size,
                     0, 0, sbuf, sizeof(sbuf), flags) == 0) {
     return std::string(sbuf);
   }
   return "[unknown]";
 #else // HAVE_GETADDRINFO
 
-  unsigned short port = ntohs(((const sockaddr_in&)getInpeer()).sin_port);
+  unsigned short port = ntohs(((const sockaddr_in&)peer).sin_port);
   ::sprintf(sbuf, "%d", port);
   return std::string(sbuf);
 #endif // HAVE_GETADDRINFO
@@ -1015,20 +992,119 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
 }
 
 /////////////////////////////////////////////////////////////////////////////
+// class dgram_socket_stream implementation
+/////////////////////////////////////////////////////////////////////////////
+
+dgram_socket_stream::dgram_socket_stream() :
+                     basic_socket_stream(*new dgram_socketbuf(INVALID_SOCKET)),
+                     dgram_sockbuf((dgram_socketbuf&)_sockbuf)
+{
+}
+
+dgram_socket_stream::~dgram_socket_stream()
+{
+}
+
+int dgram_socket_stream::bindToIpService(int service, int type, int protocol)
+{
+#ifdef HAVE_GETADDRINFO
+  struct addrinfo req, *ans;
+  char serviceName[32];
+
+  ::sprintf(serviceName, "%d", service);
+
+  req.ai_flags = AI_PASSIVE;
+  req.ai_family = PF_UNSPEC;
+  req.ai_socktype = type;
+  req.ai_protocol = 0;
+  req.ai_addrlen = 0;
+  req.ai_addr = 0;
+  req.ai_canonname = 0;
+  req.ai_next = 0;
+
+  int ret;
+  if ((ret = ::getaddrinfo(0, serviceName, &req, &ans)) != 0) {
+    std::cout << "skstream: " << gai_strerror(ret)
+              << std::endl << std::flush;
+    setLastError();
+    return -1;
+  }
+
+  int success = -1;
+
+  for(struct addrinfo * i = ans; success == -1 && i != 0; i = i->ai_next) {
+    SOCKET_TYPE socket = ::socket(i->ai_family, i->ai_socktype, i->ai_protocol);
+    if (socket == INVALID_SOCKET) {
+      setLastError();
+      continue;
+    }
+    dgram_sockbuf.setSocket(socket);
+
+    sockaddr_storage iaddr;
+    ::memcpy(&iaddr, i->ai_addr, i->ai_addrlen);
+    SOCKLEN iaddrlen = i->ai_addrlen;
+
+    if (::bind(socket, (sockaddr*)&iaddr, iaddrlen) == SOCKET_ERROR) {
+      setLastError();
+      close();
+    } else {
+      success = 0;
+    }
+  }
+
+  ::freeaddrinfo(ans);
+
+  return success;
+#else
+  // create socket
+  SOCKET_TYPE socket = ::socket(AF_INET, type, protocol);
+  if(socket == INVALID_SOCKET) {
+    setLastError();
+    return -1;
+  }
+  dgram_sockbuf.setSocket(socket);
+
+  // Bind Socket
+  sockaddr_in sa;
+  sa.sin_family = AF_INET;
+  sa.sin_addr.s_addr = INADDR_ANY; // we want to connect to ANY client!
+  sa.sin_port = htons((unsigned short)service); // define service port
+  if(::bind(socket, (sockaddr*)&sa, sizeof(sa)) == SOCKET_ERROR) {
+    setLastError();
+    close();
+    return -1;
+  }
+
+  return 0;
+#endif // HAVE_GETADDRINFO
+}
+
+/////////////////////////////////////////////////////////////////////////////
 // class udp_socket_stream implementation
 /////////////////////////////////////////////////////////////////////////////
 
-udp_socket_stream::udp_socket_stream() :
-                  basic_socket_stream(*new dgram_socketbuf(INVALID_SOCKET)),
-                  dgram_sockbuf((dgram_socketbuf&)_sockbuf)
+udp_socket_stream::udp_socket_stream()
 {
-  protocol = FreeSockets::proto_UDP; 
+  m_protocol = FreeSockets::proto_UDP; 
 }
 
 udp_socket_stream::~udp_socket_stream()
 {
   // Don't close the main socket, that is done in the basic_socket_stream
   // destructor
+}
+
+int udp_socket_stream::open(int service)
+{
+  if (is_open()) {
+    close();
+  }
+
+  if (bindToIpService(service, SOCK_DGRAM, IPPROTO_UDP) != 0) {
+    return -1;
+  }
+
+  return 0;
 }
 
 #ifdef SKSTREAM_UNIX_SOCKETS
@@ -1083,7 +1159,7 @@ void unix_socket_stream::open(const std::string& address, bool nonblock)
   if(is_open() || _connecting_socket != INVALID_SOCKET) close();
 
   // Create socket
-  SOCKET_TYPE _socket = ::socket(AF_UNIX, SOCK_STREAM, protocol);
+  SOCKET_TYPE _socket = ::socket(AF_UNIX, SOCK_STREAM, m_protocol);
   if(_socket == INVALID_SOCKET) {
     fail();
     return;
@@ -1227,32 +1303,17 @@ bool unix_socket_stream::isReady(unsigned int milliseconds)
 /////////////////////////////////////////////////////////////////////////////
 #ifdef SOCK_RAW
 
-raw_socket_stream::raw_socket_stream(FreeSockets::IP_Protocol proto) :
-                  basic_socket_stream(*new dgram_socketbuf(INVALID_SOCKET)),
-                  dgram_sockbuf((dgram_socketbuf&)_sockbuf)
+raw_socket_stream::raw_socket_stream(FreeSockets::IP_Protocol proto)
 {
-  protocol = proto;
-  SOCKET_TYPE _socket = ::socket(AF_INET, SOCK_RAW, protocol);
-  _sockbuf.setSocket(_socket);
-}
-
-raw_socket_stream::raw_socket_stream(unsigned insize,unsigned outsize,
-                                     FreeSockets::IP_Protocol proto) :
-                  basic_socket_stream(*new dgram_socketbuf(INVALID_SOCKET,
-                                                           insize,
-                                                           outsize),
-                                      proto),
-                  dgram_sockbuf((dgram_socketbuf&)_sockbuf)
-{
-  protocol = proto;
-  SOCKET_TYPE _socket = ::socket(AF_INET, SOCK_RAW, protocol);
+  m_protocol = proto;
+  SOCKET_TYPE _socket = ::socket(AF_INET, SOCK_RAW, m_protocol);
   _sockbuf.setSocket(_socket);
 }
 
 void raw_socket_stream::setProtocol(FreeSockets::IP_Protocol proto) {
   if(is_open()) close();
-  protocol = proto;
-  SOCKET_TYPE _socket = ::socket(AF_INET, SOCK_RAW, protocol);
+  m_protocol = proto;
+  SOCKET_TYPE _socket = ::socket(AF_INET, SOCK_RAW, m_protocol);
   _sockbuf.setSocket(_socket);
 }
 
@@ -1260,6 +1321,16 @@ raw_socket_stream::~raw_socket_stream()
 {
   // Don't close the main socket, that is done in the basic_socket_stream
   // destructor
+}
+
+bool raw_socket_stream::setBroadcast(bool opt)
+{
+  int ok = opt?1:0;
+  ok = ::setsockopt(_sockbuf.getSocket(),
+                  SOL_SOCKET,SO_BROADCAST,(char*)&ok,sizeof(ok));
+  bool ret = (ok != SOCKET_ERROR);
+  if(!ret) setLastError();
+  return ret;
 }
 
 #endif // SOCK_RAW

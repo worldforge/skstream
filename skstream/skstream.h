@@ -25,31 +25,12 @@
  * $Id$
  *
  */
-#ifndef RGJ_FREE_SOCKET_H_
-#define RGJ_FREE_SOCKET_H_
+#ifndef RGJ_FREE_STREAM_H_
+#define RGJ_FREE_STREAM_H_
 
-#include <iomanip>
-#include <string>
-#include <stdexcept>
 #include <iostream>
 
-#include <skstream/skstreamconfig.h>
-
-// This constant is defined in windows, but not in most other systems
-#ifndef SOCKET_ERROR
-static const int SOCKET_ERROR = -1;
-#endif
-
-// This constant is defined in windows, but not in most other systems
-#ifndef INVALID_SOCKET
- #define INVALID_SOCKET   (SOCKET_TYPE)~0
-#endif // INVALID_SOCKET
-
-// All systems should define this, but it is here just in case
-#ifndef INADDR_NONE
- #warning System headers do not define INADDR_NONE
- #define INADDR_NONE   0xFFFFFFFF
-#endif // INADDR_NONE
+#include <skstream/sksocket.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // class socketbuf
@@ -62,9 +43,6 @@ protected:
   SOCKET_TYPE _socket;
 
   timeval _timeout;
-
-  sockaddr_storage out_peer, in_peer;
-  SOCKLEN out_p_size, in_p_size;
 
 private:
   /// Not implemented. Copying a socket buffer is not permited.
@@ -88,26 +66,6 @@ public:
 
   /// Destroy the socket buffer.
   virtual ~socketbuf();
-
-  void setOutpeer(const sockaddr_storage & peer) { 
-    out_peer = peer; 
-  }
-
-  const sockaddr_storage & getOutpeer() const {
-    return out_peer; 
-  }
-
-  const sockaddr_storage & getInpeer() const { 
-    return in_peer; 
-  }
-
-  SOCKLEN getOutpeerSize() const {
-    return out_p_size;
-  }
-
-  SOCKLEN getInpeerSize() const {
-    return in_p_size;
-  }
 
   /// Set the existing socket that this buffer should use.
   void setSocket(SOCKET_TYPE sock);
@@ -183,9 +141,38 @@ public:
   /// Destroy the socket buffer.
   virtual ~dgram_socketbuf();
 
-  bool setTarget(const std::string& address, unsigned port, int protocol);
+  bool setTarget(const std::string& address, unsigned port, int proto);
+
+  void setOutpeer(const sockaddr_storage & peer) { 
+    out_peer = peer; 
+  }
+
+  const sockaddr_storage & getOutpeer() const {
+    return out_peer; 
+  }
+
+  const sockaddr_storage & getInpeer() const { 
+    return in_peer; 
+  }
+
+  SOCKLEN getOutpeerSize() const {
+    return out_p_size;
+  }
+
+  SOCKLEN getInpeerSize() const {
+    return in_p_size;
+  }
 
 protected:
+  /// Target address of datagrams sent via this stream
+  sockaddr_storage out_peer;
+  /// Source address of last datagram received by this stream
+  sockaddr_storage in_peer;
+  /// Size of target address
+  SOCKLEN out_p_size;
+  /// Size of source address
+  SOCKLEN in_p_size;
+
   /// Handle writing data from the buffer to the socket.
   virtual int overflow(int nCh=EOF);
   /// Handle reading data from the socket to the buffer.
@@ -233,29 +220,12 @@ namespace FreeSockets {
 };
 
 /////////////////////////////////////////////////////////////////////////////
-// class basic_socket, a virtual base class for use in polling
-/////////////////////////////////////////////////////////////////////////////
-
-class basic_socket {
-public:
-  virtual ~basic_socket();
-
-  virtual SOCKET_TYPE getSocket() const = 0;
-};
-
-/////////////////////////////////////////////////////////////////////////////
 // class socket_stream
 /////////////////////////////////////////////////////////////////////////////
 class basic_socket_stream : public basic_socket, public std::iostream {
 protected:
   socketbuf & _sockbuf;
-  int protocol;
-
-  mutable int LastError;
-
-  bool startup();
-
-  void setLastError() const;
+  int m_protocol;
 
 public:
   /// Make a socket stream.
@@ -274,39 +244,7 @@ public:
     return _sockbuf.timeout();
   }
 
-  void setOutpeer(const sockaddr_storage& peer) { 
-    return _sockbuf.setOutpeer(peer); 
-  }
-
-  const sockaddr_storage & getOutpeer() const { 
-    return _sockbuf.getOutpeer(); 
-  }
-
-  const sockaddr_storage & getInpeer() const { 
-    return _sockbuf.getInpeer(); 
-  }
-
-  SOCKLEN getOutpeerSize() const {
-    return _sockbuf.getOutpeerSize();
-  }
-
-  SOCKLEN getInpeerSize() const {
-    return _sockbuf.getInpeerSize();
-  }
-
-  bool is_open() const { 
-    return ( _sockbuf.getSocket() != INVALID_SOCKET); 
-  }
-
-  void setSocket(SOCKET_TYPE sock) { 
-    _sockbuf.setSocket(sock); 
-  }
-
   virtual SOCKET_TYPE getSocket() const;
-
-  int getLastError() const { 
-    return LastError; 
-  }
 
   // Needs to be virtual to handle in-progress connect()'s for
   // tcp sockets
@@ -314,15 +252,17 @@ public:
 
   void shutdown();
 
+  void setSocket(SOCKET_TYPE sock) {
+    _sockbuf.setSocket(sock);
+  }
+
   void setTimeout(unsigned sec, unsigned usec=0) { 
     _sockbuf.setTimeout(sec,usec); 
   }
 
   int getProtocol() const { 
-    return protocol; 
+    return m_protocol; 
   }
-
-  bool setBroadcast(bool opt=false);
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -366,62 +306,90 @@ public:
   bool isReady(unsigned int milliseconds = 0);
 };
 
+class dgram_socket_stream : public basic_socket_stream {
+private:
+  dgram_socket_stream(const dgram_socket_stream&);
+
+  dgram_socket_stream& operator=(const dgram_socket_stream& socket);
+
+protected:
+  dgram_socketbuf & dgram_sockbuf;
+
+  int bindToIpService(int service, int type, int protocol);
+
+public:
+  dgram_socket_stream();
+
+  virtual ~dgram_socket_stream();
+
+  bool setTarget(const std::string& address, unsigned port) { 
+    return dgram_sockbuf.setTarget(address, port, m_protocol); 
+  }
+
+  void setOutpeer(const sockaddr_storage& peer) { 
+    return dgram_sockbuf.setOutpeer(peer); 
+  }
+
+  const sockaddr_storage & getOutpeer() const { 
+    return dgram_sockbuf.getOutpeer(); 
+  }
+
+  const sockaddr_storage & getInpeer() const { 
+    return dgram_sockbuf.getInpeer(); 
+  }
+
+  SOCKLEN getOutpeerSize() const {
+    return dgram_sockbuf.getOutpeerSize();
+  }
+
+  SOCKLEN getInpeerSize() const {
+    return dgram_sockbuf.getInpeerSize();
+  }
+};
+
+
 /////////////////////////////////////////////////////////////////////////////
 // class udp_socket_stream
 /////////////////////////////////////////////////////////////////////////////
-class udp_socket_stream : public basic_socket_stream {
+
+class udp_socket_stream : public dgram_socket_stream {
 private:
   udp_socket_stream(const udp_socket_stream&);
-  udp_socket_stream(SOCKET_TYPE socket);
 
   udp_socket_stream& operator=(const udp_socket_stream& socket);
-
-  dgram_socketbuf & dgram_sockbuf;
 
 public:
   udp_socket_stream();
 
   virtual ~udp_socket_stream();
 
-  bool setTarget(const std::string& address, unsigned port) { 
-    return dgram_sockbuf.setTarget(address, port, protocol); 
-  }
+  int open(int service);
 };
 
 /////////////////////////////////////////////////////////////////////////////
 // class raw_socket_stream
 /////////////////////////////////////////////////////////////////////////////
 #ifdef SOCK_RAW
-class raw_socket_stream : public basic_socket_stream {
+class raw_socket_stream : public dgram_socket_stream {
 private:
   raw_socket_stream(const raw_socket_stream&);
-  raw_socket_stream(SOCKET_TYPE socket);
 
   raw_socket_stream& operator=(const raw_socket_stream& socket);
 
-protected:
-  sockaddr_storage local_host;
-  dgram_socketbuf & dgram_sockbuf;
-
 public:
   raw_socket_stream(FreeSockets::IP_Protocol proto=FreeSockets::proto_RAW);
-
-  raw_socket_stream(unsigned insize,unsigned outsize,
-                    FreeSockets::IP_Protocol proto=FreeSockets::proto_RAW);
 
   virtual ~raw_socket_stream();
 
   void setProtocol(FreeSockets::IP_Protocol proto);
 
   bool setTarget(const std::string& address, unsigned port) { 
-    return dgram_sockbuf.setTarget(address, port, protocol); 
+    return dgram_sockbuf.setTarget(address, port, m_protocol); 
   }
 
-  sockaddr_storage getLocalHost() const { 
-    return local_host; 
-  }
+  bool setBroadcast(bool opt=false);
 };
 #endif // SOCK_RAW
 
-#endif // RGJ_FREE_SOCKET_H_
+#endif // RGJ_FREE_STREAM_H_
 

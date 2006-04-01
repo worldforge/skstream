@@ -1,8 +1,27 @@
+2006-04-01  Al Riddoch  <alriddoch@zepler.org>
+
+	* skstream/sksocket.h, skstream/sksocket.cpp: Move base socket
+	  class into its own file, and move some code common to server
+	  and stream sockets into this class.
+
+	* skstream/skstream.h, skstream/skstream.cpp: Get rid of peer
+	  addresses in socket buffer class, and only add it to the
+	  datagram socket buffer class, as its meaningless in stream
+	  sockets. Add new base class for datagram iostream classes
+	  with peer related functionality. Add functionality to
+	  bind datagram sockets to a local address and port.
+
+	* skstream/skserver.h, skstream/skserver_unix.h, skstream/skserver.cpp:
+	  Clean up server sockets, relying more on functionality in socket
+	  base class, and getting rid of obsolete code.
+
+	* configure.ac: Increment version and interface version.
+
 2005-12-02  James Turner  <james@worldforge.org>
 
 	* Add X-Code 2.0 project file (ProjectBuilder project will be deleted
 	  shortly).
-	  
+
 2005-10-03  Al Riddoch  <alriddoch@zepler.org>
 
 	* configure.ac: Add configure parameter --enable-getaddrinfo which
