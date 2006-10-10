@@ -1,3 +1,8 @@
+2006-10-10  Al Riddoch  <alriddoch@zepler.org>
+
+	* skstream/sksocket.cpp: startup() on win32 can no longer use
+	  LastError member, as its now static. Use a local instead.
+
 2006-04-01  Al Riddoch  <alriddoch@zepler.org>
 
 	* skstream/sksocket.h, skstream/sksocket.cpp: Move base socket

@@ -69,10 +69,10 @@ basic_socket::~basic_socket()
 // System dependant initialization
 bool basic_socket::startup() {
 #ifdef _WIN32
-  const unsigned wMinVer = 0x0101;	// request WinSock v1.1 (at least)
+  static const unsigned wMinVer = 0x0101;// request WinSock v1.1 (at least)
   WSADATA wsaData;
-  LastError = WSAStartup(wMinVer, &wsaData);
-  return (LastError == 0);
+  int error = WSAStartup(wMinVer, &wsaData);
+  return (error == 0);
 #else // _WIN32
   return true;
 #endif // _WIN32
