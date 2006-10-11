@@ -1,3 +1,13 @@
+2006-10-11  Al Riddoch  <alriddoch@zepler.org>
+
+	* configure.ac: Add check for gai_strerror, as it is missing on some
+	  platforms, particularly windows. Specify the Windows API version
+	  as 0x501 so we get the XP features.
+
+	* skstream/skstream.cpp, skstream/skserver.cpp: Provide a version
+	  of gai_strerror() on platforms that use getaddrinfo, but don't
+	  have it.
+
 2006-10-10  Al Riddoch  <alriddoch@zepler.org>
 
 	* skstream/sksocket.cpp: startup() on win32 can no longer use

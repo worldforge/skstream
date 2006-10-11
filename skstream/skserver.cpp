@@ -63,6 +63,17 @@ static inline int closesocket(SOCKET_TYPE sock)
 }
 #endif // HAVE_CLOSESOCKET
 
+#ifdef HAVE_GETADDRINFO
+#ifndef HAVE_GAI_STRERROR
+const char * skstream_gai_strerror(int errcode);
+
+static const char * gai_strerror(int errcode)
+{
+    return skstream_gai_strerror(errcode);
+}
+#endif // HAVE_GAI_STRERROR
+#endif // HAVE_GETADDRINFO
+
 /////////////////////////////////////////////////////////////////////////////
 // class basic_socket_server implementation
 /////////////////////////////////////////////////////////////////////////////

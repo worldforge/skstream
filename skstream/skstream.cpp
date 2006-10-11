@@ -65,6 +65,71 @@ static inline int closesocket(SOCKET_TYPE sock)
 }
 #endif // HAVE_CLOSESOCKET
 
+#ifdef HAVE_GETADDRINFO
+#ifndef HAVE_GAI_STRERROR
+const char * skstream_gai_strerror(int errcode)
+{
+    switch (errcode) {
+#ifdef EAI_BADFLAGS
+      case EAI_BADFLAGS:
+        return "Invalid value for `ai_flags' field.";
+#endif
+#ifdef EAI_NONAME
+      case EAI_NONAME:
+        return "NAME or SERVICE is unknown.";
+#endif
+#ifdef EAI_AGAIN
+      case EAI_AGAIN:
+        return "Temporary failure in name resolution.";
+#endif
+#ifdef EAI_FAIL
+      case EAI_FAIL:
+        return "Non-recoverable failure in name res.";
+#endif
+#ifdef EAI_NODATA
+      case EAI_NODATA:
+        return "No address associated with NAME.";
+#endif
+#ifdef EAI_FAMILY
+      case EAI_FAMILY:
+        return "`ai_family' not supported.";
+#endif
+#ifdef EAI_SOCKTYPE
+      case EAI_SOCKTYPE:
+        return "`ai_socktype' not supported.";
+#endif
+#ifdef EAI_SERVICE
+      case EAI_SERVICE:
+        return "SERVICE not supported for `ai_socktype'.";
+#endif
+#ifdef EAI_ADDRFAMILY
+      case EAI_ADDRFAMILY:
+        return "Address family for NAME not supported.";
+#endif
+#ifdef EAI_MEMORY
+      case EAI_MEMORY:
+        return "Memory allocation failure.";
+#endif
+#ifdef EAI_SYSTEM
+      case EAI_SYSTEM:
+        return "System error returned in `errno'.";
+#endif
+#ifdef EAI_OVERFLOW
+      case EAI_OVERFLOW:
+        return "Argument buffer overflow.";
+#endif
+      default:
+        return "Unknown error.";
+    }
+}
+
+static const char * gai_strerror(int errcode)
+{
+    return skstream_gai_strerror(errcode);
+}
+#endif // HAVE_GAI_STRERROR
+#endif // HAVE_GETADDRINFO
+
 #ifndef HAVE_IN_ADDR_T
 // This may cause problems on L64 systems, if they don't have in_addr_t
 // but only windows does not have in_addr_t to my knowledge.
@@ -124,7 +189,7 @@ void socketbuf::setSocket(SOCKET_TYPE sock)
 int socketbuf::sync()
 {
     if(overflow() == EOF) // traits::eof()
-      return EOF;	// ios will set the fail bit // traits::eof()
+      return EOF;         // ios will set the fail bit // traits::eof()
     else {
 // This appeared to be causing the stream to lose data.
 //      // empty put and get areas

@@ -376,13 +376,14 @@ if test "$ac_enable_getaddrinfo" = "yes"; then
         AC_DEFINE(HAVE_GETADDRINFO, 1, "Define to 1 if you have the `getaddrinfo' function.")
     ],
     [
+        CXXFLAGS="$CXXFLAGS -DWINVER=0x501"
         AC_MSG_CHECKING([for getaddrinfo in ws2tcpip.h])
         AC_TRY_COMPILE(
         [
             #include <ws2tcpip.h>
         ],
         [
-            ::getaddrinfo(0, 0, 0, 0);
+            getaddrinfo(0, 0, 0, 0);
         ],
         [
             AC_MSG_RESULT(yes)
@@ -396,7 +397,7 @@ fi
 
 dnl Test for C library functions
 
-AC_CHECK_FUNCS([inet_aton])
+AC_CHECK_FUNCS([inet_aton, gai_strerror])
 
 dnl Test for Libraries
 
