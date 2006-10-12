@@ -1,3 +1,7 @@
+2006-10-12  Al Riddoch  <alriddoch@zepler.org>
+
+	* acinclude.m4: Fix quoting in autoconf macros.
+
 2006-10-11  Al Riddoch  <alriddoch@zepler.org>
 
 	* configure.ac: Add check for gai_strerror, as it is missing on some
