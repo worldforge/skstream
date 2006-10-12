@@ -1,6 +1,7 @@
 /**************************************************************************
  FreeSockets - Portable C++ classes for IP(sockets) applications. (v0.3)
  Copyright (C) 2000-2001 Rafael Guterres Jeffman
+           (C) 2003-2006 Alistair Riddoch
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

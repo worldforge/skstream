@@ -1,5 +1,12 @@
 2006-10-12  Al Riddoch  <alriddoch@zepler.org>
 
+	* sasproto.h, skpoll.cpp, skpoll.h, skserver.cpp, skserver.h,
+	  skserver_unix.h, sksocket.cpp, sksocket.h, skstream.cpp,
+	  skstream.h, skstream_unix.h: Update the copyright statements
+	  with current maintainer.
+
+2006-10-12  Al Riddoch  <alriddoch@zepler.org>
+
 	* acinclude.m4: Fix quoting in autoconf macros.
 
 2006-10-11  Al Riddoch  <alriddoch@zepler.org>
