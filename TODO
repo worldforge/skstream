@@ -1,3 +1,26 @@
+A datagram implementation requirements:
+
+  The application must be able to control the datagram. ie. prevent the stream
+  from sending a datagram arbitrarily, and having a function to send the
+  datagram. This is going to need a way to specify the target. The receiving
+  implementation is going to need a way for the application to tell where
+  the data came from.
+
+  Need to sort out what to do about socket addresses. Should a class
+  encapsulate addresses, and address sets (as returned by getaddrinfo()).
+
+  Some more difficult features are things like the need to efficiently
+  output data destined for many clients. Current server implementations
+  involve serialising the data once each time it is sent to a client (on
+  stream sockets). In datagram sockets, if we can somehow agregate all
+  the clients that are listening to the same codec, we can serialise
+  once, and transmit to all of them.
+
+  On a purely worldforge note, we will need to add features to Atlas-C++
+  to handle stuff. Need to add the functionality to Atlas-C++ to handle
+  many more directives at the negotiation phase - arbitrary directives
+  need to be handled by the client code.
+
 a datagram server and stream are not really separate functions. Try and
 sort out necessary features in the stream. In particular, need to flag
 whether it sould accept for anywhere, or only one particular place.
