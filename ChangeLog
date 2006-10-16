@@ -1,3 +1,7 @@
+2005-10-14  Al Riddoch  <alriddoch@zepler.org>
+
+	* Release 0.3.6, interface version 4.0.0.
+
 2006-10-12  Al Riddoch  <alriddoch@zepler.org>
 
 	* sasproto.h, skpoll.cpp, skpoll.h, skserver.cpp, skserver.h,
