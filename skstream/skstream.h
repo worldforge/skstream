@@ -182,45 +182,6 @@ protected:
 };
 
 /////////////////////////////////////////////////////////////////////////////
-// Enumerations
-/////////////////////////////////////////////////////////////////////////////
-// Supported Protocols
-namespace FreeSockets {
-  enum IP_Protocol {
-    proto_IP   = IPPROTO_IP,
-    proto_ICMP = IPPROTO_ICMP,
-#ifndef _WIN32 
-    proto_IGMP = IPPROTO_IGMP, 
-#else 
-    proto_IGMP = IPPROTO_GGP, 
-#endif 
-    proto_TCP  = IPPROTO_TCP,
-    proto_PUP  = IPPROTO_PUP,
-    proto_UDP  = IPPROTO_UDP,
-    proto_IDP  = IPPROTO_IDP,
-    proto_RAW  = IPPROTO_RAW
-  };
-  // Well known ports
-  enum IP_Service {
-    echo        =       7, //
-    daytime     =      13, //
-    ftp         =      21, //
-    ssh         =      22, //
-    telnet      =      23, //
-    smtp        =      25, //       mail
-    time        =      37, //       timserver
-    name        =      42, //       nameserver
-    nameserver  =      53, //       domain        # name-domain server
-    finger      =      79, //
-    http        =      80, //
-    pop         =     109, //       postoffice
-    pop2        =     109, //                     # Post Office
-    pop3        =     110, //       postoffice
-    nntp        =     119  //       usenet        # Network News Transfer
-  };
-};
-
-/////////////////////////////////////////////////////////////////////////////
 // class socket_stream
 /////////////////////////////////////////////////////////////////////////////
 class basic_socket_stream : public basic_socket, public std::iostream {
@@ -269,7 +230,6 @@ public:
 /////////////////////////////////////////////////////////////////////////////
 // class tcp_socket_stream
 /////////////////////////////////////////////////////////////////////////////
-
 struct addrinfo;
 
 class tcp_socket_stream : public basic_socket_stream {
@@ -352,7 +312,6 @@ public:
 /////////////////////////////////////////////////////////////////////////////
 // class udp_socket_stream
 /////////////////////////////////////////////////////////////////////////////
-
 class udp_socket_stream : public dgram_socket_stream {
 private:
   udp_socket_stream(const udp_socket_stream&);

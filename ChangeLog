@@ -1,5 +1,16 @@
 2005-10-14  Al Riddoch  <alriddoch@zepler.org>
 
+	* skstream/skstream.h, skstream/sksocket.h: Move the IP
+	  protocol enumerations to the generic socket header, as
+	  they can be used in either streams or servers. Remove
+	  service port numbers, as we should not be hardcoding
+	  them. We should be looking them up from the OS.
+
+	* ping/ping.cpp: Add our own variable for the ping service
+	  as the headers no longer provide it.
+
+2005-10-14  Al Riddoch  <alriddoch@zepler.org>
+
 	* Release 0.3.6, interface version 4.0.0.
 
 2006-10-12  Al Riddoch  <alriddoch@zepler.org>

@@ -48,6 +48,30 @@ static const int SOCKET_ERROR = -1;
 #endif // INADDR_NONE
 
 /////////////////////////////////////////////////////////////////////////////
+// Enumerations
+/////////////////////////////////////////////////////////////////////////////
+// Supported Protocols
+namespace FreeSockets {
+  enum IP_Protocol {
+    proto_IP   = IPPROTO_IP,
+    proto_ICMP = IPPROTO_ICMP,
+#ifndef _WIN32 
+    proto_IGMP = IPPROTO_IGMP, 
+#else 
+    proto_IGMP = IPPROTO_GGP, 
+#endif 
+    proto_TCP  = IPPROTO_TCP,
+    proto_PUP  = IPPROTO_PUP,
+    proto_UDP  = IPPROTO_UDP,
+    proto_IDP  = IPPROTO_IDP,
+#ifdef IPPROTO_SCTP
+    proto_SCTP = IPPROTO_SCTP,
+#endif
+    proto_RAW  = IPPROTO_RAW
+  };
+};
+
+/////////////////////////////////////////////////////////////////////////////
 // class basic_socket, a virtual base class for use in polling
 /////////////////////////////////////////////////////////////////////////////
 class basic_socket {

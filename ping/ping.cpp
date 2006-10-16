@@ -28,6 +28,9 @@ typedef std::map<std::string,std::pair<unsigned, unsigned> > stat_type;
 stat_type statistics;
 unsigned Ping_Count, transmitted_packets;
 bool Terminate;
+namespace FreeSockets {
+  static const int echo = 7;
+};
 //---------------------------------------------------------------------------
 // Prototypes
 unsigned short in_cksum(unsigned short*, int);
