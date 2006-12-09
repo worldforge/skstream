@@ -431,5 +431,7 @@ AC_CONFIG_FILES([
 	skstream-0.3.pc
 	skstream-unix-0.3.pc
 	skstream/skstreamconfig.h
+	debian/control
+	debian/rules
 ])
 AC_OUTPUT

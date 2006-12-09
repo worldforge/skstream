@@ -1,4 +1,8 @@
-2005-10-14  Al Riddoch  <alriddoch@zepler.org>
+2006-12-09  Al Riddoch  <alriddoch@zepler.org>
+
+	* debian: Experimental package files for creating .debs.
+
+2006-10-14  Al Riddoch  <alriddoch@zepler.org>
 
 	* skstream/skstream.h, skstream/sksocket.h: Move the IP
 	  protocol enumerations to the generic socket header, as
@@ -9,7 +13,7 @@
 	* ping/ping.cpp: Add our own variable for the ping service
 	  as the headers no longer provide it.
 
-2005-10-14  Al Riddoch  <alriddoch@zepler.org>
+2006-10-14  Al Riddoch  <alriddoch@zepler.org>
 
 	* Release 0.3.6, interface version 4.0.0.
 
