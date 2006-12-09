@@ -23,7 +23,7 @@ Description: Any iostream socket library
  .
  This package contains the development files.
 
-Package: libskstream@SKSTREAM_LIB_SUFFIX@-dbg
+Package: libskstream@SKSTREAM_LIB_SUFFIX@-@SKSTREAM_CURRENT@-dbg
 Section: libdevel
 Architecture: any
 Depends: libskstream@SKSTREAM_LIB_SUFFIX@-@SKSTREAM_CURRENT@

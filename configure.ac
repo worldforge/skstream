@@ -433,5 +433,5 @@ AC_CONFIG_FILES([
 	skstream/skstreamconfig.h
 	debian/control
 	debian/rules
-])
+], [chmod +x debian/rules])
 AC_OUTPUT
