@@ -1,3 +1,10 @@
+2006-12-14  Al Riddoch  <alriddoch@zepler.org>
+
+	* Makefile.am: Remove pc.in files from EXTRA_DIST, as autotools
+	  distribute them anyway. Include Doxyfile in the distribution.
+
+	* Doxyfile: Remove missing footer directive.
+
 2006-12-09  Al Riddoch  <alriddoch@zepler.org>
 
 	* configure.ac: Ensure debian/rules is executable.

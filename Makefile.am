@@ -9,8 +9,7 @@ MSVC_SUPPORT =
 MSVC_INSTALL_DIST = /bin/true
 endif
 
-EXTRA_DIST = autogen.sh skstream-0.3.pc.in @SKSTREAM_UNIX_PC_IN@ \
-             README.FreeSockets
+EXTRA_DIST = autogen.sh README.FreeSockets Doxyfile
 
 dist-hook: $(MSVC_SUPPORT)
 	$(MSVC_INSTALL_DIST) $(srcdir)/$(MSVC_SUPPORT) $(distdir)/$(MSVC_SUPPORT)   
