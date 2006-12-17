@@ -36,9 +36,11 @@
 /////////////////////////////////////////////////////////////////////////////
 // class socketbuf
 /////////////////////////////////////////////////////////////////////////////
+
+/// A base class for stream buffers that handle sockets
 class socketbuf : public std::streambuf {
 private:
-  char *_buffer;
+  std::streambuf::char_type *_buffer;
 
 protected:
   SOCKET_TYPE _socket;
@@ -58,12 +60,13 @@ public:
   /** Make a new socket buffer from an existing socket, with optional
    *  buffer sizes.
    */
-  explicit socketbuf(SOCKET_TYPE sock, unsigned insize=0x8000,
-                                       unsigned outsize=0x8000);
+  explicit socketbuf(SOCKET_TYPE sock, std::streamsize insize = 0x8000,
+                                       std::streamsize outsize = 0x8000);
   /** Make a new socket buffer from an existing socket, with an existing
    *  buffer.
    */
-  socketbuf(SOCKET_TYPE sock, char* buf, int length);
+  socketbuf(SOCKET_TYPE sock, std::streambuf::char_type * buf,
+                              std::streamsize length);
 
   /// Destroy the socket buffer.
   virtual ~socketbuf();
@@ -91,12 +94,12 @@ public:
 
 protected:
   /// Handle writing data from the buffer to the socket.
-  virtual int overflow(int nCh=EOF) = 0;
+  virtual int_type overflow(int_type nCh = EOF) = 0;
   /// Handle reading data from the socket to the buffer.
-  virtual int underflow() = 0;
+  virtual int_type underflow() = 0;
 
   /// Flush the output buffer.
-  int sync();
+  virtual int sync();
 
   /** Set the buffer area this stream buffer uses. Only works if not already
    *  set.
@@ -104,40 +107,46 @@ protected:
   std::streambuf * setbuf(std::streambuf::char_type * buf, std::streamsize len);
 };
 
+/// A stream buffer class that handles stream sockets
 class stream_socketbuf : public socketbuf {
 public:
   /** Make a new socket buffer from an existing socket, with optional
    *  buffer sizes.
    */
-  explicit stream_socketbuf(SOCKET_TYPE sock, unsigned insize=0x8000,
-                                              unsigned outsize=0x8000);
+  explicit stream_socketbuf(SOCKET_TYPE sock,
+                            std::streamsize insize = 0x8000,
+                            std::streamsize outsize = 0x8000);
   /** Make a new socket buffer from an existing socket, with an existing
    *  buffer.
    */
-  stream_socketbuf(SOCKET_TYPE sock, char* buf, int length);
+  stream_socketbuf(SOCKET_TYPE sock, std::streambuf::char_type * buf,
+                                     std::streamsize length);
 
   /// Destroy the socket buffer.
   virtual ~stream_socketbuf();
 
 protected:
   /// Handle writing data from the buffer to the socket.
-  virtual int overflow(int nCh=EOF);
+  virtual int_type overflow(int_type nCh = EOF);
   /// Handle reading data from the socket to the buffer.
-  virtual int underflow();
+  virtual int_type underflow();
 
 };
 
+/// A stream buffer class that handles datagram sockets
 class dgram_socketbuf : public socketbuf {
 public:
   /** Make a new socket buffer from an existing socket, with optional
    *  buffer sizes.
    */
-  explicit dgram_socketbuf(SOCKET_TYPE sock, unsigned insize=0x8000,
-                                             unsigned outsize=0x8000);
+  explicit dgram_socketbuf(SOCKET_TYPE sock, std::streamsize insize = 0x8000,
+                                             std::streamsize outsize = 0x8000);
   /** Make a new socket buffer from an existing socket, with an existing
    *  buffer.
    */
-  dgram_socketbuf(SOCKET_TYPE sock, char* buf, int length);
+  dgram_socketbuf(SOCKET_TYPE sock,
+                  std::streambuf::char_type * buf,
+                  std::streamsize length);
 
   /// Destroy the socket buffer.
   virtual ~dgram_socketbuf();
@@ -175,15 +184,17 @@ protected:
   SOCKLEN in_p_size;
 
   /// Handle writing data from the buffer to the socket.
-  virtual int overflow(int nCh=EOF);
+  virtual int_type overflow(int_type nCh = EOF);
   /// Handle reading data from the socket to the buffer.
-  virtual int underflow();
+  virtual int_type underflow();
 
 };
 
 /////////////////////////////////////////////////////////////////////////////
 // class socket_stream
 /////////////////////////////////////////////////////////////////////////////
+
+/// A base class for iostreams that handles stream sockets
 class basic_socket_stream : public basic_socket, public std::iostream {
 protected:
   socketbuf & _sockbuf;
@@ -227,11 +238,13 @@ public:
   }
 };
 
+struct addrinfo;
+
 /////////////////////////////////////////////////////////////////////////////
 // class tcp_socket_stream
 /////////////////////////////////////////////////////////////////////////////
-struct addrinfo;
 
+/// An iostream class that handle TCP sockets
 class tcp_socket_stream : public basic_socket_stream {
 private:
   tcp_socket_stream(const tcp_socket_stream&);
@@ -267,6 +280,7 @@ public:
   bool isReady(unsigned int milliseconds = 0);
 };
 
+/// An iostream class that handle IP datagram sockets
 class dgram_socket_stream : public basic_socket_stream {
 private:
   dgram_socket_stream(const dgram_socket_stream&);
@@ -312,6 +326,8 @@ public:
 /////////////////////////////////////////////////////////////////////////////
 // class udp_socket_stream
 /////////////////////////////////////////////////////////////////////////////
+
+/// An iostream class that handle UDP sockets
 class udp_socket_stream : public dgram_socket_stream {
 private:
   udp_socket_stream(const udp_socket_stream&);
@@ -326,10 +342,13 @@ public:
   int open(int service);
 };
 
+#ifdef SOCK_RAW
+
 /////////////////////////////////////////////////////////////////////////////
 // class raw_socket_stream
 /////////////////////////////////////////////////////////////////////////////
-#ifdef SOCK_RAW
+
+/// An iostream class that handle raw IP sockets
 class raw_socket_stream : public dgram_socket_stream {
 private:
   raw_socket_stream(const raw_socket_stream&);
@@ -349,6 +368,7 @@ public:
 
   bool setBroadcast(bool opt=false);
 };
+
 #endif // SOCK_RAW
 
 #endif // RGJ_FREE_STREAM_H_

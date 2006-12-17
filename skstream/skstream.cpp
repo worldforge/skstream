@@ -142,15 +142,15 @@ typedef unsigned long in_addr_t;
 // class socketbuf implementation
 /////////////////////////////////////////////////////////////////////////////
 // Constructor
-socketbuf::socketbuf(SOCKET_TYPE sock, unsigned insize, unsigned outsize)
-    : std::streambuf(), _socket(sock),
-      Timeout(false)
+socketbuf::socketbuf(SOCKET_TYPE sock, std::streamsize insize,
+                                       std::streamsize outsize)
+    : _socket(sock), Timeout(false)
 {
   _buffer = NULL;
   // allocate 16k buffer each for input and output
-  const int bufsize = insize+outsize;
+  const std::streamsize bufsize = insize + outsize;
   // Allocate a new buffer
-  char* buffer = new char[bufsize];
+  std::streambuf::char_type * buffer = new std::streambuf::char_type[bufsize];
   ::memset(buffer,0,bufsize);
   // Setup the buffer
   setbuf(buffer, bufsize);
@@ -162,9 +162,9 @@ socketbuf::socketbuf(SOCKET_TYPE sock, unsigned insize, unsigned outsize)
 }
 
 // Constructor
-socketbuf::socketbuf(SOCKET_TYPE sock, char* buf, int length)
-    : std::streambuf(), _socket(sock),
-      Timeout(false)
+socketbuf::socketbuf(SOCKET_TYPE sock, std::streambuf::char_type * buf,
+                                       std::streamsize length)
+    : _socket(sock), Timeout(false)
 {
   _buffer = NULL;
   setbuf(buf, length);
@@ -214,11 +214,13 @@ std::streambuf * socketbuf::setbuf(std::streambuf::char_type * buf,
 }
 
 stream_socketbuf::stream_socketbuf(SOCKET_TYPE sock,
-                                   unsigned insize,
-                                   unsigned outsize)
+                                   std::streamsize insize,
+                                   std::streamsize outsize)
     : socketbuf(sock, insize, outsize) { }
 
-stream_socketbuf::stream_socketbuf(SOCKET_TYPE sock, char* buf, int length)
+stream_socketbuf::stream_socketbuf(SOCKET_TYPE sock,
+                                   std::streambuf::char_type * buf,
+                                   std::streamsize length)
     : socketbuf(sock, buf, length) { }
 
 stream_socketbuf::~stream_socketbuf()
@@ -227,14 +229,16 @@ stream_socketbuf::~stream_socketbuf()
 }
 
 dgram_socketbuf::dgram_socketbuf(SOCKET_TYPE sock,
-                                 unsigned insize,
-                                 unsigned outsize)
+                                 std::streamsize insize,
+                                 std::streamsize outsize)
     : socketbuf(sock, insize, outsize),
       out_p_size(sizeof(out_peer)), in_p_size(sizeof(in_peer))
 {
 }
 
-dgram_socketbuf::dgram_socketbuf(SOCKET_TYPE sock, char* buf, int length)
+dgram_socketbuf::dgram_socketbuf(SOCKET_TYPE sock,
+                                 std::streambuf::char_type * buf,
+                                 std::streamsize length)
     : socketbuf(sock, buf, length),
       out_p_size(sizeof(out_peer)), in_p_size(sizeof(in_peer))
 {
@@ -248,15 +252,13 @@ dgram_socketbuf::~dgram_socketbuf()
 // The next function are those who do the dirt work
 
 // overflow() - handles output to a connected socket.
-int stream_socketbuf::overflow(int nCh) { // traits::eof()
+std::streambuf::int_type stream_socketbuf::overflow(std::streambuf::int_type nCh) { // traits::eof()
   // in case of error, user finds out by testing fail()
   if(_socket==INVALID_SOCKET)
     return EOF; // Invalid socket // traits::eof()
 
   if(pptr()-pbase() <= 0)
     return 0; // nothing to send
-
-  int size;
 
   // prepare structure for detecting timeout
   #ifndef __BEOS__
@@ -279,7 +281,7 @@ int stream_socketbuf::overflow(int nCh) { // traits::eof()
   #endif
 
   // send pending data or return EOF on error
-  size=::send(_socket, pbase(),pptr()-pbase(),0);
+  int size=::send(_socket, pbase(),pptr()-pbase(),0);
 
   if(size < 0) {
     return EOF; // Socket Could not send // traits::eof()
@@ -295,10 +297,10 @@ int stream_socketbuf::overflow(int nCh) { // traits::eof()
   }
 
   // move remaining pbase()+size .. pptr()-1 => pbase() .. pptr()-size-1
-  for(char *p=pbase()+size; p<pptr(); p++)
-    *(p-size)=*p;
+  for(std::streambuf::char_type * p=pbase() + size; p < pptr(); p++)
+    *(p - size) = *p;
 
-  const int newlen=(pptr()-pbase())-size;
+  const int newlen = (pptr() - pbase()) - size;
 
   setp(pbase(),epptr());
 
@@ -308,16 +310,14 @@ int stream_socketbuf::overflow(int nCh) { // traits::eof()
 }
 
 // underflow() - handles input from a connected socket.
-int stream_socketbuf::underflow()
+std::streambuf::int_type stream_socketbuf::underflow()
 {
   if(_socket == INVALID_SOCKET)
     return EOF; // Invalid socket! // traits::eof()
 
+  // FIXME Does gptr() ever return false?
   if((gptr()) && (egptr()-gptr() > 0))
-    return (int)(unsigned char)(*gptr());
-
-  // fill up from eback to egptr
-  int size;
+    return (std::streambuf::int_type)(unsigned char)(*gptr());
 
   // prepare structure for detecting timeout
   #ifndef _BEOS
@@ -337,21 +337,22 @@ int stream_socketbuf::underflow()
     Timeout = false;
   #endif
 
+  // fill up from eback to egptr
   // receive data or return EOF on error
-  size = ::recv(_socket, eback(), egptr()-eback(), 0);
+  int size = ::recv(_socket, eback(), egptr()-eback(), 0);
 
   if(size <= 0)
     return EOF; // remote site has closed connection or (TCP) Receive error
      // traits::eof()
 
   // move receivd data from eback() .. eback()+size to egptr()-size .. egptr()
-  const int delta = egptr()-(eback()+size);
-  for(char *p=eback()+size-1; p >= eback(); p--)
-    *(p+delta) = *p;
+  const std::streamsize delta = egptr()-(eback()+size);
+  for(std::streambuf::char_type * p = eback() + size - 1; p >= eback(); p--)
+    *(p + delta) = *p;
 
-  setg(eback(), egptr()-size, egptr());
+  setg(eback(), egptr() - size, egptr());
 
-  return (int)(unsigned char)(*gptr()); // traits::not_eof(...)
+  return (std::streambuf::int_type)(unsigned char)(*gptr()); // traits::not_eof(...)
 }
 
 // setTarget() - set the target socket address
@@ -448,8 +449,9 @@ bool dgram_socketbuf::setTarget(const std::string& address, unsigned port,
 #endif // HAVE_GETADDRINFO
 }
 
-// overflow() - handles output to a connected socket.
-int dgram_socketbuf::overflow(int nCh) { // traits::eof()
+/// Handle output to a connected socket.
+std::streambuf::int_type dgram_socketbuf::overflow(std::streambuf::int_type nCh)
+{ // traits::eof()
   // in case of error, user finds out by testing fail()
   if(_socket==INVALID_SOCKET)
     return EOF; // Invalid socket // traits::eof()
@@ -562,8 +564,7 @@ int dgram_socketbuf::underflow() {
 
 // Constructor
 
-basic_socket_stream::basic_socket_stream(socketbuf & buffer,
-                                                 int proto)
+basic_socket_stream::basic_socket_stream(socketbuf & buffer, int proto)
     : std::iostream(&buffer), _sockbuf(buffer),
       m_protocol(proto)
 {
@@ -628,47 +629,52 @@ bool basic_socket_stream::fail() {
 // class tcp_socket_stream implementation
 /////////////////////////////////////////////////////////////////////////////
 
-tcp_socket_stream::tcp_socket_stream() :
-                  basic_socket_stream(*new stream_socketbuf(INVALID_SOCKET)),
-                  _connecting_socket(INVALID_SOCKET),
-                  _connecting_address(0),
-                  _connecting_addrlist(0),
-                  stream_sockbuf((stream_socketbuf&)_sockbuf) {
+tcp_socket_stream::tcp_socket_stream()
+    : basic_socket_stream(*new stream_socketbuf(INVALID_SOCKET)),
+      _connecting_socket(INVALID_SOCKET),
+      _connecting_address(0),
+      _connecting_addrlist(0),
+      stream_sockbuf((stream_socketbuf&)_sockbuf)
+{
   m_protocol = FreeSockets::proto_TCP;
 }
 
-tcp_socket_stream::tcp_socket_stream(SOCKET_TYPE socket) :
-                  basic_socket_stream(*new stream_socketbuf(socket)),
-                  _connecting_socket(INVALID_SOCKET),
-                  _connecting_address(0),
-                  _connecting_addrlist(0),
-                  stream_sockbuf((stream_socketbuf&)_sockbuf) {
+tcp_socket_stream::tcp_socket_stream(SOCKET_TYPE socket)
+    : basic_socket_stream(*new stream_socketbuf(socket)),
+      _connecting_socket(INVALID_SOCKET),
+      _connecting_address(0),
+      _connecting_addrlist(0),
+      stream_sockbuf((stream_socketbuf&)_sockbuf)
+{
   m_protocol = FreeSockets::proto_TCP;
 }
 
 tcp_socket_stream::tcp_socket_stream(const std::string& address, int service,
-                                     bool nonblock) :
-                  basic_socket_stream(*new stream_socketbuf(INVALID_SOCKET)),
-                  _connecting_socket(INVALID_SOCKET),
-                  _connecting_address(0),
-                  _connecting_addrlist(0),
-                  stream_sockbuf((stream_socketbuf&)_sockbuf) {
+                                     bool nonblock)
+    : basic_socket_stream(*new stream_socketbuf(INVALID_SOCKET)),
+      _connecting_socket(INVALID_SOCKET),
+      _connecting_address(0),
+      _connecting_addrlist(0),
+      stream_sockbuf((stream_socketbuf&)_sockbuf)
+{
   m_protocol = FreeSockets::proto_TCP;
   open(address, service, nonblock);
 }
 
 tcp_socket_stream::tcp_socket_stream(const std::string& address, int service,
-                                     unsigned int milliseconds) :
-                  basic_socket_stream(*new stream_socketbuf(INVALID_SOCKET)),
-                  _connecting_socket(INVALID_SOCKET),
-                  _connecting_address(0),
-                  _connecting_addrlist(0),
-                  stream_sockbuf((stream_socketbuf&)_sockbuf) {
+                                     unsigned int milliseconds)
+    : basic_socket_stream(*new stream_socketbuf(INVALID_SOCKET)),
+      _connecting_socket(INVALID_SOCKET),
+      _connecting_address(0),
+      _connecting_addrlist(0),
+      stream_sockbuf((stream_socketbuf&)_sockbuf)
+{
   m_protocol = FreeSockets::proto_TCP;
   open(address, service, milliseconds);
 }
 
-tcp_socket_stream::~tcp_socket_stream() { 
+tcp_socket_stream::~tcp_socket_stream()
+{
   if(_connecting_socket != INVALID_SOCKET) {
     ::shutdown(_connecting_socket, SHUT_RDWR);
     ::closesocket(_connecting_socket);
@@ -971,7 +977,7 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
   ::getsockopt(_socket, SOL_SOCKET, SO_ERROR, &errnum, &errsize);
 #else // _WIN32
   Sleep(0);
-  ::getsockopt(_socket, SOL_SOCKET, SO_ERROR, (LPSTR)&errnum, &errsize); 
+  ::getsockopt(_socket, SOL_SOCKET, SO_ERROR, (LPSTR)&errnum, &errsize);
 #endif // _WIN32
 
 #ifdef HAVE_GETADDRINFO
@@ -1151,7 +1157,7 @@ int dgram_socket_stream::bindToIpService(int service, int type, int protocol)
 
 udp_socket_stream::udp_socket_stream()
 {
-  m_protocol = FreeSockets::proto_UDP; 
+  m_protocol = FreeSockets::proto_UDP;
 }
 
 udp_socket_stream::~udp_socket_stream()
@@ -1183,30 +1189,33 @@ int udp_socket_stream::open(int service)
 // class unix_socket_stream implementation
 /////////////////////////////////////////////////////////////////////////////
 
-unix_socket_stream::unix_socket_stream() :
-                   basic_socket_stream(*new stream_socketbuf(INVALID_SOCKET)),
-                   _connecting_socket(INVALID_SOCKET),
-                   stream_sockbuf((stream_socketbuf&)_sockbuf) {
+unix_socket_stream::unix_socket_stream()
+    : basic_socket_stream(*new stream_socketbuf(INVALID_SOCKET)),
+      _connecting_socket(INVALID_SOCKET),
+      stream_sockbuf((stream_socketbuf&)_sockbuf)
+{
 }
 
 unix_socket_stream::unix_socket_stream(const std::string & address,
-                                       bool nonblock) :
-                   basic_socket_stream(*new stream_socketbuf(INVALID_SOCKET)),
-                   _connecting_socket(INVALID_SOCKET),
-                   stream_sockbuf((stream_socketbuf&)_sockbuf) {
+                                       bool nonblock)
+    : basic_socket_stream(*new stream_socketbuf(INVALID_SOCKET)),
+      _connecting_socket(INVALID_SOCKET),
+      stream_sockbuf((stream_socketbuf&)_sockbuf)
+{
   open(address, nonblock);
 }
 
 unix_socket_stream::unix_socket_stream(const std::string & address,
-                                       unsigned int milliseconds) :
-                   basic_socket_stream(stream_sockbuf),
-                   _connecting_socket(INVALID_SOCKET),
-                   stream_sockbuf((stream_socketbuf&)_sockbuf) {
+                                       unsigned int milliseconds)
+    : basic_socket_stream(stream_sockbuf),
+      _connecting_socket(INVALID_SOCKET),
+      stream_sockbuf((stream_socketbuf&)_sockbuf)
+{
   open(address, milliseconds);
 }
 
 unix_socket_stream::~unix_socket_stream()
-{ 
+{
   // Don't close the main socket, that is done in the basic_socket_stream
   // destructor
   if(_connecting_socket != INVALID_SOCKET) {
@@ -1330,7 +1339,7 @@ bool unix_socket_stream::isReady(unsigned int milliseconds)
   getsockopt(_socket, SOL_SOCKET, SO_ERROR, &errnum, &errsize);
 #else // _WIN32
   Sleep(0);
-  getsockopt(_socket, SOL_SOCKET, SO_ERROR, (LPSTR)&errnum, &errsize); 
+  getsockopt(_socket, SOL_SOCKET, SO_ERROR, (LPSTR)&errnum, &errsize);
 #endif // _WIN32
 
   if(errnum != 0) {

@@ -1,3 +1,10 @@
+2006-12-17  Al Riddoch  <alriddoch@zepler.org>
+
+	* skstream/skstream.cpp, skstream/skstream.h, skstream/skstream_unix.h:
+	  Add some inline documentation comments for Doxygen. Switch some
+	  iostream related types to use the typedefs made available by
+	  the iostream library.
+
 2006-12-14  Al Riddoch  <alriddoch@zepler.org>
 
 	* Makefile.am: Remove pc.in files from EXTRA_DIST, as autotools
