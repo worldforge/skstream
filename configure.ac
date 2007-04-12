@@ -393,11 +393,35 @@ if test "$ac_enable_getaddrinfo" = "yes"; then
             AC_MSG_RESULT(no)
         ])
     ])
+
+    AC_CHECK_FUNC(gai_strerror,
+    [
+        AC_DEFINE(HAVE_GAI_STRERROR, 1, "Define to 1 if you have the `gai_strerror' function.")
+    ],
+    [
+        CXXFLAGS="$CXXFLAGS -DWINVER=0x501"
+        AC_MSG_CHECKING([for gai_strerror in ws2tcpip.h])
+        AC_TRY_COMPILE(
+        [
+            #include <ws2tcpip.h>
+        ],
+        [
+            gai_strerror(0);
+        ],
+        [
+            AC_MSG_RESULT(yes)
+            AC_DEFINE(HAVE_GAI_STRERROR, 1, "Define to 1 if you have the `gai_strerror' function.")
+        ],
+        [
+            AC_MSG_RESULT(no)
+        ])
+    ])
+
 fi
 
 dnl Test for C library functions
 
-AC_CHECK_FUNCS([inet_aton, gai_strerror])
+AC_CHECK_FUNCS([inet_aton])
 
 dnl Test for Libraries
 
