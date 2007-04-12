@@ -1,5 +1,10 @@
 2007-04-12  Al Riddoch  <alriddoch@zepler.org>
 
+	* configure.ac: Clean up the way debian/rules permissions are set so
+	  they cause less breakage.
+
+2007-04-12  Al Riddoch  <alriddoch@zepler.org>
+
 	* configure.ac: Add a more detailed test so the inlined version
 	  of gai_strerror provided by more recent versions of mingw can
 	  be used.
