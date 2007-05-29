@@ -1224,6 +1224,9 @@ unix_socket_stream::~unix_socket_stream()
   }
 }
 
+#ifndef UNIX_PATH_MAX
+#define UNIX_PATH_MAX 104
+#endif
 
 void unix_socket_stream::open(const std::string& address, bool nonblock)
 {
@@ -1260,7 +1263,7 @@ void unix_socket_stream::open(const std::string& address, bool nonblock)
   // Fill host information
   sockaddr_un sa;
   sa.sun_family = AF_UNIX;
-  strncpy(sa.sun_path, address.c_str(), 108);
+  strncpy(sa.sun_path, address.c_str(), UNIX_PATH_MAX);
 
   if(::connect(_socket,(sockaddr*)&sa, sizeof(sa)) == SOCKET_ERROR) {
     if(nonblock && getSystemError() == SOCKET_BLOCK_ERROR) {
