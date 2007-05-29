@@ -1,5 +1,10 @@
 2007-05-28  Al Riddoch  <alriddoch@zepler.org>
 
+	* skstream/skstream.cpp: A much safer way of ensuring the address
+	  length is correct, using sizeof.
+
+2007-05-28  Al Riddoch  <alriddoch@zepler.org>
+
 	* skstream/skstream.cpp: It is not safe to assume the maximum
 	  path length of a unix socket is 108. On OSX it is 104. On some
 	  systems it is defined, on others we have to assume 104.
