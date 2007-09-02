@@ -1,3 +1,7 @@
+2007-09-02  Al Riddoch  <alriddoch@zepler.org>
+
+	* configure.ac: Remove the debian subdir from distribution.
+
 2007-05-28  Al Riddoch  <alriddoch@zepler.org>
 
 	* skstream/skstream.cpp: A much safer way of ensuring the address

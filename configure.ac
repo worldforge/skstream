@@ -455,8 +455,8 @@ AC_CONFIG_FILES([
 	skstream-0.3.pc
 	skstream-unix-0.3.pc
 	skstream/skstreamconfig.h
-	debian/control
-	debian/rules
 ])
-AC_CONFIG_COMMANDS([rules], [chmod +x debian/rules])
+dnl 	debian/control
+dnl 	debian/rules
+dnl AC_CONFIG_COMMANDS([rules], [chmod +x debian/rules])
 AC_OUTPUT
