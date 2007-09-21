@@ -1,3 +1,11 @@
+2007-09-22  Al Riddoch  <alriddoch@zepler.org>
+
+	* Doxyfile: Update to a more recent version.
+
+	* skstream/skserver.h, skstream/sksocket.h: Add some quick
+	  doc strings to classes, so the inheritance tree is apparant to
+	  doxygen.
+
 2007-09-02  Al Riddoch  <alriddoch@zepler.org>
 
 	* configure.ac: Remove the debian subdir from distribution.

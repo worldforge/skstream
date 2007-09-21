@@ -74,6 +74,8 @@ namespace FreeSockets {
 /////////////////////////////////////////////////////////////////////////////
 // class basic_socket, a virtual base class for use in polling
 /////////////////////////////////////////////////////////////////////////////
+
+/// \brief Base class for anything that encapsulates a socket.
 class basic_socket {
 protected:
   mutable int LastError;
