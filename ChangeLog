@@ -1,5 +1,12 @@
 2007-09-22  Al Riddoch  <alriddoch@zepler.org>
 
+	* test/basicskstreamtest.h, test/skservertest.h,
+	  test/skstreamtestrunner.cpp, test/socketbuftest.h:
+	  Remove some tests for methods that no longer exist in the given
+	  classes.
+
+2007-09-22  Al Riddoch  <alriddoch@zepler.org>
+
 	* Doxyfile: Update to a more recent version.
 
 	* skstream/skserver.h, skstream/sksocket.h: Add some quick

@@ -22,7 +22,15 @@
 //  Created: 2000-10-03 by Bryce
 //
 // $Log$
-// Revision 1.7  2003-09-29 11:44:13  alriddoch
+// Revision 1.8  2007-09-22 14:58:30  alriddoch
+// 2007-09-22  Al Riddoch  <alriddoch@zepler.org>
+//
+// 	* test/basicskstreamtest.h, test/skservertest.h,
+// 	  test/skstreamtestrunner.cpp, test/socketbuftest.h:
+// 	  Remove some tests for methods that no longer exist in the given
+// 	  classes.
+//
+// Revision 1.7  2003/09/29 11:44:13  alriddoch
 //  2003-09-27 Al Riddoch <alriddoch@zepler.org>
 //     - Add libws2_32 which is required for getaddrinfo and friends under
 //       windows.

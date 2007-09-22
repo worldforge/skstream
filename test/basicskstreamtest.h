@@ -22,7 +22,15 @@
 //  Created: 2002-02-19 by Dan Tomalesky
 //
 // $Log$
-// Revision 1.8  2005-01-14 17:36:36  alriddoch
+// Revision 1.9  2007-09-22 14:58:30  alriddoch
+// 2007-09-22  Al Riddoch  <alriddoch@zepler.org>
+//
+// 	* test/basicskstreamtest.h, test/skservertest.h,
+// 	  test/skstreamtestrunner.cpp, test/socketbuftest.h:
+// 	  Remove some tests for methods that no longer exist in the given
+// 	  classes.
+//
+// Revision 1.8  2005/01/14 17:36:36  alriddoch
 // 2004-01-14  Al Riddoch  <alriddoch@zepler.org>
 //
 // 	* test/basicskstreamtest.h: Socket buffers are now automatically
@@ -148,7 +156,6 @@ class basicskstreamtest : public CppUnit::TestCase
     CPPUNIT_TEST(testConstructor_3);
     CPPUNIT_TEST(testConstructor_4);
     CPPUNIT_TEST(testSetSocket);
-    CPPUNIT_TEST(testSetBroadcast);
     CPPUNIT_TEST(testClose);
     CPPUNIT_TEST_SUITE_END();
 
@@ -222,20 +229,6 @@ class basicskstreamtest : public CppUnit::TestCase
         {
             CPPUNIT_ASSERT(skstream->getSocket() == socket);
             CPPUNIT_ASSERT(skstream->is_open());
-        }
-
-        void testSetBroadcast()
-        {
-            if(!skstream->setBroadcast(true))
-            {
-                std::cout << std::endl;
-                std::cout << "Error with broadcast: " << 
-                    strerror(skstream->getLastError()) << std::endl;
-
-                CPPUNIT_ASSERT(false);
-            }
-            
-            CPPUNIT_ASSERT(skstream->setBroadcast(false));
         }
 
         void testClose()

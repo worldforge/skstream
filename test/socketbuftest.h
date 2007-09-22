@@ -22,7 +22,15 @@
 //  Created: 2002-02-19 by Dan Tomalesky
 //
 // $Log$
-// Revision 1.5  2003-05-04 21:30:16  alriddoch
+// Revision 1.6  2007-09-22 14:58:30  alriddoch
+// 2007-09-22  Al Riddoch  <alriddoch@zepler.org>
+//
+// 	* test/basicskstreamtest.h, test/skservertest.h,
+// 	  test/skstreamtestrunner.cpp, test/socketbuftest.h:
+// 	  Remove some tests for methods that no longer exist in the given
+// 	  classes.
+//
+// Revision 1.5  2003/05/04 21:30:16  alriddoch
 //  2003-05-04 Al Riddoch <alriddoch@zepler.org>
 //     - Sort out nasty hard tabs from address checks.
 //     - Start work on updating the checks.
@@ -101,8 +109,6 @@ class socketbuftest : public CppUnit::TestCase
     CPPUNIT_TEST_SUITE(socketbuftest);
     CPPUNIT_TEST(testConstructor_1);
     CPPUNIT_TEST(testConstructor_2);
-    CPPUNIT_TEST(testGetOutpeer);
-    CPPUNIT_TEST(testGetInpeer);
     CPPUNIT_TEST(testSetSocket);
     CPPUNIT_TEST_SUITE_END();
 
@@ -135,34 +141,6 @@ class socketbuftest : public CppUnit::TestCase
             CPPUNIT_ASSERT(socketBuf);
 
             delete socketBuf;
-        }
-
-        void testGetOutpeer()
-        {
-            sockaddr_storage sain = socketBuffer->getOutpeer();
-
-            //these tests are no longer useful
-
-            //check the port was set
-            // CPPUNIT_ASSERT(sain.sin_port);
-
-            //check the address was set
-            // CPPUNIT_ASSERT(sain.sin_addr.s_addr);
-        }
-
-        void testGetInpeer()
-        {
-            sockaddr_storage sain = socketBuffer->getInpeer();
-
-            //these tests don't do anything it seems. hopefully some better
-            //ones will surface at some point.
-            
-            //check the address was set
-            //  CPPUNIT_ASSERT(sain.sin_addr.s_addr);
-
-            //check the port was set
-            //  CPPUNIT_ASSERT(sain.sin_port);
-
         }
 
         void testSetSocket()

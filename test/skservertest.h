@@ -22,7 +22,15 @@
 //  Created: 2002-02-24 by Dan Tomalesky
 //
 // $Log$
-// Revision 1.2  2003-05-06 21:53:11  alriddoch
+// Revision 1.3  2007-09-22 14:58:30  alriddoch
+// 2007-09-22  Al Riddoch  <alriddoch@zepler.org>
+//
+// 	* test/basicskstreamtest.h, test/skservertest.h,
+// 	  test/skstreamtestrunner.cpp, test/socketbuftest.h:
+// 	  Remove some tests for methods that no longer exist in the given
+// 	  classes.
+//
+// Revision 1.2  2003/05/06 21:53:11  alriddoch
 //  2003-05-06 Al Riddoch <alriddoch@zepler.org>
 //     - skstream/skstream.h, skstream/skstream.cpp, skstream_unix.h:
 //       Re-work basic_socket_stream so it can have either stream or datagram
@@ -143,7 +151,6 @@ class udpskservertest : public CppUnit::TestCase {
     //macros for setting up suite.
     CPPUNIT_TEST_SUITE(udpskservertest);
     CPPUNIT_TEST(testConstructor);
-    CPPUNIT_TEST(testAccept);
     CPPUNIT_TEST(testOpen);
     CPPUNIT_TEST(testClose);
     CPPUNIT_TEST_SUITE_END();
@@ -161,11 +168,6 @@ class udpskservertest : public CppUnit::TestCase {
             CPPUNIT_ASSERT(skserver);
 
             CPPUNIT_ASSERT(skserver->is_open());
-        }
-
-        void testAccept()
-        {
-            CPPUNIT_ASSERT(skserver->accept() != INVALID_SOCKET);
         }
 
         void testOpen()
