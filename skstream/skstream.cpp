@@ -1207,11 +1207,20 @@ unix_socket_stream::unix_socket_stream(const std::string & address,
 
 unix_socket_stream::unix_socket_stream(const std::string & address,
                                        unsigned int milliseconds)
-    : basic_socket_stream(stream_sockbuf),
+    : basic_socket_stream(*new stream_socketbuf(INVALID_SOCKET)),
       _connecting_socket(INVALID_SOCKET),
       stream_sockbuf((stream_socketbuf&)_sockbuf)
 {
   open(address, milliseconds);
+}
+
+unix_socket_stream::unix_socket_stream(unix_socket_stream & other,
+                                       bool nonblock)
+    : basic_socket_stream(*new stream_socketbuf(INVALID_SOCKET)),
+      _connecting_socket(INVALID_SOCKET),
+      stream_sockbuf((stream_socketbuf&)_sockbuf)
+{
+  open(other, nonblock);
 }
 
 unix_socket_stream::~unix_socket_stream()
@@ -1224,7 +1233,7 @@ unix_socket_stream::~unix_socket_stream()
   }
 }
 
-void unix_socket_stream::open(const std::string& address, bool nonblock)
+void unix_socket_stream::open(const std::string & address, bool nonblock)
 {
   if (address.size() >  107) {
     return;
@@ -1291,6 +1300,21 @@ void unix_socket_stream::open(const std::string& address, bool nonblock)
 
   // set socket for underlying socketbuf
   _sockbuf.setSocket(_socket);
+}
+
+void unix_socket_stream::open(const std::string & address,
+                              unsigned int milliseconds)
+{
+  open(address, true);
+  if(!isReady(milliseconds)) {
+    close();
+    fail();
+  }
+}
+
+void open(unix_socket_stream & other, bool nonblock = false)
+{
+  // FIXME Create a socketpair connecting the two stream together.
 }
 
 void unix_socket_stream::close()

@@ -1,3 +1,9 @@
+2007-10-02  Al Riddoch  <alriddoch@zepler.org>
+
+	* skstream/skstream_unix.h, skstream/skstream.cpp: Clean up the
+	  code for unix sockets, and add an interface for setting up socketpair
+	  style streams.
+
 2007-09-22  Al Riddoch  <alriddoch@zepler.org>
 
 	* test/basicskstreamtest.h, test/skservertest.h,

@@ -47,21 +47,20 @@ private:
 public:
   unix_socket_stream();
 
-  explicit unix_socket_stream(const std::string& address,
+  explicit unix_socket_stream(const std::string & address,
                               bool nonblock = false);
 
-  unix_socket_stream(const std::string& address, unsigned int milliseconds);
+  explicit unix_socket_stream(const std::string & address,
+                              unsigned int milliseconds);
+
+  explicit unix_socket_stream(unix_socket_stream & other,
+                              bool nonblock = false);
 
   virtual ~unix_socket_stream();
 
   void open(const std::string& address, bool nonblock = false);
-  void open(const std::string& address, unsigned int milliseconds) {
-    open(address, true);
-    if(!isReady(milliseconds)) {
-      close();
-      fail();
-    }
-  }
+  void open(const std::string& address, unsigned int milliseconds);
+  void open(unix_socket_stream & other, bool nonblock = false);
 
   virtual void close();
   virtual SOCKET_TYPE getSocket() const;
