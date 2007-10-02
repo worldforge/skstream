@@ -1,5 +1,10 @@
 2007-10-02  Al Riddoch  <alriddoch@zepler.org>
 
+	* skstream/skstream.cpp: Fix the method definition for
+	  unix_socket_stream::open().
+
+2007-10-02  Al Riddoch  <alriddoch@zepler.org>
+
 	* skstream/skstream_unix.h, skstream/skstream.cpp: Clean up the
 	  code for unix sockets, and add an interface for setting up socketpair
 	  style streams.

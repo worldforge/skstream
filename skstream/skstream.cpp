@@ -1312,7 +1312,7 @@ void unix_socket_stream::open(const std::string & address,
   }
 }
 
-void open(unix_socket_stream & other, bool nonblock = false)
+void unix_socket_stream::open(unix_socket_stream & other, bool nonblock)
 {
   // FIXME Create a socketpair connecting the two stream together.
 }
