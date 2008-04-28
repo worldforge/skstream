@@ -41,6 +41,7 @@
 
 #include <iostream>
 #include <cstdio>
+#include <cstring>
 
 #ifdef _WIN32
 #define SHUT_RD SD_RECEIVE

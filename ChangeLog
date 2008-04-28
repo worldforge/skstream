@@ -1,3 +1,9 @@
+2007-04-28  Al Riddoch  <alriddoch@zepler.org>
+
+	* skstream/skserver.cpp, skstream/skstream.cpp: Add includes required
+	  for recent compilers which include less stuff implicitly in
+	  standard headers.
+
 2007-10-02  Al Riddoch  <alriddoch@zepler.org>
 
 	* skstream/skstream.cpp: Fix the method definition for

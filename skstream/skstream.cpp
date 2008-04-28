@@ -42,6 +42,7 @@
 #endif // _WIN32
 
 #include <cstdio>
+#include <cstring>
 #include <cassert>
 
 #ifdef _WIN32
