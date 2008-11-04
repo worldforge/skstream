@@ -10,6 +10,8 @@
 #include <utility>
 
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 #include <time.h>
 #include <signal.h> // to trap Ctrl+C : SIGINT

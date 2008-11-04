@@ -1,3 +1,9 @@
+2008-11-04  Al Riddoch  <alriddoch@zepler.org>
+
+	* ping/ping.cpp: Add the C includes required for strtoul(),
+	  exit(3) and strerror() which should fix problems with more
+	  recent compilers.
+
 2007-04-28  Al Riddoch  <alriddoch@zepler.org>
 
 	* skstream/skserver.cpp, skstream/skstream.cpp: Add includes required
