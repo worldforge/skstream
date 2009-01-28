@@ -1,3 +1,9 @@
+2009-01-28  Al Riddoch  <alriddoch@zepler.org>
+
+	* test/basicskstreamtest.h: Fix an issue with an ambiguous constructor
+	  call thrown up by recent compilers. Strip out the RCS logging
+	  tag.
+
 2008-11-04  Al Riddoch  <alriddoch@zepler.org>
 
 	* ping/ping.cpp: Add the C includes required for strtoul(),
