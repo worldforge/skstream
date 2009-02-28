@@ -1,3 +1,8 @@
+2009-01-28  Alexey Torkhov  <atorkhov@gmail.com>
+
+	* skstream/skstream.h: Fix issue when EOF is undefined without explicitly
+	  including stdio with recent compilers.
+
 2009-01-28  Al Riddoch  <alriddoch@zepler.org>
 
 	* test/basicskstreamtest.h: Fix an issue with an ambiguous constructor
