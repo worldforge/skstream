@@ -1,3 +1,8 @@
+2009-03-23  Al Riddoch  <alriddoch@googlemail.com>
+
+	* skstream/skstream.h, skstream/skstream.cpp: Fix uses of EOF
+	  to use traits_type::eof() instead.
+
 2009-01-28  Alexey Torkhov  <atorkhov@gmail.com>
 
 	* skstream/skstream.h: Fix issue when EOF is undefined without explicitly

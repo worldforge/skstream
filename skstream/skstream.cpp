@@ -190,8 +190,8 @@ void socketbuf::setSocket(SOCKET_TYPE sock)
 
 int socketbuf::sync()
 {
-    if(overflow() == EOF) // traits::eof()
-      return EOF;         // ios will set the fail bit // traits::eof()
+    if(overflow() == traits_type::eof())
+      return traits_type::eof();         // ios will set the fail bit
     else {
 // This appeared to be causing the stream to lose data.
 //      // empty put and get areas
@@ -253,13 +253,15 @@ dgram_socketbuf::~dgram_socketbuf()
 // The next function are those who do the dirt work
 
 // overflow() - handles output to a connected socket.
-std::streambuf::int_type stream_socketbuf::overflow(std::streambuf::int_type nCh) { // traits::eof()
+std::streambuf::int_type stream_socketbuf::overflow(std::streambuf::int_type nCh) {
   // in case of error, user finds out by testing fail()
-  if(_socket==INVALID_SOCKET)
-    return EOF; // Invalid socket // traits::eof()
+  if(_socket==INVALID_SOCKET) {
+    return traits_type::eof(); // Invalid socket
+  }
 
-  if(pptr()-pbase() <= 0)
+  if(pptr()-pbase() <= 0) {
     return 0; // nothing to send
+  }
 
   // prepare structure for detecting timeout
   #ifndef __BEOS__
@@ -274,24 +276,27 @@ std::streambuf::int_type stream_socketbuf::overflow(std::streambuf::int_type nCh
         sr = ::select(_socket+1,NULL,&socks,NULL,&_tv);
         if(/*(sr == 0) || */ !FD_ISSET(_socket,&socks)){
           Timeout = true;
-          return EOF; // a timeout error should be set here! - RGJ
-         } else if(sr < 0) return EOF; // error on select() // traits::eof()
+          return traits_type::eof(); // a timeout error should be set here! - RGJ
+         } else if(sr < 0) {
+           return traits_type::eof(); // error on select()
+         }
       }
       Timeout = false;
     }
   #endif
 
-  // send pending data or return EOF on error
+  // send pending data or return eof() on error
   int size=::send(_socket, pbase(),pptr()-pbase(),0);
 
   if(size < 0) {
-    return EOF; // Socket Could not send // traits::eof()
+    return traits_type::eof(); // Socket Could not send
   }
 
-  if(size == 0)
-    return EOF; // remote site has closed this connection // traits::eof()
+  if(size == 0) {
+    return traits_type::eof(); // remote site has closed this connection
+  }
 
-  if(nCh != EOF) { // traits::eof()
+  if(nCh != traits_type::eof()) {
     // size >= 1 at this point
     size--;
     *(pbase()+size)=nCh;
@@ -313,12 +318,14 @@ std::streambuf::int_type stream_socketbuf::overflow(std::streambuf::int_type nCh
 // underflow() - handles input from a connected socket.
 std::streambuf::int_type stream_socketbuf::underflow()
 {
-  if(_socket == INVALID_SOCKET)
-    return EOF; // Invalid socket! // traits::eof()
+  if(_socket == INVALID_SOCKET) {
+    return traits_type::eof(); // Invalid socket!
+  }
 
   // FIXME Does gptr() ever return false?
-  if((gptr()) && (egptr()-gptr() > 0))
+  if((gptr()) && (egptr()-gptr() > 0)) {
     return (std::streambuf::int_type)(unsigned char)(*gptr());
+  }
 
   // prepare structure for detecting timeout
   #ifndef _BEOS
@@ -332,19 +339,21 @@ std::streambuf::int_type stream_socketbuf::underflow()
       sr = ::select(_socket+1,&socks,NULL,NULL,&_tv);
       if((sr == 0) || !FD_ISSET(_socket,&socks)){
         Timeout = true;
-        return EOF; // a timeout error should be set here! - RGJ
-      } else if(sr < 0) return EOF;  // error on select()
+        return traits_type::eof(); // a timeout error should be set here! - RGJ
+      } else if(sr < 0) {
+        return traits_type::eof();  // error on select()
+      }
     }
     Timeout = false;
   #endif
 
   // fill up from eback to egptr
-  // receive data or return EOF on error
+  // receive data or return eof() on error
   int size = ::recv(_socket, eback(), egptr()-eback(), 0);
 
-  if(size <= 0)
-    return EOF; // remote site has closed connection or (TCP) Receive error
-     // traits::eof()
+  if(size <= 0) {
+    return traits_type::eof(); // remote site has closed connection or (TCP) Receive error
+  }
 
   // move receivd data from eback() .. eback()+size to egptr()-size .. egptr()
   const std::streamsize delta = egptr()-(eback()+size);
@@ -452,13 +461,15 @@ bool dgram_socketbuf::setTarget(const std::string& address, unsigned port,
 
 /// Handle output to a connected socket.
 std::streambuf::int_type dgram_socketbuf::overflow(std::streambuf::int_type nCh)
-{ // traits::eof()
+{
   // in case of error, user finds out by testing fail()
-  if(_socket==INVALID_SOCKET)
-    return EOF; // Invalid socket // traits::eof()
+  if(_socket==INVALID_SOCKET) {
+    return traits_type::eof(); // Invalid socket
+  }
 
-  if(pptr()-pbase() <= 0)
+  if(pptr()-pbase() <= 0) {
     return 0; // nothing to send
+  }
 
   int size;
 
@@ -475,24 +486,27 @@ std::streambuf::int_type dgram_socketbuf::overflow(std::streambuf::int_type nCh)
         sr = ::select(_socket+1,NULL,&socks,NULL,&_tv);
         if(/*(sr == 0) || */ !FD_ISSET(_socket,&socks)){
           Timeout = true;
-          return EOF; // a timeout error should be set here! - RGJ
-         } else if(sr < 0) return EOF; // error on select() // traits::eof()
+          return traits_type::eof(); // a timeout error should be set here! - RGJ
+         } else if(sr < 0) {
+          return traits_type::eof(); // error on select()
+         }
       }
       Timeout = false;
     }
   #endif
 
-  // send pending data or return EOF on error
+  // send pending data or return eof() on error
   size=::sendto(_socket, pbase(),pptr()-pbase(),0,(sockaddr*)&out_peer,out_p_size);
 
   if(size < 0) {
-    return EOF; // Socket Could not send // traits::eof()
+    return traits_type::eof(); // Socket Could not send
   }
 
-  if(size == 0)
-    return EOF; // remote site has closed this connection // traits::eof()
+  if(size == 0) {
+    return traits_type::eof(); // remote site has closed this connection
+  }
 
-  if(nCh != EOF) { // traits::eof()
+  if(nCh != traits_type::eof()) {
     // size >= 1 at this point
     size--;
     *(pbase()+size)=nCh;
@@ -513,11 +527,13 @@ std::streambuf::int_type dgram_socketbuf::overflow(std::streambuf::int_type nCh)
 
 // underflow() - handles input from a connected socket.
 int dgram_socketbuf::underflow() {
-  if(_socket == INVALID_SOCKET)
-    return EOF; // Invalid socket! // traits::eof()
+  if(_socket == INVALID_SOCKET) {
+    return traits_type::eof(); // Invalid socket!
+  }
 
-  if((gptr()) && (egptr()-gptr() > 0))
+  if((gptr()) && (egptr()-gptr() > 0)) {
     return (int)(unsigned char)(*gptr());
+  }
 
   // fill up from eback to egptr
   int size;
@@ -534,20 +550,22 @@ int dgram_socketbuf::underflow() {
       sr = ::select(_socket+1,&socks,NULL,NULL,&_tv);
       if((sr == 0) || !FD_ISSET(_socket,&socks)){
         Timeout = true;
-        return EOF; // a timeout error should be set here! - RGJ
-      } else if(sr < 0) return EOF;  // error on select()
+        return traits_type::eof(); // a timeout error should be set here! - RGJ
+      } else if(sr < 0) {
+        return traits_type::eof();  // error on select()
+      }
     }
     Timeout = false;
   #endif
 
-  // receive data or return EOF on error
+  // receive data or return eof() on error
   in_p_size = sizeof(in_peer);
   size = ::recvfrom(_socket, eback(), egptr()-eback(), 0,
                     (sockaddr*)&in_peer, &in_p_size);
 
-  if(size <= 0)
-    return EOF; // remote site has closed connection or (TCP) Receive error
-     // traits::eof()
+  if(size <= 0) {
+    return traits_type::eof(); // remote site has closed connection or (TCP) Receive error
+  }
 
   // move receivd data from eback() .. eback()+size to egptr()-size .. egptr()
   const int delta = egptr()-(eback()+size);

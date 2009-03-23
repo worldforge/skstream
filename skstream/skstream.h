@@ -33,11 +33,6 @@
 
 #include <skstream/sksocket.h>
 
-// To not include full <cstdio>, we define only EOF
-#ifndef EOF
-#define EOF (-1)
-#endif
-
 /////////////////////////////////////////////////////////////////////////////
 // class socketbuf
 /////////////////////////////////////////////////////////////////////////////
@@ -99,7 +94,7 @@ public:
 
 protected:
   /// Handle writing data from the buffer to the socket.
-  virtual int_type overflow(int_type nCh = EOF) = 0;
+  virtual int_type overflow(int_type nCh = traits_type::eof()) = 0;
   /// Handle reading data from the socket to the buffer.
   virtual int_type underflow() = 0;
 
@@ -132,7 +127,7 @@ public:
 
 protected:
   /// Handle writing data from the buffer to the socket.
-  virtual int_type overflow(int_type nCh = EOF);
+  virtual int_type overflow(int_type nCh = traits_type::eof());
   /// Handle reading data from the socket to the buffer.
   virtual int_type underflow();
 
@@ -189,7 +184,7 @@ protected:
   SOCKLEN in_p_size;
 
   /// Handle writing data from the buffer to the socket.
-  virtual int_type overflow(int_type nCh = EOF);
+  virtual int_type overflow(int_type nCh = traits_type::eof());
   /// Handle reading data from the socket to the buffer.
   virtual int_type underflow();
 
