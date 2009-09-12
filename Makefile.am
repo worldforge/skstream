@@ -19,9 +19,6 @@ VisualC.zip:
 
 SUBDIRS = skstream ping test
 
-docdatadir = $(datadir)/doc/skstream-$(VERSION)
-docdata_DATA = README COPYING AUTHORS NEWS README.FreeSockets
-
 docs:
 	@echo "running doxygen..."
 	@doxygen Doxyfile
