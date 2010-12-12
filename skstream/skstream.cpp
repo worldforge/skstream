@@ -1046,6 +1046,12 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
       }
     }
 
+    if (!success) {
+      ::freeaddrinfo(_connecting_addrlist);
+      _connecting_addrlist = 0;
+      _connecting_address = 0;
+      return false;
+    }
   }
 
   ::freeaddrinfo(_connecting_addrlist);
