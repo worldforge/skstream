@@ -748,7 +748,11 @@ void tcp_socket_stream::open(const std::string & address,
 
     if(nonblock) {
    #ifndef _WIN32
-      int err_val = ::fcntl(_socket, F_SETFL, O_NONBLOCK);
+      int flags = ::fcntl(_socket, F_GETFL, 0);
+      if (flags == -1) {
+        flags = 0;
+      }
+      int err_val = ::fcntl(_socket, F_SETFL, flags | O_NONBLOCK);
    #else // _WIN32
       u_long nonblocking = 1;  // This flag may be set elsewhere,
                                // in a header ?
@@ -800,7 +804,11 @@ void tcp_socket_stream::open(const std::string & address,
 
   if(nonblock) {
  #ifndef _WIN32
-    int err_val = ::fcntl(_socket, F_SETFL, O_NONBLOCK);
+    int flags = ::fcntl(_socket, F_GETFL, 0);
+    if (flags == -1) {
+      flags = 0;
+    }
+    int err_val = ::fcntl(_socket, F_SETFL, flags | O_NONBLOCK);
  #else // _WIN32
     u_long nonblocking = 1;  // This flag may be set elsewhere, in a header ?
     int err_val = ::ioctlsocket(_socket, FIONBIO, &nonblocking);
@@ -871,7 +879,11 @@ void tcp_socket_stream::open(const std::string & address,
   // set the socket blocking again for io
   if(nonblock) {
 #ifndef _WIN32
-    int err_val = ::fcntl(_socket, F_SETFL, 0);
+    int flags = ::fcntl(_socket, F_GETFL, 0);
+    if (flags == -1) {
+      flags = 0;
+    }
+    int err_val = ::fcntl(_socket, F_SETFL, flags & ~O_NONBLOCK);
 #else // _WIN32
     u_long blocking = 0;
     int err_val = ::ioctlsocket(_socket, FIONBIO, &blocking);
@@ -1017,7 +1029,11 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
         continue;
       }
    #ifndef _WIN32
-      int err_val = ::fcntl(_socket, F_SETFL, O_NONBLOCK);
+      int flags = ::fcntl(_socket, F_GETFL, 0);
+      if (flags == -1) {
+        flags = 0;
+      }
+      int err_val = ::fcntl(_socket, F_SETFL, flags | O_NONBLOCK);
    #else // _WIN32
       u_long nonblocking = 1;  // This flag may be set elsewhere,
                                // in a header ?
@@ -1069,7 +1085,11 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
 
   // set the socket blocking again for io
 #ifndef _WIN32
-  int err_val = ::fcntl(_socket, F_SETFL, 0);
+  int flags = ::fcntl(_socket, F_GETFL, 0);
+  if (flags == -1) {
+    flags = 0;
+  }
+  int err_val = ::fcntl(_socket, F_SETFL, flags & ~O_NONBLOCK);
 #else // _WIN32
   u_long blocking = 0;
   int err_val = ::ioctlsocket(_socket, FIONBIO, &blocking);
@@ -1280,7 +1300,11 @@ void unix_socket_stream::open(const std::string & address, bool nonblock)
 
   if(nonblock) {
 #ifndef _WIN32
-    int err_val = ::fcntl(_socket, F_SETFL, O_NONBLOCK);
+    int flags = ::fcntl(_socket, F_GETFL, 0);
+    if (flags == -1) {
+      flags = 0;
+    }
+    int err_val = ::fcntl(_socket, F_SETFL, flags | O_NONBLOCK);
 #else // _WIN32
     u_long nonblocking = 1;  // This flag may be set elsewhere,
                              // in a header ?
@@ -1314,7 +1338,11 @@ void unix_socket_stream::open(const std::string & address, bool nonblock)
   // set the socket blocking again for io
   if(nonblock) {
 #ifndef _WIN32
-    int err_val = ::fcntl(_socket, F_SETFL, 0);
+    int flags = ::fcntl(_socket, F_GETFL, 0);
+    if (flags == -1) {
+      flags = 0;
+    }
+    int err_val = ::fcntl(_socket, F_SETFL, flags & ~O_NONBLOCK);
 #else // _WIN32
     u_long blocking = 0;
     int err_val = ::ioctlsocket(_socket, FIONBIO, &blocking);
@@ -1405,7 +1433,11 @@ bool unix_socket_stream::isReady(unsigned int milliseconds)
 
   // set the socket blocking again for io
 #ifndef _WIN32
-  int err_val = ::fcntl(_socket, F_SETFL, 0);
+  int flags = ::fcntl(_socket, F_GETFL, 0);
+  if (flags == -1) {
+    flags = 0;
+  }
+  int err_val = ::fcntl(_socket, F_SETFL, flags & ~O_NONBLOCK);
 #else // _WIN32
   u_long blocking = 0;
   int err_val = ::ioctlsocket(_socket, FIONBIO, &blocking);
