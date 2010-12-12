@@ -1082,6 +1082,11 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
   return true;
 }
 
+bool tcp_socket_stream::connect_pending() const
+{
+  return (_connecting_socket != INVALID_SOCKET);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // class dgram_socket_stream implementation
 /////////////////////////////////////////////////////////////////////////////

@@ -278,6 +278,7 @@ public:
   const std::string getRemoteHost(bool lookup = false) const;
   const std::string getRemoteService(bool lookup = false) const;
   bool isReady(unsigned int milliseconds = 0);
+  bool connect_pending() const;
 };
 
 /// An iostream class that handle IP datagram sockets
