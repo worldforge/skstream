@@ -765,11 +765,7 @@ void tcp_socket_stream::open(const std::string & address,
       }
     }
 
-    sockaddr_storage iaddr;
-    ::memcpy(&iaddr, i->ai_addr, i->ai_addrlen);
-    SOCKLEN iaddrlen = i->ai_addrlen;
-
-    if(::connect(_socket, (sockaddr *)&iaddr, iaddrlen) < 0) {
+    if(::connect(_socket, i->ai_addr, i->ai_addrlen) < 0) {
       if(nonblock && getSystemError() == SOCKET_BLOCK_ERROR) {
         _connecting_socket = _socket;
         _connecting_address = i;
@@ -1045,11 +1041,7 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
         continue;
       }
 
-      sockaddr_storage iaddr;
-      ::memcpy(&iaddr, i->ai_addr, i->ai_addrlen);
-      SOCKLEN iaddrlen = i->ai_addrlen;
-
-      if(::connect(_socket, (sockaddr *)&iaddr, iaddrlen) < 0) {
+      if(::connect(_socket, i->ai_addr, i->ai_addrlen) < 0) {
         if(getSystemError() == SOCKET_BLOCK_ERROR) {
           _connecting_socket = _socket;
           _connecting_address = i;
@@ -1162,11 +1154,7 @@ int dgram_socket_stream::bindToIpService(int service, int type, int protocol)
     }
     dgram_sockbuf.setSocket(socket);
 
-    sockaddr_storage iaddr;
-    ::memcpy(&iaddr, i->ai_addr, i->ai_addrlen);
-    SOCKLEN iaddrlen = i->ai_addrlen;
-
-    if (::bind(socket, (sockaddr*)&iaddr, iaddrlen) == SOCKET_ERROR) {
+    if (::bind(socket, i->ai_addr, i->ai_addrlen) == SOCKET_ERROR) {
       setLastError();
       close();
     } else {
