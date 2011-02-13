@@ -92,25 +92,22 @@ dnl Test for types
 AC_MSG_CHECKING([for socket type])
 SKSTREAM_SOCKET_TYPE=int;
 SKSTREAM_SOCKET_HEADER="#include <unistd.h>"
-AC_CACHE_VAL(ac_cv_socket_type,
+AC_TRY_COMPILE([#include <ws2tcpip.h>],
 [
-    AC_TRY_COMPILE([#include <ws2tcpip.h>],
-    [
-        SOCKET foo;
-        return foo; /* Avoids warning */
-    ],
-    [
-        ac_cv_socket_type=SOCKET
-        SKSTREAM_SOCKET_TYPE=$ac_cv_socket_type
-        SKSTREAM_SOCKET_HEADER="#include <ws2tcpip.h>"
-    ],
-    [
-        ac_cv_socket_type=int
-        SKSTREAM_SOCKET_TYPE=$ac_cv_socket_type
-        SKSTREAM_SOCKET_HEADER="#include <unistd.h>"
-    ])
+    SOCKET foo;
+    return foo; /* Avoids warning */
+],
+[
+    ac_cv_socket_type=SOCKET
+    SKSTREAM_SOCKET_TYPE=SOCKET
+    SKSTREAM_SOCKET_HEADER="#include <ws2tcpip.h>"
+],
+[
+    ac_cv_socket_type=int
+    SKSTREAM_SOCKET_TYPE=int
+    SKSTREAM_SOCKET_HEADER="#include <unistd.h>"
 ])
-AC_MSG_RESULT($ac_cv_socket_type)
+AC_MSG_RESULT($SKSTREAM_SOCKET_TYPE)
 AC_SUBST(SKSTREAM_SOCKET_TYPE)
 AC_SUBST(SKSTREAM_SOCKET_HEADER)
 
@@ -420,7 +417,7 @@ dnl Test for Libraries
 
 found_cppunit=yes
 AM_PATH_CPPUNIT(1.6.1,, 
-    AC_MSG_WARN(Couldn't Find CppUnit - Tests will not work)
+    AC_MSG_WARN([Could not Find CppUnit - Tests will not work])
     found_cppunit=no
 )
 
