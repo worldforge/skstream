@@ -1,3 +1,8 @@
+2011-02-13  Al Riddoch  <alriddoch@googlemail.com>
+
+	* skstream/skstream.cpp, skstream/skstream.h: A number of bugs and
+	  issues with non-blocking connect have been fixed.
+
 2010-08-02  Al Riddoch  <alriddoch@googlemail.com>
 
 	* Release 0.3.7, interface version 5.0.0.
