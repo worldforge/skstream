@@ -10,7 +10,7 @@ AC_CANONICAL_HOST
 
 dnl Initialise automake
 
-AM_INIT_AUTOMAKE([dist-bzip2 check-news])
+AM_INIT_AUTOMAKE([nostdinc dist-bzip2 check-news -Wall])
 
 SKSTREAM_CURRENT=5
 SKSTREAM_REVISION=0
@@ -439,7 +439,4 @@ AC_CONFIG_FILES([
 	skstream-unix-0.3.pc
 	skstream/skstreamconfig.h
 ])
-dnl 	debian/control
-dnl 	debian/rules
-dnl AC_CONFIG_COMMANDS([rules], [chmod +x debian/rules])
 AC_OUTPUT

@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_srcdir)
+AM_CPPFLAGS = -I$(top_srcdir) -I$(top_builddir)
 
 lib_LTLIBRARIES = libskstream-0.3.la
 libskstream_0_3_la_LDFLAGS = -version-info @SKSTREAM_VERSION_INFO@

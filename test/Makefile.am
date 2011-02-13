@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_srcdir)
+AM_CPPFLAGS = -I$(top_srcdir) -I$(top_builddir)
 
 if USE_CPPUNIT
 TESTPROGS = skstreamtestrunner
