@@ -1,7 +1,7 @@
 dnl Initialise autoconf
 
-AC_INIT(skstream, 0.3.7, alriddoch@zepler.org)
-AC_CONFIG_SRCDIR(skstream/skstream.cpp)
+AC_INIT([skstream], [0.3.7], [alriddoch@googlemail.com])
+AC_CONFIG_SRCDIR([skstream/skstream.cpp])
 AC_CONFIG_HEADERS([config.h])
 
 dnl Detect the canonical host environment
@@ -30,8 +30,7 @@ AC_SUBST(SKSTREAM_VERSION_NO)
 
 dnl Test for GNU libtool
 
-AC_DISABLE_STATIC
-AC_PROG_LIBTOOL
+LT_INIT([disable-static])
 
 dnl Test for C++ compiler
 
