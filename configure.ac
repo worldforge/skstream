@@ -163,48 +163,42 @@ SKSTREAM_TIMEVAL_HEADER="#include <sys/time.h>"
 SKSTREAM_UNIX_HEADER_FLAG=0
 SKSTREAM_BEOS_HEADER_FLAG=0
 SKSTREAM_WINDOWS_HEADER_FLAG=0
-AC_CACHE_VAL(ac_cv_timeval_header,
+AC_TRY_COMPILE([#include <winsock2.h>],
 [
-    AC_TRY_COMPILE([#include <winsock2.h>],
+    timeval foo;
+    return &foo == 0; /* Avoids warning */
+],
+[
+    SKSTREAM_TIMEVAL_HEADER="#include <winsock2.h>"
+    SKSTREAM_WINDOWS_HEADER_FLAG=1
+],
+[
+    AC_TRY_COMPILE([#include <sys/time.h>],
     [
         timeval foo;
         return &foo == 0; /* Avoids warning */
     ],
     [
-        ac_cv_timeval_header="#include <winsock2.h>"
-        SKSTREAM_TIMEVAL_HEADER=$ac_cv_timeval_header
-        SKSTREAM_WINDOWS_HEADER_FLAG=1
+        SKSTREAM_TIMEVAL_HEADER="#include <sys/time.h>"
+        SKSTREAM_UNIX_HEADER_FLAG=1
     ],
     [
-        AC_TRY_COMPILE([#include <sys/time.h>],
+        AC_TRY_COMPILE([#include <net/socket.h>],
         [
             timeval foo;
             return &foo == 0; /* Avoids warning */
         ],
         [
-            ac_cv_timeval_header="#include <sys/time.h>"
-            SKSTREAM_TIMEVAL_HEADER=$ac_cv_timeval_header
-            SKSTREAM_UNIX_HEADER_FLAG=1
+            SKSTREAM_TIMEVAL_HEADER="#include <net/socket.h>"
+            SKSTREAM_BEOS_HEADER_FLAG=1
         ],
         [
-            AC_TRY_COMPILE([#include <net/socket.h>],
-            [
-                timeval foo;
-                return &foo == 0; /* Avoids warning */
-            ],
-            [
-                ac_cv_timeval_header="#include <net/socket.h>"
-                SKSTREAM_TIMEVAL_HEADER=$ac_cv_timeval_header
-                SKSTREAM_BEOS_HEADER_FLAG=1
-            ],
-            [
-                AC_MSG_ERROR(Unable to find header for timeval type)
-            ])
-    
+            AC_MSG_ERROR(Unable to find header for timeval type)
         ])
+
     ])
 ])
-AC_MSG_RESULT($ac_cv_timeval_header)
+AC_MSG_RESULT($SKSTREAM_TIMEVAL_HEADER)
 AC_SUBST(SKSTREAM_TIMEVAL_HEADER)
 AC_SUBST(SKSTREAM_UNIX_HEADER_FLAG)
 AC_SUBST(SKSTREAM_BEOS_HEADER_FLAG)
