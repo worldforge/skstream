@@ -98,12 +98,10 @@ AC_TRY_COMPILE([#include <ws2tcpip.h>],
     return foo; /* Avoids warning */
 ],
 [
-    ac_cv_socket_type=SOCKET
     SKSTREAM_SOCKET_TYPE=SOCKET
     SKSTREAM_SOCKET_HEADER="#include <ws2tcpip.h>"
 ],
 [
-    ac_cv_socket_type=int
     SKSTREAM_SOCKET_TYPE=int
     SKSTREAM_SOCKET_HEADER="#include <unistd.h>"
 ])
@@ -113,24 +111,18 @@ AC_SUBST(SKSTREAM_SOCKET_HEADER)
 
 AC_MSG_CHECKING([for socket address length type])
 SKSTREAM_SOCKLEN_TYPE=int;
-AC_CACHE_VAL(ac_cv_socklen_type,
+AC_TRY_COMPILE([#include <unistd.h>
+                #include <sys/socket.h>],
 [
-    AC_TRY_COMPILE([#include <unistd.h>
-                    #include <sys/socket.h>],
-    [
-        socklen_t foo = 0;
-        return foo != 0; /* Avoids warning */
-    ],
-    [
-        ac_cv_socklen_type=socklen_t
-        SKSTREAM_SOCKLEN_TYPE=$ac_cv_socklen_type
-    ],
-    [
-        ac_cv_socklen_type=int
-        SKSTREAM_SOCKLEN_TYPE=$ac_cv_socklen_type
-    ])
+    socklen_t foo = 0;
+    return foo != 0; /* Avoids warning */
+],
+[
+    SKSTREAM_SOCKLEN_TYPE=socklen_t
+],
+[
+    SKSTREAM_SOCKLEN_TYPE=int
 ])
-AC_MSG_RESULT($ac_cv_socklen_type)
 AC_SUBST(SKSTREAM_SOCKLEN_TYPE)
 
 AC_MSG_CHECKING([for unix domain sockets])
