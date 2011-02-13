@@ -10,7 +10,7 @@ AC_CANONICAL_HOST
 
 dnl Initialise automake
 
-AM_INIT_AUTOMAKE([nostdinc dist-bzip2 check-news -Wall])
+AM_INIT_AUTOMAKE([nostdinc dist-bzip2 check-news])
 
 SKSTREAM_CURRENT=5
 SKSTREAM_REVISION=0
