@@ -1,6 +1,6 @@
 AM_CPPFLAGS = -I$(top_srcdir) -I$(top_builddir)
 
-check_PROGRAMS = ping
+noinst_PROGRAMS = ping
 
 ping_SOURCES = ping.cpp ping.h
 
