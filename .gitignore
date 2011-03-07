@@ -21,8 +21,12 @@ depcomp
 install-sh
 libtool
 ltmain.sh
+mingw32-skstream.spec
 missing
+ping/ping
 skstream.spec
 skstream*.pc
 skstream/skstreamconfig.h
 stamp-h1
+test/skstreamtestrunner
+tools/skstream-cat
