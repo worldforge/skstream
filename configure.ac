@@ -432,6 +432,7 @@ AC_CONFIG_FILES([
 	Makefile
 	skstream/Makefile
 	ping/Makefile
+	tools/Makefile
 	test/Makefile
 	skstream.spec
 	mingw32-skstream.spec

@@ -17,7 +17,7 @@ dist-hook: $(MSVC_SUPPORT)
 VisualC.zip:
 	@SK_ZIP@ -r $(srcdir)/VisualC.zip $(srcdir)/VisualC/ -x '*CVS/*'
 
-SUBDIRS = skstream ping test
+SUBDIRS = skstream ping tools test
 
 docs:
 	@echo "running doxygen..."
