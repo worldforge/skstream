@@ -47,5 +47,47 @@ int main(int argc, char ** argv)
         return 1;
     }
 
+    SOCKET_TYPE sfd = s->getSocket();
+
+    bool done = false;
+
+    while (!done) {
+        fd_set rfds;
+        FD_ZERO(&rfds);
+        FD_SET(STDIN_FILENO, &rfds);
+        FD_SET(sfd, &rfds);
+
+        int ret = select(std::max(STDIN_FILENO, sfd) + 1, &rfds, 0, 0, 0);
+
+        if (ret == -1) {
+            perror("select");
+            done = true;
+        } else if (ret) {
+            char buffer[8192];
+            if (FD_ISSET(STDIN_FILENO, &rfds)) {
+                if (fgets(&buffer[0], 8192, stdin) == 0) {
+                    done = true;
+                } else {
+                    (*s) << &buffer[0] << std::flush;
+                }
+            }
+            if (FD_ISSET(sfd, &rfds)) {
+                if (s->fail() ||
+                    s->peek() == std::iostream::traits_type::eof()) {
+                    done = true;
+                } else {
+                    s->get(&buffer[0], 8192, 4);
+                    if (s->fail()) {
+                        done = true;
+                    } else {
+                        std::cout << &buffer[0] << std::flush;
+                    }
+                }
+            }
+        } else {
+            perror("unknown");
+        }
+    }
+
     return 0;
 }
