@@ -22,13 +22,29 @@
 
 static void usage(const char * prgname)
 {
-    std::cout << "usage: " << prgname << " host [port]"
+    std::cout << "usage: " << prgname << " [-n] host [port]"
               << std::endl << std::flush;
 }
 
 int main(int argc, char ** argv)
 {
-    if (argc < 2 || argc > 3) {
+    int option_nonblock = 0;
+
+    while (1) {
+        int c = getopt(argc, argv, "n");
+        if (c == -1) {
+            break;
+        } else if (c == '?') {
+            usage(argv[0]);
+            return 1;
+        } else if (c == 'n') {
+            option_nonblock = 1;
+        }
+    }
+
+    int arg_left = argc - optind;
+
+    if (arg_left < 1 || arg_left > 2) {
         usage(argv[0]);
         return 1;
     }
@@ -36,11 +52,11 @@ int main(int argc, char ** argv)
     tcp_socket_stream * s = new tcp_socket_stream;
     int port = 80;
 
-    if (argc == 3) {
-        port = strtol(argv[2], 0, 10);
+    if (arg_left == 2) {
+        port = strtol(argv[optind + 1], 0, 10);
     }
 
-    s->open(argv[1], port);
+    s->open(argv[optind], port);
 
     if (!s->is_open()) {
         perror("connect");
