@@ -92,10 +92,11 @@ int main(int argc, char ** argv)
                     s->peek() == std::iostream::traits_type::eof()) {
                     done = true;
                 } else {
-                    s->get(&buffer[0], 8192, 4);
-                    if (s->fail()) {
-                        done = true;
-                    } else {
+                    std::streamsize c = s->rdbuf()->in_avail();
+                    for (; c > 0;) {
+                        int i = std::min(8191, c);
+                        s->rdbuf()->sgetn(&buffer[0], i);
+                        buffer[i] = '\0';
                         std::cout << &buffer[0] << std::flush;
                     }
                 }
