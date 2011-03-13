@@ -28,6 +28,25 @@ static void usage(const char * prgname)
               << std::endl << std::flush;
 }
 
+static bool copy(std::istream & i, std::ostream & o)
+{
+    static char buffer[BUF_SIZE];
+    if (i.fail() ||
+        i.peek() == std::iostream::traits_type::eof()) {
+        return true;
+    } else {
+        std::streamsize count = i.rdbuf()->in_avail();
+        for (; count > 0;) {
+            std::streamsize len = std::min(BUF_SIZE - 1, count);
+            i.rdbuf()->sgetn(&buffer[0], len);
+            buffer[len] = '\0';
+            o << &buffer[0] << std::flush;
+            count -= len;
+        }
+    }
+    return false;
+}
+
 int main(int argc, char ** argv)
 {
     bool option_nonblock = false;
@@ -83,7 +102,7 @@ int main(int argc, char ** argv)
             perror("select");
             done = true;
         } else if (ret) {
-            char buffer[BUF_SIZE];
+            static char buffer[BUF_SIZE];
             if (FD_ISSET(STDIN_FILENO, &rfds)) {
                 if (fgets(&buffer[0], BUF_SIZE, stdin) == 0) {
                     done = true;
@@ -92,19 +111,7 @@ int main(int argc, char ** argv)
                 }
             }
             if (FD_ISSET(sfd, &rfds)) {
-                if (s->fail() ||
-                    s->peek() == std::iostream::traits_type::eof()) {
-                    done = true;
-                } else {
-                    std::streamsize c = s->rdbuf()->in_avail();
-                    for (; c > 0;) {
-                        int i = std::min(BUF_SIZE - 1, c);
-                        s->rdbuf()->sgetn(&buffer[0], i);
-                        buffer[i] = '\0';
-                        std::cout << &buffer[0] << std::flush;
-                        c -= i;
-                    }
-                }
+                copy(*s, std::cout);
             }
         } else {
             perror("unknown");
