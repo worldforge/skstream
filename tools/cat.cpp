@@ -20,6 +20,8 @@
 #include <cstdio>
 #include <cstdlib>
 
+static const int BUF_SIZE = 8192;
+
 static void usage(const char * prgname)
 {
     std::cout << "usage: " << prgname << " [-n] host [port]"
@@ -81,9 +83,9 @@ int main(int argc, char ** argv)
             perror("select");
             done = true;
         } else if (ret) {
-            char buffer[8192];
+            char buffer[BUF_SIZE];
             if (FD_ISSET(STDIN_FILENO, &rfds)) {
-                if (fgets(&buffer[0], 8192, stdin) == 0) {
+                if (fgets(&buffer[0], BUF_SIZE, stdin) == 0) {
                     done = true;
                 } else {
                     (*s) << &buffer[0] << std::flush;
@@ -96,7 +98,7 @@ int main(int argc, char ** argv)
                 } else {
                     std::streamsize c = s->rdbuf()->in_avail();
                     for (; c > 0;) {
-                        int i = std::min(8191, c);
+                        int i = std::min(BUF_SIZE - 1, c);
                         s->rdbuf()->sgetn(&buffer[0], i);
                         buffer[i] = '\0';
                         std::cout << &buffer[0] << std::flush;
