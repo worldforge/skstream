@@ -111,7 +111,7 @@ int main(int argc, char ** argv)
                 }
             }
             if (FD_ISSET(sfd, &rfds)) {
-                copy(*s, std::cout);
+                done = copy(*s, std::cout);
             }
         } else {
             perror("unknown");
