@@ -28,7 +28,7 @@ static void usage(const char * prgname)
 
 int main(int argc, char ** argv)
 {
-    int option_nonblock = 0;
+    bool option_nonblock = false;
 
     while (1) {
         int c = getopt(argc, argv, "n");
@@ -38,7 +38,7 @@ int main(int argc, char ** argv)
             usage(argv[0]);
             return 1;
         } else if (c == 'n') {
-            option_nonblock = 1;
+            option_nonblock = true;
         }
     }
 
@@ -56,7 +56,9 @@ int main(int argc, char ** argv)
         port = strtol(argv[optind + 1], 0, 10);
     }
 
-    s->open(argv[optind], port);
+    s->open(argv[optind], port, option_nonblock);
+
+    s->isReady(2000);
 
     if (!s->is_open()) {
         perror("connect");
@@ -98,6 +100,7 @@ int main(int argc, char ** argv)
                         s->rdbuf()->sgetn(&buffer[0], i);
                         buffer[i] = '\0';
                         std::cout << &buffer[0] << std::flush;
+                        c -= i;
                     }
                 }
             }
