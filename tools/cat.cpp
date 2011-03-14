@@ -20,6 +20,8 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include <getopt.h>
+
 static const std::streamsize BUF_SIZE = 8192;
 
 static void usage(const char * prgname)
