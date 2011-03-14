@@ -20,7 +20,7 @@
 #include <cstdio>
 #include <cstdlib>
 
-static const int BUF_SIZE = 8192;
+static const std::streamsize BUF_SIZE = 8192;
 
 static void usage(const char * prgname)
 {
