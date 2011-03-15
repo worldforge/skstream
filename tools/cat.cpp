@@ -114,6 +114,8 @@ int main(int argc, char ** argv)
         std::cerr << "Connection complete"
                   << std::endl << std::flush;
     } else {
+        std::cerr << "Connection failed"
+                  << std::endl << std::flush;
         perror("connect");
         return 1;
     }
