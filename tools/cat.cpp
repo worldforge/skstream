@@ -51,18 +51,26 @@ static bool copy(std::istream & i, std::ostream & o)
 
 int main(int argc, char ** argv)
 {
+    bool option_verbose = false;
     bool option_nonblock = false;
 
     while (1) {
-        int c = getopt(argc, argv, "n");
+        int c = getopt(argc, argv, "nv");
         if (c == -1) {
             break;
         } else if (c == '?') {
             usage(argv[0]);
             return 1;
+        } else if (c == 'v') {
+            option_verbose = true;
         } else if (c == 'n') {
             option_nonblock = true;
         }
+    }
+
+    if (option_verbose && option_nonblock) {
+        std::cerr << "Connecting non blocking"
+                  << std::endl << std::flush;
     }
 
     int arg_left = argc - optind;
@@ -81,29 +89,51 @@ int main(int argc, char ** argv)
 
     s->open(argv[optind], port, option_nonblock);
 
-    s->isReady(2000);
+    if(s->connect_pending()) {
+        std::cerr << "Connection pending"
+                  << std::endl << std::flush;
+        s->isReady(2000);
+    } else if (s->is_open()) {
+        std::cerr << "Connected without blocking"
+                  << std::endl << std::flush;
+    } else {
+        std::cerr << "Connection failed"
+                  << std::endl << std::flush;
+        return 1;
+    }
 
-    if (!s->is_open()) {
+    if (s->is_open()) {
+        std::cerr << "Connection complete"
+                  << std::endl << std::flush;
+    } else {
         perror("connect");
         return 1;
     }
 
     SOCKET_TYPE sfd = s->getSocket();
+#ifdef _WIN32
+    int nfds = sfd + 1;
+#else
+    int nfds = std::max(STDIN_FILENO, sfd) + 1;
+#endif
 
     bool done = false;
 
     while (!done) {
         fd_set rfds;
         FD_ZERO(&rfds);
+#ifndef _WIN32
         FD_SET(STDIN_FILENO, &rfds);
+#endif
         FD_SET(sfd, &rfds);
 
-        int ret = select(std::max(STDIN_FILENO, sfd) + 1, &rfds, 0, 0, 0);
+        int ret = select(nfds, &rfds, 0, 0, 0);
 
         if (ret == -1) {
             perror("select");
             done = true;
         } else if (ret) {
+#ifndef _WIN32
             static char buffer[BUF_SIZE];
             if (FD_ISSET(STDIN_FILENO, &rfds)) {
                 if (fgets(&buffer[0], BUF_SIZE, stdin) == 0) {
@@ -112,6 +142,7 @@ int main(int argc, char ** argv)
                     (*s) << &buffer[0] << std::flush;
                 }
             }
+#endif
             if (FD_ISSET(sfd, &rfds)) {
                 done = copy(*s, std::cout);
             }
