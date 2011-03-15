@@ -89,10 +89,18 @@ int main(int argc, char ** argv)
 
     s->open(argv[optind], port, option_nonblock);
 
+    if (option_verbose) {
+        std::cerr << "Open called" << std::endl << std::flush;
+    }
+
     if(s->connect_pending()) {
-        std::cerr << "Connection pending"
-                  << std::endl << std::flush;
-        s->isReady(2000);
+        for (int i = 0; i < 4; ++i) {
+            std::cerr << "Connection pending"
+                      << std::endl << std::flush;
+            if (s->isReady(1000)) {
+                break;
+            }
+        }
     } else if (s->is_open()) {
         std::cerr << "Connected without blocking"
                   << std::endl << std::flush;
