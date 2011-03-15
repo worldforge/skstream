@@ -408,11 +408,16 @@ AC_CHECK_FUNCS([inet_aton])
 
 dnl Test for Libraries
 
-found_cppunit=yes
-AM_PATH_CPPUNIT(1.6.1,, 
-    AC_MSG_WARN([Could not Find CppUnit - Tests will not work])
-    found_cppunit=no
-)
+PKG_PROG_PKG_CONFIG
+
+PKG_CHECK_MODULES(CPPUNIT, cppunit >= 1.0,
+    [
+        found_cppunit=yes
+    ],
+    [
+        AC_MSG_WARN([Could not Find CppUnit - Tests will not work])
+        found_cppunit=no
+    ])
 
 AM_CONDITIONAL(USE_CPPUNIT, test "$found_cppunit" = "yes")
 
