@@ -981,14 +981,27 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
     return true;
   }
 
-  fd_set fds;
+  fd_set wfds;
+  fd_set * efdsp = 0;
   struct timeval wait_time = {milliseconds / 1000, (milliseconds % 1000) * 1000};
 
-  FD_ZERO(&fds);
-  FD_SET(_connecting_socket, &fds);
+  FD_ZERO(&wfds);
+  FD_SET(_connecting_socket, &wfds);
 
-  if (::select(_connecting_socket + 1, 0, &fds, 0, &wait_time) != 1
-      || !FD_ISSET(_connecting_socket, &fds)) {
+#ifdef _WIN32
+  fd_set efds;
+  FD_ZERO(&efds);
+  FD_SET(_connecting_socket, &efds);
+  
+  efdsp = &efds;
+#endif // _WIN32
+
+  if (::select(_connecting_socket + 1, 0, &wfds, efdsp, &wait_time) != 1
+#ifdef _WIN32
+      || !FD_ISSET(_connecting_socket, &efds) && !FD_ISSET(_connecting_socket, &wfds)) {
+#else // _WIN32
+      || !FD_ISSET(_connecting_socket, &wfds)) {
+#endif // _WIN32
     return false;
   }
 
@@ -1003,7 +1016,6 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
 #ifndef _WIN32
   ::getsockopt(_socket, SOL_SOCKET, SO_ERROR, &errnum, &errsize);
 #else // _WIN32
-  Sleep(0);
   ::getsockopt(_socket, SOL_SOCKET, SO_ERROR, (LPSTR)&errnum, &errsize);
 #endif // _WIN32
 
