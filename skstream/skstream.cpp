@@ -902,6 +902,80 @@ void tcp_socket_stream::open(const std::string & address, int service,
   }
 }
 
+int tcp_socket_stream::open_next()
+{
+#ifdef HAVE_GETADDRINFO
+  if(_connecting_socket == INVALID_SOCKET ||
+     _connecting_addrlist == 0 ||
+     _connecting_address == 0) {
+    // We can only go on if we are in non-blocking connect already
+    return -1;
+  }
+
+  ::closesocket(_connecting_socket);
+  _connecting_socket = INVALID_SOCKET;
+
+  bool success = false;
+  SOCKET_TYPE sfd = INVALID_SOCKET;
+
+  struct addrinfo * i = _connecting_address->ai_next;
+  for (; success == false && i != 0; i = i->ai_next) {
+    sfd = ::socket(i->ai_family, i->ai_socktype, i->ai_protocol);
+    if(sfd == INVALID_SOCKET) {
+      setLastError();
+      continue;
+    }
+    int err_val = set_nonblock(sfd);
+    if(err_val == -1) {
+      setLastError();
+      ::closesocket(sfd);
+      continue;
+    }
+
+    if(::connect(sfd, i->ai_addr, i->ai_addrlen) < 0) {
+      if(getSystemError() == SOCKET_BLOCK_ERROR) {
+        _connecting_socket = sfd;
+        _connecting_address = i;
+        return 1;
+      }
+      setLastError();
+      ::closesocket(sfd);
+    } else {
+      success = true;
+    }
+  }
+
+  assert(_connecting_socket == INVALID_SOCKET);
+
+  ::freeaddrinfo(_connecting_addrlist);
+  _connecting_addrlist = 0;
+  _connecting_address = 0;
+
+  if (!success) {
+    return -1;
+  }
+
+  assert(sfd == INVALID_SOCKET);
+
+  // Socket is connected, complete the process
+
+  // set the socket blocking again for io
+  int err_val = reset_nonblock(sfd);
+  if(err_val == -1) {
+    setLastError();
+    ::closesocket(sfd);
+    return true;
+  }
+
+  // set socket for underlying socketbuf
+  _sockbuf.setSocket(sfd);
+
+  return 0;
+#else // HAVE_GETADDRINFO
+  return -1;
+#endif // HAVE_GETADDRINFO
+}
+
 void tcp_socket_stream::close()
 {
   if(_connecting_socket != INVALID_SOCKET) {
