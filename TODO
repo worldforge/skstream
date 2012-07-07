@@ -1,3 +1,7 @@
+Add return status codes to ->open() functions.
+
+Remove the BEOS conditionals.
+
 A datagram implementation requirements:
 
   The application must be able to control the datagram. ie. prevent the stream
