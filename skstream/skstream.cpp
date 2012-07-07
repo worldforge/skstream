@@ -644,6 +644,35 @@ bool basic_socket_stream::fail() {
   return false;
 }
 
+static int set_nonblock(int sfd)
+{
+#ifndef _WIN32
+  int flags = ::fcntl(sfd, F_GETFL, 0);
+  if (flags == -1) {
+    flags = 0;
+  }
+  return ::fcntl(sfd, F_SETFL, flags | O_NONBLOCK);
+#else // _WIN32
+  u_long nonblocking = 1;  // This flag may be set elsewhere,
+                           // in a header ?
+  return ::ioctlsocket(sfd, FIONBIO, &nonblocking);
+#endif // _WIN32
+}
+
+static int reset_nonblock(int sfd)
+{
+#ifndef _WIN32
+  int flags = ::fcntl(sfd, F_GETFL, 0);
+  if (flags == -1) {
+    flags = 0;
+  }
+  return ::fcntl(sfd, F_SETFL, flags & ~O_NONBLOCK);
+#else // _WIN32
+  u_long blocking = 0;
+  return ::ioctlsocket(sfd, FIONBIO, &blocking);
+#endif // _WIN32
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // class tcp_socket_stream implementation
 /////////////////////////////////////////////////////////////////////////////
@@ -732,7 +761,7 @@ void tcp_socket_stream::open(const std::string & address,
 
   int ret;
   if ((ret = ::getaddrinfo(address.c_str(), serviceName, &req, &ans)) != 0) {
-    fail();
+    setLastError();
     return;
   }
 
@@ -747,17 +776,7 @@ void tcp_socket_stream::open(const std::string & address,
     }
 
     if(nonblock) {
-   #ifndef _WIN32
-      int flags = ::fcntl(sfd, F_GETFL, 0);
-      if (flags == -1) {
-        flags = 0;
-      }
-      int err_val = ::fcntl(sfd, F_SETFL, flags | O_NONBLOCK);
-   #else // _WIN32
-      u_long nonblocking = 1;  // This flag may be set elsewhere,
-                               // in a header ?
-      int err_val = ::ioctlsocket(sfd, FIONBIO, &nonblocking);
-   #endif // _WIN32
+      int err_val = set_nonblock(sfd);
       if(err_val == -1) {
         setLastError();
         ::closesocket(sfd);
@@ -783,7 +802,6 @@ void tcp_socket_stream::open(const std::string & address,
   ::freeaddrinfo(ans);
 
   if (!success) {
-    fail();
     return;
   }
 
@@ -794,26 +812,15 @@ void tcp_socket_stream::open(const std::string & address,
   // Create socket
   SOCKET_TYPE sfd = ::socket(AF_INET, SOCK_STREAM, m_protocol);
   if(sfd == INVALID_SOCKET) {
-    fail();
+    setLastError();
     return;
   }
 
   if(nonblock) {
- #ifndef _WIN32
-    int flags = ::fcntl(sfd, F_GETFL, 0);
-    if (flags == -1) {
-      flags = 0;
-    }
-    int err_val = ::fcntl(sfd, F_SETFL, flags | O_NONBLOCK);
- #else // _WIN32
-    u_long nonblocking = 1;  // This flag may be set elsewhere, in a header ?
-    int err_val = ::ioctlsocket(sfd, FIONBIO, &nonblocking);
- #endif // _WIN32
+    int err_val = set_nonblock(sfd);
     if(err_val == -1) {
       setLastError();
       ::closesocket(sfd);
-      sfd = INVALID_SOCKET;
-      fail();
       return;
     }
   }
@@ -838,7 +845,7 @@ void tcp_socket_stream::open(const std::string & address,
  #ifdef HAVE_INET_ATON
     struct in_addr in_address;
     if (::inet_aton(address.c_str(), &in_address) == 0) {
-      fail();
+      // errno is not set
       ::closesocket(sfd);
       return;
     }
@@ -847,7 +854,7 @@ void tcp_socket_stream::open(const std::string & address,
     in_addr_t iaddr;
     iaddr = ::inet_addr(address.c_str());
     if (iaddr == INADDR_NONE) {
-      fail();
+      // errno is not set
       ::closesocket(sfd);
       return;
     }
@@ -866,7 +873,6 @@ void tcp_socket_stream::open(const std::string & address,
       return;
     }
     setLastError();
-    fail();
     ::closesocket(sfd);
     return;
   }
@@ -874,21 +880,10 @@ void tcp_socket_stream::open(const std::string & address,
 
   // set the socket blocking again for io
   if(nonblock) {
-#ifndef _WIN32
-    int flags = ::fcntl(sfd, F_GETFL, 0);
-    if (flags == -1) {
-      flags = 0;
-    }
-    int err_val = ::fcntl(sfd, F_SETFL, flags & ~O_NONBLOCK);
-#else // _WIN32
-    u_long blocking = 0;
-    int err_val = ::ioctlsocket(sfd, FIONBIO, &blocking);
-#endif // _WIN32
+    int err_val = reset_nonblock(sfd);
     if(err_val == -1) {
       setLastError();
       ::closesocket(sfd);
-      sfd = INVALID_SOCKET;
-      fail();
       return;
     }
   }
@@ -901,9 +896,9 @@ void tcp_socket_stream::open(const std::string & address, int service,
                              unsigned int milliseconds)
 {
   open(address, service, true);
+  // FIXME add retry logic here
   if(!isReady(milliseconds)) {
     close();
-    fail();
   }
 }
 
@@ -1007,17 +1002,17 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
 
   // It's done connecting, check for error
 
-  // We're no longer connecting, put the socket in a tmp variable
-  SOCKET_TYPE sfd = _connecting_socket;
-  _connecting_socket = INVALID_SOCKET;
-
   int errnum;
   SOCKLEN errsize = sizeof(errnum);
 #ifndef _WIN32
-  ::getsockopt(sfd, SOL_SOCKET, SO_ERROR, &errnum, &errsize);
+  ::getsockopt(_connecting_socket, SOL_SOCKET, SO_ERROR, &errnum, &errsize);
 #else // _WIN32
-  ::getsockopt(sfd, SOL_SOCKET, SO_ERROR, (LPSTR)&errnum, &errsize);
+  ::getsockopt(_connecting_socket, SOL_SOCKET, SO_ERROR, (LPSTR)&errnum, &errsize);
 #endif // _WIN32
+
+  // We're no longer connecting, put the socket in a tmp variable
+  SOCKET_TYPE sfd = _connecting_socket;
+  _connecting_socket = INVALID_SOCKET;
 
 #ifdef HAVE_GETADDRINFO
   // Check for failure, and if it has occured, we need to
@@ -1036,17 +1031,7 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
       if(sfd == INVALID_SOCKET) {
         continue;
       }
-   #ifndef _WIN32
-      int flags = ::fcntl(sfd, F_GETFL, 0);
-      if (flags == -1) {
-        flags = 0;
-      }
-      int err_val = ::fcntl(sfd, F_SETFL, flags | O_NONBLOCK);
-   #else // _WIN32
-      u_long nonblocking = 1;  // This flag may be set elsewhere,
-                               // in a header ?
-      int err_val = ::ioctlsocket(sfd, FIONBIO, &nonblocking);
-   #endif // _WIN32
+      int err_val = set_nonblock(sfd);
       if(err_val == -1) {
         setLastError();
         ::closesocket(sfd);
@@ -1081,28 +1066,16 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
   if (errnum != 0) {
     // Can't use setLastError(), since errno doesn't have the error
     LastError = errnum;
-    fail();
     ::closesocket(sfd);
     return true;
   }
 #endif // HAVE_GETADDRINFO
 
   // set the socket blocking again for io
-#ifndef _WIN32
-  int flags = ::fcntl(sfd, F_GETFL, 0);
-  if (flags == -1) {
-    flags = 0;
-  }
-  int err_val = ::fcntl(sfd, F_SETFL, flags & ~O_NONBLOCK);
-#else // _WIN32
-  u_long blocking = 0;
-  int err_val = ::ioctlsocket(sfd, FIONBIO, &blocking);
-#endif // _WIN32
+  int err_val = reset_nonblock(sfd);
   if(err_val == -1) {
     setLastError();
     ::closesocket(sfd);
-    sfd = INVALID_SOCKET;
-    fail();
     return true;
   }
 
@@ -1292,29 +1265,17 @@ void unix_socket_stream::open(const std::string & address, bool nonblock)
   if(is_open() || _connecting_socket != INVALID_SOCKET) close();
 
   // Create socket
-  SOCKET_TYPE _socket = ::socket(AF_UNIX, SOCK_STREAM, m_protocol);
-  if(_socket == INVALID_SOCKET) {
-    fail();
+  SOCKET_TYPE sfd = ::socket(AF_UNIX, SOCK_STREAM, m_protocol);
+  if(sfd == INVALID_SOCKET) {
+    setLastError();
     return;
   }
 
   if(nonblock) {
-#ifndef _WIN32
-    int flags = ::fcntl(_socket, F_GETFL, 0);
-    if (flags == -1) {
-      flags = 0;
-    }
-    int err_val = ::fcntl(_socket, F_SETFL, flags | O_NONBLOCK);
-#else // _WIN32
-    u_long nonblocking = 1;  // This flag may be set elsewhere,
-                             // in a header ?
-    int err_val = ::ioctlsocket(_socket, FIONBIO, &nonblocking);
-#endif // _WIN32
+    int err_val = set_nonblock(sfd);
     if(err_val == -1) {
       setLastError();
-      ::closesocket(_socket);
-      _socket = INVALID_SOCKET;
-      fail();
+      ::closesocket(sfd);
       return;
     }
   }
@@ -1324,40 +1285,28 @@ void unix_socket_stream::open(const std::string & address, bool nonblock)
   sa.sun_family = AF_UNIX;
   strncpy(sa.sun_path, address.c_str(), sizeof(sa.sun_path));
 
-  if(::connect(_socket,(sockaddr*)&sa, sizeof(sa)) == SOCKET_ERROR) {
+  if(::connect(sfd,(sockaddr*)&sa, sizeof(sa)) == SOCKET_ERROR) {
     if(nonblock && getSystemError() == SOCKET_BLOCK_ERROR) {
-      _connecting_socket = _socket;
+      _connecting_socket = sfd;
       return;
     }
     setLastError();
-    fail();
-    ::closesocket(_socket);
+    ::closesocket(sfd);
     return;
   }
 
   // set the socket blocking again for io
   if(nonblock) {
-#ifndef _WIN32
-    int flags = ::fcntl(_socket, F_GETFL, 0);
-    if (flags == -1) {
-      flags = 0;
-    }
-    int err_val = ::fcntl(_socket, F_SETFL, flags & ~O_NONBLOCK);
-#else // _WIN32
-    u_long blocking = 0;
-    int err_val = ::ioctlsocket(_socket, FIONBIO, &blocking);
-#endif // _WIN32
+    int err_val = reset_nonblock(sfd);
     if(err_val == -1) {
       setLastError();
-      ::closesocket(_socket);
-      _socket = INVALID_SOCKET;
-      fail();
+      ::closesocket(sfd);
       return;
     }
   }
 
   // set socket for underlying socketbuf
-  _sockbuf.setSocket(_socket);
+  _sockbuf.setSocket(sfd);
 }
 
 void unix_socket_stream::open(const std::string & address,
@@ -1366,7 +1315,6 @@ void unix_socket_stream::open(const std::string & address,
   open(address, true);
   if(!isReady(milliseconds)) {
     close();
-    fail();
   }
 }
 
@@ -1411,47 +1359,35 @@ bool unix_socket_stream::isReady(unsigned int milliseconds)
   // It's done connecting, check for error
 
   // We're no longer connecting, put the socket in a tmp variable
-  SOCKET_TYPE _socket = _connecting_socket;
+  SOCKET_TYPE sfd = _connecting_socket;
   _connecting_socket = INVALID_SOCKET;
 
   int errnum;
   SOCKLEN errsize = sizeof(errnum);
 #ifndef _WIN32
-  getsockopt(_socket, SOL_SOCKET, SO_ERROR, &errnum, &errsize);
+  getsockopt(sfd, SOL_SOCKET, SO_ERROR, &errnum, &errsize);
 #else // _WIN32
   Sleep(0);
-  getsockopt(_socket, SOL_SOCKET, SO_ERROR, (LPSTR)&errnum, &errsize);
+  getsockopt(sfd, SOL_SOCKET, SO_ERROR, (LPSTR)&errnum, &errsize);
 #endif // _WIN32
 
   if(errnum != 0) {
     // Can't use setLastError(), since errno doesn't have the error
     LastError = errnum;
-    fail();
-    ::closesocket(_socket);
+    ::closesocket(sfd);
     return true;
   }
 
   // set the socket blocking again for io
-#ifndef _WIN32
-  int flags = ::fcntl(_socket, F_GETFL, 0);
-  if (flags == -1) {
-    flags = 0;
-  }
-  int err_val = ::fcntl(_socket, F_SETFL, flags & ~O_NONBLOCK);
-#else // _WIN32
-  u_long blocking = 0;
-  int err_val = ::ioctlsocket(_socket, FIONBIO, &blocking);
-#endif // _WIN32
+  int err_val = reset_nonblock(sfd);
   if(err_val == -1) {
     setLastError();
-    ::closesocket(_socket);
-    _socket = INVALID_SOCKET;
-    fail();
+    ::closesocket(sfd);
     return true;
   }
 
   // set socket for underlying socketbuf
-    _sockbuf.setSocket(_socket);
+  _sockbuf.setSocket(sfd);
 
   return true;
 }
