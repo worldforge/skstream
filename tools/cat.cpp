@@ -100,6 +100,13 @@ int main(int argc, char ** argv)
             if (s->isReady(1000)) {
                 break;
             }
+            if (s->connect_pending()) {
+                std::cerr << "try next" << std::endl << std::flush;
+                if (s->open_next() < 0) {
+                    std::cerr << "next fail" << std::endl << std::flush;
+                    break;
+                }
+            }
         }
     } else if (s->is_open()) {
         std::cerr << "Connected without blocking"

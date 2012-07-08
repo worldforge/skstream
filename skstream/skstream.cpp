@@ -1084,10 +1084,6 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
   ::getsockopt(_connecting_socket, SOL_SOCKET, SO_ERROR, (LPSTR)&errnum, &errsize);
 #endif // _WIN32
 
-  // We're no longer connecting, put the socket in a tmp variable
-  SOCKET_TYPE sfd = _connecting_socket;
-  _connecting_socket = INVALID_SOCKET;
-
 #ifdef HAVE_GETADDRINFO
   // Check for failure, and if it has occured, we need to
   // revisit the address list we got from getaddrinfo.
@@ -1095,66 +1091,35 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
   assert(_connecting_address != 0);
 
   if (errnum != 0) {
-    ::closesocket(sfd);
-
-    bool success = false;
-
-    struct addrinfo * i = _connecting_address->ai_next;
-    for (; success == false && i != 0; i = i->ai_next) {
-      sfd = ::socket(i->ai_family, i->ai_socktype, i->ai_protocol);
-      if(sfd == INVALID_SOCKET) {
-        continue;
-      }
-      int err_val = set_nonblock(sfd);
-      if(err_val == -1) {
-        setLastError();
-        ::closesocket(sfd);
-        continue;
-      }
-
-      if(::connect(sfd, i->ai_addr, i->ai_addrlen) < 0) {
-        if(getSystemError() == SOCKET_BLOCK_ERROR) {
-          _connecting_socket = sfd;
-          _connecting_address = i;
-          return false;
-        }
-        setLastError();
-        ::closesocket(sfd);
-      } else {
-        success = true;
-      }
-    }
-
-    if (!success) {
-      ::freeaddrinfo(_connecting_addrlist);
-      _connecting_addrlist = 0;
-      _connecting_address = 0;
-      return false;
-    }
+    return false;
   }
 
   ::freeaddrinfo(_connecting_addrlist);
   _connecting_addrlist = 0;
   _connecting_address = 0;
+
 #else // HAVE_GETADDRINFO
   if (errnum != 0) {
     // Can't use setLastError(), since errno doesn't have the error
     LastError = errnum;
-    ::closesocket(sfd);
+    ::closesocket(_connecting_socket);
+    _connecting_socket = INVALID_SOCKET;
     return true;
   }
 #endif // HAVE_GETADDRINFO
 
   // set the socket blocking again for io
-  int err_val = reset_nonblock(sfd);
+  int err_val = reset_nonblock(_connecting_socket);
   if(err_val == -1) {
     setLastError();
-    ::closesocket(sfd);
+    ::closesocket(_connecting_socket);
+    _connecting_socket = INVALID_SOCKET;
     return true;
   }
 
   // set socket for underlying socketbuf
-  _sockbuf.setSocket(sfd);
+  _sockbuf.setSocket(_connecting_socket);
+  _connecting_socket = INVALID_SOCKET;
 
   return true;
 }
