@@ -264,26 +264,25 @@ std::streambuf::int_type stream_socketbuf::overflow(std::streambuf::int_type nCh
   }
 
   // prepare structure for detecting timeout
-  #ifndef __BEOS__
-    // if a timeout was specified, wait for it.
-    {
-      timeval _tv = _timeout;
-      if((_tv.tv_sec+_tv.tv_usec) > 0) {
-        int sr;
-        fd_set socks;
-        FD_ZERO(&socks); // zero fd_set
-        FD_SET(_socket,&socks); // add buffer socket to fd_set
-        sr = ::select(_socket+1,NULL,&socks,NULL,&_tv);
-        if(/*(sr == 0) || */ !FD_ISSET(_socket,&socks)){
-          Timeout = true;
-          return traits_type::eof(); // a timeout error should be set here! - RGJ
-         } else if(sr < 0) {
-           return traits_type::eof(); // error on select()
-         }
-      }
-      Timeout = false;
+
+  // if a timeout was specified, wait for it.
+
+  if((_timeout.tv_sec+_timeout.tv_usec) > 0) {
+    int sr;
+    timeval tv = _timeout;
+    fd_set socks;
+    FD_ZERO(&socks); // zero fd_set
+    FD_SET(_socket,&socks); // add buffer socket to fd_set
+    sr = ::select(_socket+1,NULL,&socks,NULL,&tv);
+    if(sr == 0){
+      Timeout = true;
+      return traits_type::eof(); // a timeout error should be set here! - RGJ
+    } else if(sr < 0) {
+      return traits_type::eof(); // error on select()
     }
-  #endif
+    assert(FD_ISSET(_socket,&socks));
+  }
+  Timeout = false;
 
   // send pending data or return eof() on error
   int size=::send(_socket, pbase(),pptr()-pbase(),0);
@@ -341,7 +340,7 @@ std::streambuf::int_type stream_socketbuf::underflow()
       Timeout = true;
       return traits_type::eof(); // a timeout error should be set here! - RGJ
     } else if(sr < 0) {
-      return traits_type::eof();  // error on select()
+      return traits_type::eof(); // error on select()
     }
     assert(FD_ISSET(_socket,&socks));
   }
@@ -475,26 +474,25 @@ std::streambuf::int_type dgram_socketbuf::overflow(std::streambuf::int_type nCh)
   int size;
 
   // prepare structure for detecting timeout
-  #ifndef __BEOS__
-    // if a timeout was specified, wait for it.
-    {
-      timeval _tv = _timeout;
-      if((_tv.tv_sec+_tv.tv_usec) > 0) {
-        int sr;
-        fd_set socks;
-        FD_ZERO(&socks); // zero fd_set
-        FD_SET(_socket,&socks); // add buffer socket to fd_set
-        sr = ::select(_socket+1,NULL,&socks,NULL,&_tv);
-        if(/*(sr == 0) || */ !FD_ISSET(_socket,&socks)){
-          Timeout = true;
-          return traits_type::eof(); // a timeout error should be set here! - RGJ
-         } else if(sr < 0) {
-          return traits_type::eof(); // error on select()
-         }
-      }
-      Timeout = false;
+
+  // if a timeout was specified, wait for it.
+
+  if((_timeout.tv_sec+_timeout.tv_usec) > 0) {
+    int sr;
+    timeval tv = _timeout;
+    fd_set socks;
+    FD_ZERO(&socks); // zero fd_set
+    FD_SET(_socket,&socks); // add buffer socket to fd_set
+    sr = ::select(_socket+1,NULL,&socks,NULL,&tv);
+    if(sr == 0){
+      Timeout = true;
+      return traits_type::eof(); // a timeout error should be set here! - RGJ
+    } else if(sr < 0) {
+      return traits_type::eof(); // error on select()
     }
-  #endif
+    assert(FD_ISSET(_socket,&socks));
+  }
+  Timeout = false;
 
   // send pending data or return eof() on error
   size=::sendto(_socket, pbase(),pptr()-pbase(),0,(sockaddr*)&out_peer,out_p_size);
@@ -532,32 +530,33 @@ int dgram_socketbuf::underflow() {
     return traits_type::eof(); // Invalid socket!
   }
 
-  if((gptr()) && (egptr()-gptr() > 0)) {
-    return (int)(unsigned char)(*gptr());
+  if(gptr() < egptr()) {
+    return traits_type::to_int_type(*this->gptr());
   }
 
   // fill up from eback to egptr
   int size;
 
   // prepare structure for detecting timeout
-  #ifndef _BEOS
-    // if a timeout was specified, wait for it.
-    if((_timeout.tv_sec+_timeout.tv_usec) > 0) {
-      int sr;
-      timeval _tv = _timeout;
-      fd_set socks;
-      FD_ZERO(&socks); // zero fd_set
-      FD_SET(_socket,&socks); // add buffer socket to fd_set
-      sr = ::select(_socket+1,&socks,NULL,NULL,&_tv);
-      if((sr == 0) || !FD_ISSET(_socket,&socks)){
-        Timeout = true;
-        return traits_type::eof(); // a timeout error should be set here! - RGJ
-      } else if(sr < 0) {
-        return traits_type::eof();  // error on select()
-      }
+
+  // if a timeout was specified, wait for it.
+  if((_timeout.tv_sec+_timeout.tv_usec) > 0) {
+    int sr;
+    timeval tv = _timeout;
+    fd_set socks;
+    FD_ZERO(&socks); // zero fd_set
+    FD_SET(_socket,&socks); // add buffer socket to fd_set
+    sr = ::select(_socket+1,&socks,NULL,NULL,&tv);
+    if(sr == 0){
+      Timeout = true;
+      return traits_type::eof(); // a timeout error should be set here! - RGJ
+    } else if(sr < 0) {
+      return traits_type::eof(); // error on select()
     }
-    Timeout = false;
-  #endif
+    assert(FD_ISSET(_socket,&socks));
+  }
+  Timeout = false;
+
 
   // receive data or return eof() on error
   in_p_size = sizeof(in_peer);
