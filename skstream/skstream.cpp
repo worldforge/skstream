@@ -156,8 +156,11 @@ socketbuf::socketbuf(SOCKET_TYPE sock, std::streamsize insize,
   // Setup the buffer
   setbuf(buffer, bufsize);
 
-  _timeout.tv_sec  = 0;
-  _timeout.tv_usec = 0;
+  _underflow_timeout.tv_sec  = 0;
+  _underflow_timeout.tv_usec = 0;
+
+  _overflow_timeout.tv_sec  = 0;
+  _overflow_timeout.tv_usec = 0;
 
   setSocket(sock);
 }
@@ -170,8 +173,11 @@ socketbuf::socketbuf(SOCKET_TYPE sock, std::streambuf::char_type * buf,
   _buffer = NULL;
   setbuf(buf, length);
 
-  _timeout.tv_sec  = 0;
-  _timeout.tv_usec = 0;
+  _underflow_timeout.tv_sec  = 0;
+  _underflow_timeout.tv_usec = 0;
+
+  _overflow_timeout.tv_sec  = 0;
+  _overflow_timeout.tv_usec = 0;
 
   setSocket(sock);
 }
@@ -267,9 +273,9 @@ std::streambuf::int_type stream_socketbuf::overflow(std::streambuf::int_type nCh
 
   // if a timeout was specified, wait for it.
 
-  if((_timeout.tv_sec+_timeout.tv_usec) > 0) {
+  if((_overflow_timeout.tv_sec+_overflow_timeout.tv_usec) > 0) {
     int sr;
-    timeval tv = _timeout;
+    timeval tv = _overflow_timeout;
     fd_set socks;
     FD_ZERO(&socks); // zero fd_set
     FD_SET(_socket,&socks); // add buffer socket to fd_set
@@ -329,9 +335,9 @@ std::streambuf::int_type stream_socketbuf::underflow()
   // prepare structure for detecting timeout
 
   // if a timeout was specified, wait for it.
-  if((_timeout.tv_sec+_timeout.tv_usec) > 0) {
+  if((_underflow_timeout.tv_sec+_underflow_timeout.tv_usec) > 0) {
     int sr;
-    timeval tv = _timeout;
+    timeval tv = _underflow_timeout;
     fd_set socks;
     FD_ZERO(&socks); // zero fd_set
     FD_SET(_socket,&socks); // add buffer socket to fd_set
@@ -477,9 +483,9 @@ std::streambuf::int_type dgram_socketbuf::overflow(std::streambuf::int_type nCh)
 
   // if a timeout was specified, wait for it.
 
-  if((_timeout.tv_sec+_timeout.tv_usec) > 0) {
+  if((_overflow_timeout.tv_sec+_overflow_timeout.tv_usec) > 0) {
     int sr;
-    timeval tv = _timeout;
+    timeval tv = _overflow_timeout;
     fd_set socks;
     FD_ZERO(&socks); // zero fd_set
     FD_SET(_socket,&socks); // add buffer socket to fd_set
@@ -540,9 +546,9 @@ int dgram_socketbuf::underflow() {
   // prepare structure for detecting timeout
 
   // if a timeout was specified, wait for it.
-  if((_timeout.tv_sec+_timeout.tv_usec) > 0) {
+  if((_underflow_timeout.tv_sec+_underflow_timeout.tv_usec) > 0) {
     int sr;
-    timeval tv = _timeout;
+    timeval tv = _underflow_timeout;
     fd_set socks;
     FD_ZERO(&socks); // zero fd_set
     FD_SET(_socket,&socks); // add buffer socket to fd_set

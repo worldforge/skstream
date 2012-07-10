@@ -45,7 +45,8 @@ private:
 protected:
   SOCKET_TYPE _socket;
 
-  timeval _timeout;
+  timeval _underflow_timeout;
+  timeval _overflow_timeout;
 
 private:
   /// Not implemented. Copying a socket buffer is not permited.
@@ -80,11 +81,23 @@ public:
   }
 
   /** Set up a timeout value after which an error flag is set if the socket
-   *  is not ready for a read or write.
+   *  is not ready for a read.
    */
+  void setReadTimeout(unsigned sec, unsigned usec=0) {
+    _underflow_timeout.tv_sec  = sec;
+    _underflow_timeout.tv_usec = usec;
+  }
+
+  /** Set up a timeout value after which an error flag is set if the socket
+   *  is not ready for a write.
+   */
+  void setWriteTimeout(unsigned sec, unsigned usec=0) {
+    _overflow_timeout.tv_sec  = sec;
+    _overflow_timeout.tv_usec = usec;
+  }
+
   void setTimeout(unsigned sec, unsigned usec=0) {
-    _timeout.tv_sec  = sec;
-    _timeout.tv_usec = usec;
+    setWriteTimeout(sec, usec);
   }
 
   /// Return the flag indicating whether a timeout has occured.
