@@ -322,9 +322,9 @@ std::streambuf::int_type stream_socketbuf::underflow()
     return traits_type::eof(); // Invalid socket!
   }
 
-  // FIXME Does gptr() ever return false?
-  if((gptr()) && (egptr()-gptr() > 0)) {
-    return (std::streambuf::int_type)(unsigned char)(*gptr());
+  assert(gptr());
+  if(gptr() < egptr()) {
+    return traits_type::to_int_type(*this->gptr());
   }
 
   // prepare structure for detecting timeout
@@ -362,7 +362,7 @@ std::streambuf::int_type stream_socketbuf::underflow()
 
   setg(eback(), egptr() - size, egptr());
 
-  return (std::streambuf::int_type)(unsigned char)(*gptr()); // traits::not_eof(...)
+  return traits_type::to_int_type(*this->gptr()); // traits::not_eof(...)
 }
 
 // setTarget() - set the target socket address
