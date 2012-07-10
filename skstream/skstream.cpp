@@ -328,24 +328,25 @@ std::streambuf::int_type stream_socketbuf::underflow()
   }
 
   // prepare structure for detecting timeout
-  #ifndef _BEOS
-    // if a timeout was specified, wait for it.
-    if((_timeout.tv_sec+_timeout.tv_usec) > 0) {
-      int sr;
-      timeval _tv = _timeout;
-      fd_set socks;
-      FD_ZERO(&socks); // zero fd_set
-      FD_SET(_socket,&socks); // add buffer socket to fd_set
-      sr = ::select(_socket+1,&socks,NULL,NULL,&_tv);
-      if((sr == 0) || !FD_ISSET(_socket,&socks)){
-        Timeout = true;
-        return traits_type::eof(); // a timeout error should be set here! - RGJ
-      } else if(sr < 0) {
-        return traits_type::eof();  // error on select()
-      }
+
+  // if a timeout was specified, wait for it.
+  if((_timeout.tv_sec+_timeout.tv_usec) > 0) {
+    int sr;
+    timeval tv = _timeout;
+    fd_set socks;
+    FD_ZERO(&socks); // zero fd_set
+    FD_SET(_socket,&socks); // add buffer socket to fd_set
+    sr = ::select(_socket+1,&socks,NULL,NULL,&tv);
+    if(sr == 0){
+      Timeout = true;
+      return traits_type::eof(); // a timeout error should be set here! - RGJ
+    } else if(sr < 0) {
+      return traits_type::eof();  // error on select()
     }
-    Timeout = false;
-  #endif
+    assert(FD_ISSET(_socket,&socks));
+  }
+  Timeout = false;
+
 
   // fill up from eback to egptr
   // receive data or return eof() on error
