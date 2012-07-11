@@ -81,7 +81,9 @@ static const char * gai_strerror(int errcode)
 /////////////////////////////////////////////////////////////////////////////
 
 basic_socket_server::~basic_socket_server() {
-  basic_socket_server::close();
+  if(_socket != INVALID_SOCKET) {
+    ::closesocket(_socket);
+  }
 }
 
 SOCKET_TYPE basic_socket_server::getSocket() const {
@@ -91,7 +93,7 @@ SOCKET_TYPE basic_socket_server::getSocket() const {
 // close server's underlying socket
 //   The shutdown is a little rude... -  RGJ
 void basic_socket_server::close() {
-  if(is_open()) {
+  if(_socket != INVALID_SOCKET) {
     if(::shutdown(_socket, SHUT_RDWR) == SOCKET_ERROR) {
       setLastError();
       //not necessarily a returning offense because there could be a socket
@@ -108,7 +110,7 @@ void basic_socket_server::close() {
 }
 
 void basic_socket_server::shutdown() {
-  if(is_open()) {
+  if(_socket != INVALID_SOCKET) {
     if(::shutdown(_socket, SHUT_RDWR) == SOCKET_ERROR) {
       setLastError();
     }
