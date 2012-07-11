@@ -236,8 +236,6 @@ SOCKET_TYPE tcp_socket_server::accept()
   SOCKET_TYPE commsock = ::accept(_socket, NULL, NULL);
   if(commsock == INVALID_SOCKET) {
     setLastError();
-    close();
-    return INVALID_SOCKET;
   }
   return commsock;
 }
@@ -305,8 +303,6 @@ SOCKET_TYPE unix_socket_server::accept() {
   SOCKET_TYPE commsock = ::accept(_socket, NULL, NULL);
   if(commsock == INVALID_SOCKET) {
     setLastError();
-    close();
-    return INVALID_SOCKET;
   }
   return commsock;
 }
