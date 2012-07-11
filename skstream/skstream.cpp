@@ -599,9 +599,11 @@ basic_socket_stream::basic_socket_stream(socketbuf & buffer, int proto)
 
 basic_socket_stream::~basic_socket_stream()
 {
-  if(is_open()) {
-    ::shutdown(_sockbuf.getSocket(), SHUT_RDWR);
-    ::closesocket(_sockbuf.getSocket());
+  // It is not safe to call getSocket() or is_open as calling
+  // vtable from the destructor is not allowed
+  SOCKET_TYPE fd = _sockbuf.getSocket();
+  if(fd != INVALID_SOCKET){
+    ::closesocket(fd);
   }
   delete &_sockbuf;
 }
@@ -612,8 +614,9 @@ SOCKET_TYPE basic_socket_stream::getSocket() const
 }
 
 void basic_socket_stream::shutdown() {
-  if(is_open()) {
-    if(::shutdown(_sockbuf.getSocket(), SHUT_RDWR) == SOCKET_ERROR) {
+  SOCKET_TYPE fd = getSocket();
+  if(fd != INVALID_SOCKET){
+    if(::shutdown(fd, SHUT_RDWR) == SOCKET_ERROR) {
       setLastError();
     }
   }
@@ -621,15 +624,9 @@ void basic_socket_stream::shutdown() {
 
 // closes a socket connection
 void basic_socket_stream::close() {
-  if(is_open()) {
-    if(::shutdown(_sockbuf.getSocket(), SHUT_RDWR) == SOCKET_ERROR) {
-      setLastError();
-      //not necessarily a returning offense because there could be a socket
-      //open that has never connected to anything and hence, does not need
-      //to be shutdown.
-    }
-
-    if(::closesocket(_sockbuf.getSocket()) == SOCKET_ERROR) {
+  SOCKET_TYPE fd = getSocket();
+  if(fd != INVALID_SOCKET){
+    if(::closesocket(fd) == SOCKET_ERROR) {
       setLastError();
       return;
     }
@@ -730,7 +727,6 @@ tcp_socket_stream::tcp_socket_stream(const std::string& address, int service,
 tcp_socket_stream::~tcp_socket_stream()
 {
   if(_connecting_socket != INVALID_SOCKET) {
-    ::shutdown(_connecting_socket, SHUT_RDWR);
     ::closesocket(_connecting_socket);
 #ifdef HAVE_GETADDRINFO
     ::freeaddrinfo(_connecting_addrlist);
@@ -1296,7 +1292,6 @@ unix_socket_stream::~unix_socket_stream()
   // Don't close the main socket, that is done in the basic_socket_stream
   // destructor
   if(_connecting_socket != INVALID_SOCKET) {
-    ::shutdown(_connecting_socket, SHUT_RDWR);
     ::closesocket(_connecting_socket);
   }
 }
