@@ -251,24 +251,48 @@ public:
   }
 };
 
-struct addrinfo;
+/////////////////////////////////////////////////////////////////////////////
+// class stream_socket_stream
+/////////////////////////////////////////////////////////////////////////////
+
+class stream_socket_stream : public basic_socket_stream {
+private:
+  stream_socket_stream(const stream_socket_stream&);
+  stream_socket_stream& operator=(const stream_socket_stream& socket);
+
+protected:
+  SOCKET_TYPE _connecting_socket;
+
+  stream_socketbuf & stream_sockbuf;
+
+  stream_socket_stream();
+  stream_socket_stream(SOCKET_TYPE socket);
+public:
+  virtual ~stream_socket_stream();
+  
+  virtual void close();
+  virtual SOCKET_TYPE getSocket() const;
+
+  bool connect_pending() const {
+    return (_connecting_socket != INVALID_SOCKET);
+  }
+};
 
 /////////////////////////////////////////////////////////////////////////////
 // class tcp_socket_stream
 /////////////////////////////////////////////////////////////////////////////
 
+struct addrinfo;
+
 /// An iostream class that handle TCP sockets
-class tcp_socket_stream : public basic_socket_stream {
+class tcp_socket_stream : public stream_socket_stream {
 private:
   tcp_socket_stream(const tcp_socket_stream&);
 
   tcp_socket_stream& operator=(const tcp_socket_stream& socket);
 
-  SOCKET_TYPE _connecting_socket;
   struct addrinfo * _connecting_address;
   struct addrinfo * _connecting_addrlist;
-
-  stream_socketbuf & stream_sockbuf;
 
 public:
   tcp_socket_stream();
@@ -286,13 +310,9 @@ public:
   void open(const std::string& address, int service, unsigned int milliseconds);
   int open_next();
 
-  virtual void close();
-  virtual SOCKET_TYPE getSocket() const;
-
   const std::string getRemoteHost(bool lookup = false) const;
   const std::string getRemoteService(bool lookup = false) const;
   bool isReady(unsigned int milliseconds = 0);
-  bool connect_pending() const;
 };
 
 /// An iostream class that handle IP datagram sockets

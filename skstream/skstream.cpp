@@ -593,7 +593,6 @@ basic_socket_stream::basic_socket_stream(socketbuf & buffer, int proto)
     : std::iostream(&buffer), _sockbuf(buffer),
       m_protocol(proto)
 {
-  startup();
   init(&_sockbuf); // initialize underlying streambuf
 }
 
@@ -677,48 +676,78 @@ static int reset_nonblock(int sfd)
 }
 
 /////////////////////////////////////////////////////////////////////////////
+// class stream_socket_stream implementation
+/////////////////////////////////////////////////////////////////////////////
+
+stream_socket_stream::stream_socket_stream()
+    : basic_socket_stream(*new stream_socketbuf(INVALID_SOCKET)),
+      _connecting_socket(INVALID_SOCKET),
+      stream_sockbuf((stream_socketbuf&)_sockbuf)
+{
+}
+
+stream_socket_stream::stream_socket_stream(SOCKET_TYPE socket)
+    : basic_socket_stream(*new stream_socketbuf(socket)),
+      _connecting_socket(INVALID_SOCKET),
+      stream_sockbuf((stream_socketbuf&)_sockbuf)
+{
+}
+
+stream_socket_stream::~stream_socket_stream()
+{
+  if(_connecting_socket != INVALID_SOCKET) {
+    ::closesocket(_connecting_socket);
+  }
+}
+
+void stream_socket_stream::close()
+{
+  if(_connecting_socket != INVALID_SOCKET) {
+    ::closesocket(_connecting_socket);
+    _connecting_socket = INVALID_SOCKET;
+  }
+
+  basic_socket_stream::close();
+}
+
+SOCKET_TYPE stream_socket_stream::getSocket() const
+{
+    return (_connecting_socket == INVALID_SOCKET)
+            ? basic_socket_stream::getSocket() : _connecting_socket;
+}
+
+/////////////////////////////////////////////////////////////////////////////
 // class tcp_socket_stream implementation
 /////////////////////////////////////////////////////////////////////////////
 
-tcp_socket_stream::tcp_socket_stream()
-    : basic_socket_stream(*new stream_socketbuf(INVALID_SOCKET)),
-      _connecting_socket(INVALID_SOCKET),
+tcp_socket_stream::tcp_socket_stream() :
       _connecting_address(0),
-      _connecting_addrlist(0),
-      stream_sockbuf((stream_socketbuf&)_sockbuf)
+      _connecting_addrlist(0)
 {
   m_protocol = FreeSockets::proto_TCP;
 }
 
 tcp_socket_stream::tcp_socket_stream(SOCKET_TYPE socket)
-    : basic_socket_stream(*new stream_socketbuf(socket)),
-      _connecting_socket(INVALID_SOCKET),
+    : stream_socket_stream(socket),
       _connecting_address(0),
-      _connecting_addrlist(0),
-      stream_sockbuf((stream_socketbuf&)_sockbuf)
+      _connecting_addrlist(0)
 {
   m_protocol = FreeSockets::proto_TCP;
 }
 
 tcp_socket_stream::tcp_socket_stream(const std::string& address, int service,
-                                     bool nonblock)
-    : basic_socket_stream(*new stream_socketbuf(INVALID_SOCKET)),
-      _connecting_socket(INVALID_SOCKET),
+                                     bool nonblock) :
       _connecting_address(0),
-      _connecting_addrlist(0),
-      stream_sockbuf((stream_socketbuf&)_sockbuf)
+      _connecting_addrlist(0)
 {
   m_protocol = FreeSockets::proto_TCP;
   open(address, service, nonblock);
 }
 
 tcp_socket_stream::tcp_socket_stream(const std::string& address, int service,
-                                     unsigned int milliseconds)
-    : basic_socket_stream(*new stream_socketbuf(INVALID_SOCKET)),
-      _connecting_socket(INVALID_SOCKET),
+                                     unsigned int milliseconds) :
       _connecting_address(0),
-      _connecting_addrlist(0),
-      stream_sockbuf((stream_socketbuf&)_sockbuf)
+      _connecting_addrlist(0)
 {
   m_protocol = FreeSockets::proto_TCP;
   open(address, service, milliseconds);
@@ -726,12 +755,11 @@ tcp_socket_stream::tcp_socket_stream(const std::string& address, int service,
 
 tcp_socket_stream::~tcp_socket_stream()
 {
-  if(_connecting_socket != INVALID_SOCKET) {
-    ::closesocket(_connecting_socket);
 #ifdef HAVE_GETADDRINFO
+  if(_connecting_socket != INVALID_SOCKET) {
     ::freeaddrinfo(_connecting_addrlist);
-#endif // HAVE_GETADDRINFO
   }
+#endif // HAVE_GETADDRINFO
 }
 
 void tcp_socket_stream::open(const std::string & address,
@@ -978,22 +1006,6 @@ int tcp_socket_stream::open_next()
 #endif // HAVE_GETADDRINFO
 }
 
-void tcp_socket_stream::close()
-{
-  if(_connecting_socket != INVALID_SOCKET) {
-    ::closesocket(_connecting_socket);
-    _connecting_socket = INVALID_SOCKET;
-  }
-
-  basic_socket_stream::close();
-}
-
-SOCKET_TYPE tcp_socket_stream::getSocket() const
-{
-    return (_connecting_socket == INVALID_SOCKET)
-            ? basic_socket_stream::getSocket() : _connecting_socket;
-}
-
 const std::string tcp_socket_stream::getRemoteHost(bool lookup) const
 {
   sockaddr_storage peer;
@@ -1126,11 +1138,6 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
   return true;
 }
 
-bool tcp_socket_stream::connect_pending() const
-{
-  return (_connecting_socket != INVALID_SOCKET);
-}
-
 /////////////////////////////////////////////////////////////////////////////
 // class dgram_socket_stream implementation
 /////////////////////////////////////////////////////////////////////////////
@@ -1254,35 +1261,23 @@ int udp_socket_stream::open(int service)
 /////////////////////////////////////////////////////////////////////////////
 
 unix_socket_stream::unix_socket_stream()
-    : basic_socket_stream(*new stream_socketbuf(INVALID_SOCKET)),
-      _connecting_socket(INVALID_SOCKET),
-      stream_sockbuf((stream_socketbuf&)_sockbuf)
 {
 }
 
 unix_socket_stream::unix_socket_stream(const std::string & address,
                                        bool nonblock)
-    : basic_socket_stream(*new stream_socketbuf(INVALID_SOCKET)),
-      _connecting_socket(INVALID_SOCKET),
-      stream_sockbuf((stream_socketbuf&)_sockbuf)
 {
   open(address, nonblock);
 }
 
 unix_socket_stream::unix_socket_stream(const std::string & address,
                                        unsigned int milliseconds)
-    : basic_socket_stream(*new stream_socketbuf(INVALID_SOCKET)),
-      _connecting_socket(INVALID_SOCKET),
-      stream_sockbuf((stream_socketbuf&)_sockbuf)
 {
   open(address, milliseconds);
 }
 
 unix_socket_stream::unix_socket_stream(unix_socket_stream & other,
                                        bool nonblock)
-    : basic_socket_stream(*new stream_socketbuf(INVALID_SOCKET)),
-      _connecting_socket(INVALID_SOCKET),
-      stream_sockbuf((stream_socketbuf&)_sockbuf)
 {
   open(other, nonblock);
 }
@@ -1361,22 +1356,6 @@ void unix_socket_stream::open(const std::string & address,
 void unix_socket_stream::open(unix_socket_stream & other, bool nonblock)
 {
   // FIXME Create a socketpair connecting the two stream together.
-}
-
-void unix_socket_stream::close()
-{
-  if(_connecting_socket != INVALID_SOCKET) {
-    ::closesocket(_connecting_socket);
-    _connecting_socket = INVALID_SOCKET;
-  }
-
-  basic_socket_stream::close();
-}
-
-SOCKET_TYPE unix_socket_stream::getSocket() const
-{
-    return (_connecting_socket == INVALID_SOCKET)
-            ? basic_socket_stream::getSocket() : _connecting_socket;
 }
 
 bool unix_socket_stream::isReady(unsigned int milliseconds)

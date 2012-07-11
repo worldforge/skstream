@@ -34,15 +34,12 @@
 /////////////////////////////////////////////////////////////////////////////
 
 /// An iostream class that handles unix sockets
-class unix_socket_stream : public basic_socket_stream {
+class unix_socket_stream : public stream_socket_stream {
 private:
   explicit unix_socket_stream(const unix_socket_stream&);
   explicit unix_socket_stream(SOCKET_TYPE socket);
 
   unix_socket_stream& operator=(const unix_socket_stream& socket);
-
-  SOCKET_TYPE _connecting_socket;
-  stream_socketbuf & stream_sockbuf;
 
 public:
   unix_socket_stream();
@@ -61,9 +58,6 @@ public:
   void open(const std::string& address, bool nonblock = false);
   void open(const std::string& address, unsigned int milliseconds);
   void open(unix_socket_stream & other, bool nonblock = false);
-
-  virtual void close();
-  virtual SOCKET_TYPE getSocket() const;
 
   bool isReady(unsigned int milliseconds = 0);
 };

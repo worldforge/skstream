@@ -1,3 +1,6 @@
+::underflow seems to involve a full copy of the data - copy bad!
+see "move receivd data..."(sic)
+
 Add return status codes to ->open() functions.
 
 Remove the BEOS conditionals.
