@@ -77,6 +77,8 @@ namespace FreeSockets {
 
 /// \brief Base class for anything that encapsulates a socket.
 class basic_socket {
+private:
+  static int startup_count;
 protected:
   mutable int LastError;
 

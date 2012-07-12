@@ -52,6 +52,8 @@ static inline int getSystemError()
 // class basic_socket implementation
 /////////////////////////////////////////////////////////////////////////////
 
+int basic_socket::startup_count = 0;
+
 // private function that sets the internal variable LastError
 void basic_socket::setLastError() const {
     LastError = getSystemError();
@@ -70,10 +72,12 @@ basic_socket::~basic_socket()
 // System dependant initialization
 bool basic_socket::startup() {
 #ifdef _WIN32
-  static const unsigned wMinVer = 0x0101;// request WinSock v1.1 (at least)
-  WSADATA wsaData;
-  int error = WSAStartup(wMinVer, &wsaData);
-  return (error == 0);
+  if (++startup_count == 1) {
+      static const unsigned wMinVer = 0x0101;// request WinSock v1.1 (at least)
+      WSADATA wsaData;
+      int error = WSAStartup(wMinVer, &wsaData);
+      return (error == 0);
+  }
 #else // _WIN32
   return true;
 #endif // _WIN32
