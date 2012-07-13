@@ -33,6 +33,8 @@
 
 #include <skstream/skserver.h>
 
+#include <skstream/skaddress.h>
+
 #ifndef _WIN32
 #include <sys/types.h>
 #include <netdb.h>
@@ -148,31 +150,21 @@ bool basic_socket_server::can_accept() {
 int ip_socket_server::bindToIpService(int service, int type, int protocol)
 {
 #ifdef HAVE_GETADDRINFO
-  struct addrinfo req, *ans;
   char serviceName[32];
 
   ::sprintf(serviceName, "%d", service);
 
-  req.ai_flags = AI_PASSIVE;
-  req.ai_family = PF_UNSPEC;
-  req.ai_socktype = type;
-  req.ai_protocol = 0;
-  req.ai_addrlen = 0;
-  req.ai_addr = 0;
-  req.ai_canonname = 0;
-  req.ai_next = 0;
+  tcp_address l;
 
-  int ret;
-  if ((ret = ::getaddrinfo(0, serviceName, &req, &ans)) != 0) {
-    std::cout << "skstream: " << gai_strerror(ret)
-              << std::endl << std::flush;
-    setLastError();
+  if (l.resolveListener(serviceName) != 0) {
     return -1;
   }
 
   int success = -1;
 
-  for(struct addrinfo * i = ans; success == -1 && i != 0; i = i->ai_next) {
+  tcp_address::const_iterator I = l.begin();
+  for(; success == -1 && I != l.end(); ++I) {
+    struct addrinfo * i = *I;
     _socket = ::socket(i->ai_family, i->ai_socktype, i->ai_protocol);
     if (_socket == INVALID_SOCKET) {
       setLastError();
@@ -191,9 +183,7 @@ int ip_socket_server::bindToIpService(int service, int type, int protocol)
     }
   }
 
-  ::freeaddrinfo(ans);
-
-  return 0;
+  return success;
 #else
   // create socket
   _socket = ::socket(AF_INET, type, protocol);
