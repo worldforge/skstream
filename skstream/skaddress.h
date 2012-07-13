@@ -131,4 +131,10 @@ public:
 
 };
 
+class ip_datagram_address : public basic_address {
+public:
+  ip_datagram_address();
+
+};
+
 #endif // RGJ_FREE_SOCKET_H_

@@ -120,3 +120,11 @@ basic_address::const_iterator& basic_address::const_iterator::operator++()
 tcp_address::tcp_address() : basic_address(SOCK_STREAM, IPPROTO_TCP)
 {
 }
+
+/////////////////////////////////////////////////////////////////////////////
+// class ip_datagram_address implementation
+/////////////////////////////////////////////////////////////////////////////
+
+ip_datagram_address::ip_datagram_address() : basic_address(SOCK_DGRAM, 0)
+{
+}
