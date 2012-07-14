@@ -49,19 +49,6 @@ AC_ARG_ENABLE(debug,
     ]
 )
 
-AC_ARG_ENABLE(getaddrinfo,
-    [  --enable-getaddrinfo    enable getaddrinfo for hostname lookups [default=yes]],
-    [
-        if test "$enableval" = "yes"; then
-            ac_enable_getaddrinfo="yes"
-        else
-            ac_enable_getaddrinfo="no"
-        fi
-    ],[
-        ac_enable_getaddrinfo="yes"
-    ]
-)
-
 dnl Test for ANSI standard language features
 
 dnl Test for C++ bool keyword
@@ -353,54 +340,51 @@ AC_TRY_COMPILE([#include <ws2tcpip.h>],
 
 dnl Test for getaddrinfo
 
-if test "$ac_enable_getaddrinfo" = "yes"; then
-    AC_CHECK_FUNC(getaddrinfo,
+AC_CHECK_FUNC(getaddrinfo,
+[
+    AC_DEFINE(HAVE_GETADDRINFO, 1, "Define to 1 if you have the `getaddrinfo' function.")
+],
+[
+    CXXFLAGS="$CXXFLAGS -DWINVER=0x501"
+    AC_MSG_CHECKING([for getaddrinfo in ws2tcpip.h])
+    AC_TRY_COMPILE(
     [
+        #include <ws2tcpip.h>
+    ],
+    [
+        getaddrinfo(0, 0, 0, 0);
+    ],
+    [
+        AC_MSG_RESULT(yes)
         AC_DEFINE(HAVE_GETADDRINFO, 1, "Define to 1 if you have the `getaddrinfo' function.")
     ],
     [
-        CXXFLAGS="$CXXFLAGS -DWINVER=0x501"
-        AC_MSG_CHECKING([for getaddrinfo in ws2tcpip.h])
-        AC_TRY_COMPILE(
-        [
-            #include <ws2tcpip.h>
-        ],
-        [
-            getaddrinfo(0, 0, 0, 0);
-        ],
-        [
-            AC_MSG_RESULT(yes)
-            AC_DEFINE(HAVE_GETADDRINFO, 1, "Define to 1 if you have the `getaddrinfo' function.")
-        ],
-        [
-            AC_MSG_RESULT(no)
-        ])
+        AC_MSG_RESULT(no)
     ])
+])
 
-    AC_CHECK_FUNC(gai_strerror,
+AC_CHECK_FUNC(gai_strerror,
+[
+    AC_DEFINE(HAVE_GAI_STRERROR, 1, "Define to 1 if you have the `gai_strerror' function.")
+],
+[
+    CXXFLAGS="$CXXFLAGS -DWINVER=0x501"
+    AC_MSG_CHECKING([for gai_strerror in ws2tcpip.h])
+    AC_TRY_COMPILE(
     [
+        #include <ws2tcpip.h>
+    ],
+    [
+        gai_strerror(0);
+    ],
+    [
+        AC_MSG_RESULT(yes)
         AC_DEFINE(HAVE_GAI_STRERROR, 1, "Define to 1 if you have the `gai_strerror' function.")
     ],
     [
-        CXXFLAGS="$CXXFLAGS -DWINVER=0x501"
-        AC_MSG_CHECKING([for gai_strerror in ws2tcpip.h])
-        AC_TRY_COMPILE(
-        [
-            #include <ws2tcpip.h>
-        ],
-        [
-            gai_strerror(0);
-        ],
-        [
-            AC_MSG_RESULT(yes)
-            AC_DEFINE(HAVE_GAI_STRERROR, 1, "Define to 1 if you have the `gai_strerror' function.")
-        ],
-        [
-            AC_MSG_RESULT(no)
-        ])
+        AC_MSG_RESULT(no)
     ])
-
-fi
+])
 
 dnl Test for C library functions
 
