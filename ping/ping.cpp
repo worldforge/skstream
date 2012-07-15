@@ -152,10 +152,6 @@ void send_request(raw_socket_stream& sock, const std::string& host) {
 
   const sockaddr_storage & sst = sock.getOutpeer();
 
-#ifndef HAVE_GETADDRINFO
-#warning Legacy resolver code
-  std::cout << "Pinging "<<host<<"["<<::inet_ntoa(((sockaddr_in &)sst).sin_addr);
-#else // HAVE_GETADDRINFO
   char hbuf[NI_MAXHOST];
 
   if (::getnameinfo((const sockaddr*)&sst, sock.getOutpeerSize(),
@@ -164,7 +160,7 @@ void send_request(raw_socket_stream& sock, const std::string& host) {
   } else {
     std::cout << "Pinging [unknown";
   }
-#endif // HAVE_GETADDRINFO
+
   std::cout << "] with " << REQ_DATASIZE << " bytes of data." << std::endl;
 
   sock.setTimeout(3,0);
@@ -216,10 +212,6 @@ void print_statistics(const ECHO_REPLY& reply) {
   clock_t elapsed = clock() - reply.echoRequest.dwTime;
 
   std::string replier;
-#ifndef HAVE_GETADDRINFO
-#warning Legacy resolver code
-  replier = ::inet_ntoa(reply.ipHdr.iaSrc);
-#else // HAVE_GETADDRINFO
   char hbuf[NI_MAXHOST];
 
   if (::getnameinfo((const sockaddr*)&reply.ipHdr.iaSrc,
@@ -229,7 +221,6 @@ void print_statistics(const ECHO_REPLY& reply) {
   } else {
     replier = "[unknown]";
   }
-#endif // HAVE_GETADDRINFO
 
   stat_type::iterator iter = statistics.find(replier);
   if(iter == statistics.end())

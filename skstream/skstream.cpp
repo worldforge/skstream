@@ -67,7 +67,6 @@ static inline int closesocket(SOCKET_TYPE sock)
 }
 #endif // HAVE_CLOSESOCKET
 
-#ifdef HAVE_GETADDRINFO
 #ifndef HAVE_GAI_STRERROR
 const char * skstream_gai_strerror(int errcode)
 {
@@ -130,14 +129,6 @@ static const char * gai_strerror(int errcode)
     return skstream_gai_strerror(errcode);
 }
 #endif // HAVE_GAI_STRERROR
-#endif // HAVE_GETADDRINFO
-
-#ifndef HAVE_IN_ADDR_T
-// This may cause problems on L64 systems, if they don't have in_addr_t
-// but only windows does not have in_addr_t to my knowledge.
-// AJR 2003-09-24
-typedef unsigned long in_addr_t;
-#endif // HAVE_IN_ADDR_T
 
 /////////////////////////////////////////////////////////////////////////////
 // class socketbuf implementation
@@ -380,7 +371,6 @@ bool dgram_socketbuf::setTarget(const std::string& address, unsigned port,
     _socket = INVALID_SOCKET;
   }
 
-#ifdef HAVE_GETADDRINFO
   struct addrinfo req, *ans;
   char portName[32];
 
@@ -417,52 +407,6 @@ bool dgram_socketbuf::setTarget(const std::string& address, unsigned port,
   ::freeaddrinfo(ans);
 
   return success;
-#else // HAVE_GETADDRINFO
-
-#warning Using deprecated resolver code because getaddrinfo() is not available
-
-  hostent * he = ::gethostbyname(address.c_str());
-  if (he != 0) {
-    // If gethostbyname succeeded, we now have an address
-    out_peer.ss_family = he->h_addrtype;
-    ::memcpy(&((sockaddr_in&)out_peer).sin_addr, he->h_addr_list[0],
-                                                 he->h_length);
-    out_p_size = sizeof(sockaddr_in);
-    ((sockaddr_in &)out_peer).sin_port = htons(port);
-  } else {
-    // If gethostbyname failed then our last chance is to assume
-    // the string contains an IPv4 address in dotted quad form.
-    // inet_aton is the cleaner way of reading this, but may
-    // not be present on all systems.
-
-    sockaddr_in & out_peer_in = (sockaddr_in &)out_peer;
- #ifdef HAVE_INET_ATON
-    struct in_addr in_address;
-    if (::inet_aton(address.c_str(), &in_address) == 0) {
-      return false;
-    }
-    ::memcpy(&out_peer_in.sin_addr, &in_address, sizeof(in_address));
- #else // HAVE_INET_ATON
-    in_addr_t iaddr;
-    iaddr = ::inet_addr(address.c_str());
-    if (iaddr == INADDR_NONE) {
-      return false;
-    }
-    out_peer_in.sin_addr.s_addr = iaddr;
- #endif // HAVE_INET_ATON
-    out_peer_in.sin_family = AF_INET;
-    out_peer_in.sin_port = htons(port);
-    out_p_size = sizeof(sockaddr_in);
-  }
-
-  SOCKET_TYPE newSock = ::socket(out_peer.ss_family, SOCK_DGRAM, proto);
-  if(newSock == INVALID_SOCKET) {
-    return false;
-  }
-  _socket = newSock;
-
-  return true;
-#endif // HAVE_GETADDRINFO
 }
 
 /// Handle output to a connected socket.
@@ -755,11 +699,9 @@ tcp_socket_stream::tcp_socket_stream(const std::string& address, int service,
 
 tcp_socket_stream::~tcp_socket_stream()
 {
-#ifdef HAVE_GETADDRINFO
   if(_connecting_socket != INVALID_SOCKET) {
     ::freeaddrinfo(_connecting_addrlist);
   }
-#endif // HAVE_GETADDRINFO
 }
 
 void tcp_socket_stream::open(const std::string & address,
@@ -769,7 +711,6 @@ void tcp_socket_stream::open(const std::string & address,
     close();
   }
 
-#ifdef HAVE_GETADDRINFO
   if (_connecting_addrlist != 0) {
     ::freeaddrinfo(_connecting_addrlist);
     _connecting_addrlist = 0;
@@ -835,79 +776,6 @@ void tcp_socket_stream::open(const std::string & address,
     return;
   }
 
-#else // HAVE_GETADDRINFO
-
-#warning Using deprecated resolver code because getaddrinfo() is not available
-
-  // Create socket
-  SOCKET_TYPE sfd = ::socket(AF_INET, SOCK_STREAM, m_protocol);
-  if(sfd == INVALID_SOCKET) {
-    setLastError();
-    return;
-  }
-
-  if(nonblock) {
-    int err_val = set_nonblock(sfd);
-    if(err_val == -1) {
-      setLastError();
-      ::closesocket(sfd);
-      return;
-    }
-  }
-
-  sockaddr_storage sa;
-  SOCKLEN sa_size;
-  hostent * he = ::gethostbyname(address.c_str());
-  if (he != 0) {
-    // If gethostbyname succeeded, we now have an address
-    sa.ss_family = he->h_addrtype;
-    ::memcpy(&((sockaddr_in&)sa).sin_addr, he->h_addr_list[0],
-                                           he->h_length);
-    sa_size = sizeof(sockaddr_in);
-    ((sockaddr_in &)sa).sin_port = htons(service);
-  } else {
-    // If gethostbyname failed then our last chance is to assume
-    // the string contains an IPv4 address in dotted quad form.
-    // inet_aton is the cleaner way of reading this, but may
-    // not be present on all systems.
-
-    sockaddr_in & sa_in = (sockaddr_in &)sa;
- #ifdef HAVE_INET_ATON
-    struct in_addr in_address;
-    if (::inet_aton(address.c_str(), &in_address) == 0) {
-      // errno is not set
-      ::closesocket(sfd);
-      return;
-    }
-    ::memcpy(&sa_in.sin_addr, &in_address, sizeof(in_address));
- #else // HAVE_INET_ATON
-    in_addr_t iaddr;
-    iaddr = ::inet_addr(address.c_str());
-    if (iaddr == INADDR_NONE) {
-      // errno is not set
-      ::closesocket(sfd);
-      return;
-    }
-    sa_in.sin_addr.s_addr = iaddr;
- #endif // HAVE_INET_ATON
-    sa_in.sin_family = AF_INET;
-    sa_in.sin_port = htons(service);
-    sa_size = sizeof(sockaddr_in);
-  }
-
-  // Connect to host
-
-  if(::connect(sfd,(sockaddr*)&sa, sa_size) == SOCKET_ERROR) {
-    if(nonblock && getSystemError() == SOCKET_BLOCK_ERROR) {
-      _connecting_socket = sfd;
-      return;
-    }
-    setLastError();
-    ::closesocket(sfd);
-    return;
-  }
-#endif // HAVE_GETADDRINFO
-
   // set the socket blocking again for io
   if(nonblock) {
     int err_val = reset_nonblock(sfd);
@@ -934,7 +802,6 @@ void tcp_socket_stream::open(const std::string & address, int service,
 
 int tcp_socket_stream::open_next()
 {
-#ifdef HAVE_GETADDRINFO
   if(_connecting_socket == INVALID_SOCKET ||
      _connecting_addrlist == 0 ||
      _connecting_address == 0) {
@@ -1001,34 +868,24 @@ int tcp_socket_stream::open_next()
   _sockbuf.setSocket(sfd);
 
   return 0;
-#else // HAVE_GETADDRINFO
-  return -1;
-#endif // HAVE_GETADDRINFO
 }
 
 const std::string tcp_socket_stream::getRemoteHost(bool lookup) const
 {
   sockaddr_storage peer;
   SOCKLEN peer_size;
-#ifdef HAVE_GETADDRINFO
   char hbuf[NI_MAXHOST];
   const int flags = lookup ? 0 : NI_NUMERICHOST;
-#endif
 
   if (::getpeername(getSocket(), (sockaddr*)&peer, &peer_size) != 0) {
     return "[unconnected]";
   }
-
-#ifdef HAVE_GETADDRINFO
 
   if (::getnameinfo((const sockaddr*)&peer, peer_size,
                     hbuf, sizeof(hbuf), 0, 0, flags) == 0) {
     return std::string(hbuf);
   }
   return "[unknown]";
-#else // HAVE_GETADDRINFO
-  return std::string(::inet_ntoa(((const sockaddr_in&)peer).sin_addr));
-#endif // HAVE_GETADDRINFO
 }
 
 const std::string tcp_socket_stream::getRemoteService(bool lookup) const
@@ -1036,26 +893,17 @@ const std::string tcp_socket_stream::getRemoteService(bool lookup) const
   char sbuf[NI_MAXSERV];
   sockaddr_storage peer;
   SOCKLEN peer_size;
-#ifdef HAVE_GETADDRINFO
   const int flags = lookup ? 0 : NI_NUMERICSERV;
-#endif
 
   if (::getpeername(getSocket(), (sockaddr*)&peer, &peer_size) != 0) {
     return "[unconnected]";
   }
 
-#ifdef HAVE_GETADDRINFO
   if (::getnameinfo((const sockaddr*)&peer, peer_size,
                     0, 0, sbuf, sizeof(sbuf), flags) == 0) {
     return std::string(sbuf);
   }
   return "[unknown]";
-#else // HAVE_GETADDRINFO
-
-  unsigned short port = ntohs(((const sockaddr_in&)peer).sin_port);
-  ::sprintf(sbuf, "%d", port);
-  return std::string(sbuf);
-#endif // HAVE_GETADDRINFO
 }
 
 bool tcp_socket_stream::isReady(unsigned int milliseconds)
@@ -1098,7 +946,6 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
   ::getsockopt(_connecting_socket, SOL_SOCKET, SO_ERROR, (LPSTR)&errnum, &errsize);
 #endif // _WIN32
 
-#ifdef HAVE_GETADDRINFO
   // Check for failure, and if it has occured, we need to
   // revisit the address list we got from getaddrinfo.
   assert(_connecting_addrlist != 0);
@@ -1111,16 +958,6 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
   ::freeaddrinfo(_connecting_addrlist);
   _connecting_addrlist = 0;
   _connecting_address = 0;
-
-#else // HAVE_GETADDRINFO
-  if (errnum != 0) {
-    // Can't use setLastError(), since errno doesn't have the error
-    LastError = errnum;
-    ::closesocket(_connecting_socket);
-    _connecting_socket = INVALID_SOCKET;
-    return true;
-  }
-#endif // HAVE_GETADDRINFO
 
   // set the socket blocking again for io
   int err_val = reset_nonblock(_connecting_socket);
@@ -1154,7 +991,6 @@ dgram_socket_stream::~dgram_socket_stream()
 
 int dgram_socket_stream::bindToIpService(int service, int type, int protocol)
 {
-#ifdef HAVE_GETADDRINFO
   struct addrinfo req, *ans;
   char serviceName[32];
 
@@ -1198,28 +1034,6 @@ int dgram_socket_stream::bindToIpService(int service, int type, int protocol)
   ::freeaddrinfo(ans);
 
   return success;
-#else
-  // create socket
-  SOCKET_TYPE socket = ::socket(AF_INET, type, protocol);
-  if(socket == INVALID_SOCKET) {
-    setLastError();
-    return -1;
-  }
-  dgram_sockbuf.setSocket(socket);
-
-  // Bind Socket
-  sockaddr_in sa;
-  sa.sin_family = AF_INET;
-  sa.sin_addr.s_addr = INADDR_ANY; // we want to connect to ANY client!
-  sa.sin_port = htons((unsigned short)service); // define service port
-  if(::bind(socket, (sockaddr*)&sa, sizeof(sa)) == SOCKET_ERROR) {
-    setLastError();
-    close();
-    return -1;
-  }
-
-  return 0;
-#endif // HAVE_GETADDRINFO
 }
 
 /////////////////////////////////////////////////////////////////////////////

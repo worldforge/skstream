@@ -67,17 +67,6 @@ static inline int closesocket(SOCKET_TYPE sock)
 }
 #endif // HAVE_CLOSESOCKET
 
-#ifdef HAVE_GETADDRINFO
-#ifndef HAVE_GAI_STRERROR
-const char * skstream_gai_strerror(int errcode);
-
-static const char * gai_strerror(int errcode)
-{
-    return skstream_gai_strerror(errcode);
-}
-#endif // HAVE_GAI_STRERROR
-#endif // HAVE_GETADDRINFO
-
 /////////////////////////////////////////////////////////////////////////////
 // class basic_socket_server implementation
 /////////////////////////////////////////////////////////////////////////////
@@ -149,7 +138,6 @@ bool basic_socket_server::can_accept() {
 
 int ip_socket_server::bindToIpService(int service, int type, int protocol)
 {
-#ifdef HAVE_GETADDRINFO
   char serviceName[32];
 
   ::sprintf(serviceName, "%d", service);
@@ -184,27 +172,6 @@ int ip_socket_server::bindToIpService(int service, int type, int protocol)
   }
 
   return success;
-#else
-  // create socket
-  _socket = ::socket(AF_INET, type, protocol);
-  if(_socket == INVALID_SOCKET) {
-    setLastError();
-    return false;
-  }
-
-  // Bind Socket
-  sockaddr_in sa;
-  sa.sin_family = AF_INET;
-  sa.sin_addr.s_addr = INADDR_ANY; // we want to connect to ANY client!
-  sa.sin_port = htons((unsigned short)service); // define service port
-  if(::bind(_socket, (sockaddr*)&sa, sizeof(sa)) == SOCKET_ERROR) {
-    setLastError();
-    close();
-    return false;
-  }
-
-  return true;
-#endif // HAVE_GETADDRINFO
 }
 
 ip_socket_server::~ip_socket_server()
