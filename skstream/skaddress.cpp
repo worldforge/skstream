@@ -68,7 +68,7 @@ int basic_address::resolve(int flags,
   req.ai_canonname = 0;
   req.ai_next = 0;
 
-  if (::getaddrinfo(0, service, &req, &_addrlist) != 0) {
+  if (::getaddrinfo(node, service, &req, &_addrlist) != 0) {
     setLastError();
     return -1;
   }
