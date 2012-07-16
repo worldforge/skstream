@@ -135,9 +135,8 @@ static const char * gai_strerror(int errcode)
 // Constructor
 socketbuf::socketbuf(SOCKET_TYPE sock, std::streamsize insize,
                                        std::streamsize outsize)
-    : _socket(sock), Timeout(false)
+    : _buffer(0), _socket(sock), Timeout(false)
 {
-  _buffer = NULL;
   // allocate 16k buffer each for input and output
   const std::streamsize bufsize = insize + outsize;
   // Allocate a new buffer
@@ -158,9 +157,8 @@ socketbuf::socketbuf(SOCKET_TYPE sock, std::streamsize insize,
 // Constructor
 socketbuf::socketbuf(SOCKET_TYPE sock, std::streambuf::char_type * buf,
                                        std::streamsize length)
-    : _socket(sock), Timeout(false)
+    : _buffer(0), _socket(sock), Timeout(false)
 {
-  _buffer = NULL;
   setbuf(buf, length);
 
   _underflow_timeout.tv_sec  = 0;
