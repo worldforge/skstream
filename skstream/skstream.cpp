@@ -33,6 +33,8 @@
 
 #include <skstream/skstream.h>
 
+#include <skstream/skaddress.h>
+
 #ifndef _WIN32
 #include <fcntl.h>
 #include <sys/types.h>
@@ -370,29 +372,21 @@ bool dgram_socketbuf::setTarget(const std::string& address, unsigned port,
     _socket = INVALID_SOCKET;
   }
 
-  struct addrinfo req, *ans;
+  ip_datagram_address target;
+
   char portName[32];
 
   ::sprintf(portName, "%d", port);
 
-  req.ai_flags = 0;
-  req.ai_family = PF_UNSPEC;
-  req.ai_socktype = SOCK_DGRAM;
-  req.ai_protocol = proto;
-  req.ai_addrlen = 0;
-  req.ai_addr = 0;
-  req.ai_canonname = 0;
-  req.ai_next = 0;
-
-  int ret;
-  if ((ret = ::getaddrinfo(address.c_str(), portName, &req, &ans)) != 0) {
+  if(target.resolveConnector(address, portName) != 0) {
     return false;
   }
 
   bool success = false;
 
-  for(struct addrinfo * i = ans; success == false && i != 0; i = i->ai_next) {
-
+  ip_datagram_address::const_iterator I = target.begin();
+  for(; success == false && I != target.end(); ++I) {
+    struct addrinfo * i = *I;
     _socket = ::socket(i->ai_family, i->ai_socktype, i->ai_protocol);
 
     if (_socket != INVALID_SOCKET) {
@@ -402,8 +396,6 @@ bool dgram_socketbuf::setTarget(const std::string& address, unsigned port,
     }
 
   }
-
-  ::freeaddrinfo(ans);
 
   return success;
 }
