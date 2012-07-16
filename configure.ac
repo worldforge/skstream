@@ -140,6 +140,7 @@ SKSTREAM_TIMEVAL_HEADER="#include <sys/time.h>"
 SKSTREAM_UNIX_HEADER_FLAG=0
 SKSTREAM_BEOS_HEADER_FLAG=0
 SKSTREAM_WINDOWS_HEADER_FLAG=0
+
 AC_TRY_COMPILE([#include <winsock2.h>],
 [
     timeval foo;
@@ -175,6 +176,7 @@ AC_TRY_COMPILE([#include <winsock2.h>],
 
     ])
 ])
+
 AC_MSG_RESULT($SKSTREAM_TIMEVAL_HEADER)
 AC_SUBST(SKSTREAM_TIMEVAL_HEADER)
 AC_SUBST(SKSTREAM_UNIX_HEADER_FLAG)
@@ -210,62 +212,6 @@ AC_MSG_RESULT($SKSTREAM_BLOCK_ERROR_VAL)
 AC_SUBST(SKSTREAM_BLOCK_ERROR_VAL)
 
 dnl Test for IPv6 socket addresses
-
-AC_MSG_CHECKING([for IPv6 socket address])
-AC_TRY_COMPILE([#include <sys/types.h>
-                #include <sys/socket.h>
-                #include <netinet/in.h>],
-[
-    sockaddr_in6 sin6;
-    sin6.sin6_family = AF_INET6;
-],
-[
-    AC_MSG_RESULT(yes)
-    AC_DEFINE(HAVE_IPV6, 1, true if we have sockaddr_in6 and AF_INET6)
-],
-[
-    AC_TRY_COMPILE([#include <ws2tcpip.h>],
-    [
-        sockaddr_in6 sin6;
-        sin6.sin6_family = AF_INET6;
-    ],
-    [
-        AC_MSG_RESULT(yes)
-        AC_DEFINE(HAVE_IPV6, 1, true if we have sockaddr_in6 and AF_INET6)
-    ],
-    [
-        AC_MSG_RESULT(no)
-    ])
-])
-
-dnl Test for in_addr_t
-
-AC_MSG_CHECKING([for in_addr_t])
-AC_TRY_COMPILE([#include <sys/types.h>
-                #include <sys/socket.h>
-                #include <netinet/in.h>],
-[
-    in_addr_t ia;
-    return &ia == 0; /* Avoids warnings */
-],
-[
-    AC_MSG_RESULT(yes)
-    AC_DEFINE(HAVE_IN_ADDR_T, 1, true if we have in_addr_t)
-],
-[
-    AC_TRY_COMPILE([#include <ws2tcpip.h>],
-    [
-        in_addr_t ia;
-        return &ia == 0; /* Avoids warnings */
-    ],
-    [
-        AC_MSG_RESULT(yes)
-        AC_DEFINE(HAVE_IN_ADDR_T, 1, true if we have in_addr_t)
-    ],
-    [
-        AC_MSG_RESULT(no)
-    ])
-])
 
 dnl Test for nsl library
 
@@ -385,10 +331,6 @@ AC_CHECK_FUNC(gai_strerror,
         AC_MSG_RESULT(no)
     ])
 ])
-
-dnl Test for C library functions
-
-AC_CHECK_FUNCS([inet_aton])
 
 dnl Test for Libraries
 

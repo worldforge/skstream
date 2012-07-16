@@ -38,7 +38,6 @@
 #include <sys/types.h>
 #include <netdb.h>
 #include <errno.h>
-#include <arpa/inet.h>
 #endif // _WIN32
 
 #include <cstdio>
