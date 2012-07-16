@@ -94,7 +94,7 @@ public:
     return LastError; 
   }
 
-  int copyLastError(const basic_socket & other) {
+  void copyLastError(const basic_socket & other) {
     LastError = other.getLastError();
   }
 
