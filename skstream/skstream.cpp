@@ -171,9 +171,12 @@ socketbuf::socketbuf(SOCKET_TYPE sock, std::streambuf::char_type * buf,
 }
 
 // Destructor
-socketbuf::~socketbuf(){
+socketbuf::~socketbuf()
+{
   delete [] _buffer;
-  _buffer = NULL;
+  if(_socket != INVALID_SOCKET){
+    ::closesocket(_socket);
+  }
 }
 
 void socketbuf::setSocket(SOCKET_TYPE sock)
@@ -220,7 +223,6 @@ stream_socketbuf::stream_socketbuf(SOCKET_TYPE sock,
 
 stream_socketbuf::~stream_socketbuf()
 {
-  sync();
 }
 
 dgram_socketbuf::dgram_socketbuf(SOCKET_TYPE sock,
@@ -539,12 +541,6 @@ basic_socket_stream::basic_socket_stream(socketbuf & buffer, int proto)
 
 basic_socket_stream::~basic_socket_stream()
 {
-  // It is not safe to call getSocket() or is_open as calling
-  // vtable from the destructor is not allowed
-  SOCKET_TYPE fd = _sockbuf.getSocket();
-  if(fd != INVALID_SOCKET){
-    ::closesocket(fd);
-  }
   delete &_sockbuf;
 }
 
