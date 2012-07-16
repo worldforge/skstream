@@ -1228,15 +1228,15 @@ bool unix_socket_stream::isReady(unsigned int milliseconds)
 raw_socket_stream::raw_socket_stream(FreeSockets::IP_Protocol proto)
 {
   m_protocol = proto;
-  SOCKET_TYPE _socket = ::socket(AF_INET, SOCK_RAW, m_protocol);
-  _sockbuf.setSocket(_socket);
+  SOCKET_TYPE sfd = ::socket(AF_INET, SOCK_RAW, m_protocol);
+  _sockbuf.setSocket(sfd);
 }
 
 void raw_socket_stream::setProtocol(FreeSockets::IP_Protocol proto) {
   if(is_open()) close();
   m_protocol = proto;
-  SOCKET_TYPE _socket = ::socket(AF_INET, SOCK_RAW, m_protocol);
-  _sockbuf.setSocket(_socket);
+  SOCKET_TYPE sfd = ::socket(AF_INET, SOCK_RAW, m_protocol);
+  _sockbuf.setSocket(sfd);
 }
 
 raw_socket_stream::~raw_socket_stream()
