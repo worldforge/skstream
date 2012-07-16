@@ -263,8 +263,6 @@ private:
 protected:
   SOCKET_TYPE _connecting_socket;
 
-  stream_socketbuf & stream_sockbuf;
-
   stream_socket_stream();
   stream_socket_stream(SOCKET_TYPE socket);
 public:

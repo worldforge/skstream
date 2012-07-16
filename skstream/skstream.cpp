@@ -618,15 +618,13 @@ static int reset_nonblock(int sfd)
 
 stream_socket_stream::stream_socket_stream()
     : basic_socket_stream(*new stream_socketbuf(INVALID_SOCKET)),
-      _connecting_socket(INVALID_SOCKET),
-      stream_sockbuf((stream_socketbuf&)_sockbuf)
+      _connecting_socket(INVALID_SOCKET)
 {
 }
 
 stream_socket_stream::stream_socket_stream(SOCKET_TYPE socket)
     : basic_socket_stream(*new stream_socketbuf(socket)),
-      _connecting_socket(INVALID_SOCKET),
-      stream_sockbuf((stream_socketbuf&)_sockbuf)
+      _connecting_socket(INVALID_SOCKET)
 {
 }
 
