@@ -94,6 +94,10 @@ public:
     return LastError; 
   }
 
+  int copyLastError(const basic_socket & other) {
+    LastError = other.getLastError();
+  }
+
   bool is_open() const { 
     return (getSocket() != INVALID_SOCKET); 
   }
