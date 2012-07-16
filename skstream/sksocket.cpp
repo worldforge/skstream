@@ -59,7 +59,7 @@ void basic_socket::setLastError() const {
     LastError = getSystemError();
 }
 
-basic_socket::basic_socket() throw () : LastError(0)
+basic_socket::basic_socket() : LastError(0)
 {
   startup();
 }

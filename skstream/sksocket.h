@@ -84,7 +84,7 @@ protected:
 
   void setLastError() const;
 
-  basic_socket() throw ();
+  basic_socket();
 public:
   virtual ~basic_socket();
 
