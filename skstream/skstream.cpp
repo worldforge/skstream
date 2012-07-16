@@ -699,31 +699,24 @@ void tcp_socket_stream::open(const std::string & address,
     _connecting_addrlist = 0;
   }
 
-  struct addrinfo req, *ans;
+  tcp_address endpoint;
+
   char serviceName[32];
 
   ::sprintf(serviceName, "%d", service);
 
-  req.ai_flags = 0;
-  req.ai_family = PF_UNSPEC;
-  req.ai_socktype = SOCK_STREAM;
-  req.ai_protocol = m_protocol;
-  req.ai_addrlen = 0;
-  req.ai_addr = 0;
-  req.ai_canonname = 0;
-  req.ai_next = 0;
-
-  int ret;
-  if ((ret = ::getaddrinfo(address.c_str(), serviceName, &req, &ans)) != 0) {
-    setLastError();
+  if (endpoint.resolveConnector(address, serviceName) != 0) {
+    copyLastError(endpoint);
     return;
   }
 
   bool success = false;
   SOCKET_TYPE sfd = INVALID_SOCKET;
+  tcp_address::const_iterator I = endpoint.begin();
+  tcp_address::const_iterator Iend = endpoint.end();
 
-  for(struct addrinfo * i = ans; success == false && i != 0; i = i->ai_next) {
-
+  for(; success == false && I != Iend; ++I) {
+    struct addrinfo * i = *I;
     sfd = ::socket(i->ai_family, i->ai_socktype, i->ai_protocol);
     if(sfd == INVALID_SOCKET) {
       continue;
@@ -742,7 +735,7 @@ void tcp_socket_stream::open(const std::string & address,
       if(nonblock && getSystemError() == SOCKET_BLOCK_ERROR) {
         _connecting_socket = sfd;
         _connecting_address = i;
-        _connecting_addrlist = ans;
+        _connecting_addrlist = endpoint.takeAddressInfo();
         return;
       }
       setLastError();
@@ -752,8 +745,6 @@ void tcp_socket_stream::open(const std::string & address,
     }
 
   }
-
-  ::freeaddrinfo(ans);
 
   if (!success) {
     return;
