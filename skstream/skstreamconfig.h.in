@@ -39,10 +39,6 @@
   #include <sys/socket.h>
   #include <netinet/in.h>
 #endif
-#if @SKSTREAM_BEOS_HEADER_FLAG@
-  #include <net/socket.h>
-  #include <net/netdb.h>
-#endif
 
 typedef @SKSTREAM_SOCKLEN_TYPE@ SOCKLEN;
 typedef @SKSTREAM_SOCKET_TYPE@ SOCKET_TYPE;
