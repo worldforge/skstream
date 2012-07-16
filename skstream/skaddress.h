@@ -90,7 +90,12 @@ private:
   }
 
 public:
-  // FIXME Add move stuff
+  // FIXME Add move stuff (c++11)
+  struct addrinfo * takeAddressInfo() {
+    struct addrinfo * t = _info;
+    _info = 0;
+    return t;
+  }
 
   const_iterator(const const_iterator & rhs) : _info(rhs._info) {
   }
