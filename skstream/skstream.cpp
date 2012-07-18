@@ -687,8 +687,8 @@ tcp_socket_stream::~tcp_socket_stream()
   }
 }
 
-void tcp_socket_stream::open(const std::string & address,
-                             int service, bool nonblock)
+int tcp_socket_stream::open(const std::string & address,
+                            int service, bool nonblock)
 {
   if (is_open() || _connecting_socket != INVALID_SOCKET) {
     close();
@@ -707,7 +707,7 @@ void tcp_socket_stream::open(const std::string & address,
 
   if (endpoint.resolveConnector(address, serviceName) != 0) {
     copyLastError(endpoint);
-    return;
+    return -1;
   }
 
   bool success = false;
@@ -736,7 +736,7 @@ void tcp_socket_stream::open(const std::string & address,
         _connecting_socket = sfd;
         _connecting_address = i;
         _connecting_addrlist = endpoint.takeAddressInfo();
-        return;
+        return 0;
       }
       setLastError();
       ::closesocket(sfd);
@@ -747,7 +747,7 @@ void tcp_socket_stream::open(const std::string & address,
   }
 
   if (!success) {
-    return;
+    return -1;
   }
 
   // set the socket blocking again for io
@@ -756,22 +756,28 @@ void tcp_socket_stream::open(const std::string & address,
     if(err_val == -1) {
       setLastError();
       ::closesocket(sfd);
-      return;
+      return -1;
     }
   }
 
   // set socket for underlying socketbuf
   _sockbuf.setSocket(sfd);
+
+  return 0;
 }
 
-void tcp_socket_stream::open(const std::string & address, int service,
-                             unsigned int milliseconds)
+int tcp_socket_stream::open(const std::string & address, int service,
+                            unsigned int milliseconds)
 {
-  open(address, service, true);
+  if (open(address, service, true) != 0) {
+    return -1;
+  }
   // FIXME add retry logic here
   if(!isReady(milliseconds)) {
     close();
+    return -1;
   }
+  return -1;
 }
 
 int tcp_socket_stream::open(struct addrinfo * i, bool nonblock)

@@ -304,8 +304,8 @@ public:
 
   virtual ~tcp_socket_stream();
 
-  void open(const std::string& address, int service, bool nonblock = false);
-  void open(const std::string& address, int service, unsigned int milliseconds);
+  int open(const std::string& address, int service, bool nonblock = false);
+  int open(const std::string& address, int service, unsigned int milliseconds);
   int open(struct addrinfo *, bool nonblock = false);
   int open_next();
 
