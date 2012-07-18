@@ -774,6 +774,58 @@ void tcp_socket_stream::open(const std::string & address, int service,
   }
 }
 
+int tcp_socket_stream::open(struct addrinfo * i, bool nonblock)
+{
+  if (is_open()) {
+    close();
+  }
+
+  if (_connecting_addrlist != 0) {
+    ::freeaddrinfo(_connecting_addrlist);
+    _connecting_addrlist = 0;
+  }
+
+  SOCKET_TYPE sfd = ::socket(i->ai_family, i->ai_socktype, i->ai_protocol);
+  if(sfd == INVALID_SOCKET) {
+    return -1;
+  }
+
+  if(nonblock) {
+    int err_val = set_nonblock(sfd);
+    if(err_val == -1) {
+      setLastError();
+      ::closesocket(sfd);
+      return -1;
+    }
+  }
+
+  if(::connect(sfd, i->ai_addr, i->ai_addrlen) < 0) {
+    if(nonblock && getSystemError() == SOCKET_BLOCK_ERROR) {
+      _connecting_socket = sfd;
+      _connecting_address = i;
+      return 0;
+    }
+    setLastError();
+    ::closesocket(sfd);
+    return -1;
+  }
+
+  // set the socket blocking again for io
+  if(nonblock) {
+    int err_val = reset_nonblock(sfd);
+    if(err_val == -1) {
+      setLastError();
+      ::closesocket(sfd);
+      return -1;
+    }
+  }
+
+  // set socket for underlying socketbuf
+  _sockbuf.setSocket(sfd);
+}
+
+
+
 int tcp_socket_stream::open_next()
 {
   if(_connecting_socket == INVALID_SOCKET ||
@@ -922,15 +974,16 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
 
   // Check for failure, and if it has occured, we need to
   // revisit the address list we got from getaddrinfo.
-  assert(_connecting_addrlist != 0);
   assert(_connecting_address != 0);
 
   if (errnum != 0) {
     return false;
   }
 
-  ::freeaddrinfo(_connecting_addrlist);
-  _connecting_addrlist = 0;
+  if (_connecting_addrlist != 0) {
+    ::freeaddrinfo(_connecting_addrlist);
+    _connecting_addrlist = 0;
+  }
   _connecting_address = 0;
 
   // set the socket blocking again for io

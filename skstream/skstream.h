@@ -306,6 +306,7 @@ public:
 
   void open(const std::string& address, int service, bool nonblock = false);
   void open(const std::string& address, int service, unsigned int milliseconds);
+  int open(struct addrinfo *, bool nonblock = false);
   int open_next();
 
   const std::string getRemoteHost(bool lookup = false) const;
