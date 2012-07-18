@@ -97,6 +97,9 @@ private:
 
 public:
   // FIXME Add move stuff (c++11)
+  const_iterator() : _info(0) {
+  }
+
   const_iterator(const const_iterator & rhs) : _info(rhs._info) {
   }
 
