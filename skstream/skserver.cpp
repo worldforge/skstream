@@ -85,13 +85,6 @@ SOCKET_TYPE basic_socket_server::getSocket() const {
 //   The shutdown is a little rude... -  RGJ
 void basic_socket_server::close() {
   if(_socket != INVALID_SOCKET) {
-    if(::shutdown(_socket, SHUT_RDWR) == SOCKET_ERROR) {
-      setLastError();
-      //not necessarily a returning offense because there could be a socket
-      //open that has never connected to anything and hence, does not need
-      //to be shutdown.
-    }
-
     if(::closesocket(_socket) == SOCKET_ERROR) {
       setLastError();
       return;
