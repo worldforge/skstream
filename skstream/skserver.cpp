@@ -202,24 +202,24 @@ SOCKET_TYPE tcp_socket_server::accept()
 }
 
 // start tcp server and put it in listen state
-bool tcp_socket_server::open(int service)
+int tcp_socket_server::open(int service)
 {
   if (is_open()) {
     close();
   }
 
   if (bindToIpService(service, SOCK_STREAM, IPPROTO_TCP) != 0) {
-    return false;
+    return -1;
   }
 
   // Listen
   if(::listen(_socket, 5) == SOCKET_ERROR) { // max backlog
     setLastError();
     close();
-    return false;
+    return -1;
   }
 
-  return true;
+  return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -231,17 +231,17 @@ udp_socket_server::~udp_socket_server()
 }
 
 // create a UDP socket binded to a given port
-bool udp_socket_server::open(int service)
+int udp_socket_server::open(int service)
 {
   if (is_open()) {
     close();
   }
 
   if (bindToIpService(service, SOCK_DGRAM, IPPROTO_UDP) != 0) {
-    return false;
+    return -1;
   }
 
-  return true;
+  return 0;
 }
 
 #ifdef SKSTREAM_UNIX_SOCKETS

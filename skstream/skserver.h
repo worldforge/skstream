@@ -100,7 +100,7 @@ public:
 
   SOCKET_TYPE accept();
 
-  bool open(int service);
+  int open(int service);
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -117,7 +117,7 @@ public:
   // Destructor
   virtual ~udp_socket_server();
 
-  bool open(int service);
+  int open(int service);
 
 };
 
