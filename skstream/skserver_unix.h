@@ -50,7 +50,7 @@ public:
 
   SOCKET_TYPE accept();
 
-  void open(const std::string & service);
+  int open(const std::string & service);
 };
 
 #endif // RGJ_FREE_THREADS_SERVER_UNIX_H_

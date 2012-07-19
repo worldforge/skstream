@@ -269,18 +269,18 @@ SOCKET_TYPE unix_socket_server::accept() {
 }
 
 // start unix server and put it in listen state
-void unix_socket_server::open(const std::string & service) {
+int unix_socket_server::open(const std::string & service) {
   if(is_open()) close();
 
   if (service.size() > 107) {
-    return;
+    return -1;
   }
 
   // create socket
   _socket = ::socket(AF_UNIX, SOCK_STREAM, 0);
   if(_socket == INVALID_SOCKET) {
     setLastError();
-    return;
+    return -1;
   }
 
   // Bind Socket
@@ -290,15 +290,16 @@ void unix_socket_server::open(const std::string & service) {
   if(::bind(_socket, (sockaddr*)&sa, sizeof(sa)) == SOCKET_ERROR) {
     setLastError();
     close();
-    return;
+    return -1;
   }
 
   // Listen
   if(::listen(_socket, 5) == SOCKET_ERROR) { // max backlog
     setLastError();
     close();
-    return;
+    return -1;
   }
+  return 0;
 }
 
 
