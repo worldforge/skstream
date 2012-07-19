@@ -136,6 +136,26 @@ bool basic_socket_server::can_accept() {
 // class ip_socket_server implementation
 /////////////////////////////////////////////////////////////////////////////
 
+int ip_socket_server::bindToAddressInfo(struct addrinfo * i)
+{
+  _socket = ::socket(i->ai_family, i->ai_socktype, i->ai_protocol);
+  if (_socket == INVALID_SOCKET) {
+    setLastError();
+    return -1;
+  }
+
+  sockaddr_storage iaddr;
+  ::memcpy(&iaddr, i->ai_addr, i->ai_addrlen);
+  SOCKLEN iaddrlen = i->ai_addrlen;
+
+  if (::bind(_socket, (sockaddr*)&iaddr, iaddrlen) == SOCKET_ERROR) {
+    setLastError();
+    close();
+    return -1;
+  }
+  return 0;
+}
+
 int ip_socket_server::bindToIpService(int service, int type, int protocol)
 {
   char serviceName[32];
@@ -152,23 +172,7 @@ int ip_socket_server::bindToIpService(int service, int type, int protocol)
 
   tcp_address::const_iterator I = l.begin();
   for(; success == -1 && I != l.end(); ++I) {
-    struct addrinfo * i = *I;
-    _socket = ::socket(i->ai_family, i->ai_socktype, i->ai_protocol);
-    if (_socket == INVALID_SOCKET) {
-      setLastError();
-      continue;
-    }
-
-    sockaddr_storage iaddr;
-    ::memcpy(&iaddr, i->ai_addr, i->ai_addrlen);
-    SOCKLEN iaddrlen = i->ai_addrlen;
-
-    if (::bind(_socket, (sockaddr*)&iaddr, iaddrlen) == SOCKET_ERROR) {
-      setLastError();
-      close();
-    } else {
-      success = 0;
-    }
+    success = bindToAddressInfo(*I);
   }
 
   return success;

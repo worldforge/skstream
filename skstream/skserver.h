@@ -71,6 +71,7 @@ public:
 /// \brief Base class for anything that encapsulates an IP listen socket.
 class ip_socket_server : public basic_socket_server {
 protected:
+  int bindToAddressInfo(struct addrinfo *);
   int bindToIpService(int service, int type, int protocol);
 
   explicit ip_socket_server(SOCKET_TYPE _sock = INVALID_SOCKET) :
