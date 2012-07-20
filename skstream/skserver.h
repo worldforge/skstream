@@ -101,6 +101,7 @@ public:
   SOCKET_TYPE accept();
 
   int open(int service);
+  int open(struct addrinfo *);
 };
 
 /////////////////////////////////////////////////////////////////////////////

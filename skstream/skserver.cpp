@@ -215,6 +215,26 @@ int tcp_socket_server::open(int service)
   return 0;
 }
 
+int tcp_socket_server::open(struct addrinfo * i)
+{
+  if (is_open()) {
+    close();
+  }
+
+  if (bindToAddressInfo(i) != 0) {
+    return -1;
+  }
+
+  // Listen
+  if(::listen(_socket, 5) == SOCKET_ERROR) { // max backlog
+    setLastError();
+    close();
+    return -1;
+  }
+
+  return 0;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // class udp_socket_server implementation
 /////////////////////////////////////////////////////////////////////////////
