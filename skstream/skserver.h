@@ -37,16 +37,22 @@
 
 /// \brief Base class for anything that encapsulates a listen socket.
 class basic_socket_server : public basic_socket {
+public:
+  static const int SK_SRV_NONE = 0;
+  static const int SK_SRV_PURE = 1 << 0;
+  static const int SK_SRV_REUSE = 1 << 1;
+  static const int SK_SRV_NOLINGER = 1 << 2;
 protected:
   SOCKET_TYPE _socket;
-
+  int _flags;
 private:
   basic_socket_server(const basic_socket_server&);
   basic_socket_server& operator=(const basic_socket_server&);
 
 protected:
-  explicit basic_socket_server(SOCKET_TYPE _sock = INVALID_SOCKET)
-     : _socket(_sock) { 
+  explicit basic_socket_server(SOCKET_TYPE _sock = INVALID_SOCKET,
+                               int flags = SK_SRV_NONE)
+     : _socket(_sock), _flags(flags) { 
     startup(); 
   }
 
@@ -74,8 +80,9 @@ protected:
   int bindToAddressInfo(struct addrinfo *);
   int bindToIpService(int service, int type, int protocol);
 
-  explicit ip_socket_server(SOCKET_TYPE _sock = INVALID_SOCKET) :
-             basic_socket_server(_sock) {
+  explicit ip_socket_server(SOCKET_TYPE _sock = INVALID_SOCKET,
+                            int flags = SK_SRV_NONE) :
+             basic_socket_server(_sock, flags) {
   }
 public:
   virtual ~ip_socket_server();
@@ -88,11 +95,10 @@ public:
 /// \brief Encapsulates a TCP/IP stream listen socket.
 class tcp_socket_server : public ip_socket_server {
 public:
-  tcp_socket_server() {
-  }
-
-  explicit tcp_socket_server(int service) { 
-    open(service); 
+  explicit tcp_socket_server(int flags = SK_SRV_PURE |
+                                         SK_SRV_REUSE |
+                                         SK_SRV_NOLINGER) :
+      ip_socket_server(INVALID_SOCKET, flags) {
   }
 
   // Destructor
