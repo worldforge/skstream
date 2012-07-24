@@ -541,10 +541,10 @@ SOCKET_TYPE basic_socket_stream::getSocket() const
   return _sockbuf.getSocket();
 }
 
-void basic_socket_stream::shutdown() {
+void basic_socket_stream::shutdown(bool wr_only) {
   SOCKET_TYPE fd = getSocket();
   if(fd != INVALID_SOCKET){
-    if(::shutdown(fd, SHUT_RDWR) == SOCKET_ERROR) {
+    if(::shutdown(fd, wr_only ? SHUT_WR : SHUT_RDWR) == SOCKET_ERROR) {
       setLastError();
     }
   }

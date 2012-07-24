@@ -236,7 +236,7 @@ public:
   // tcp sockets
   virtual void close();
 
-  void shutdown();
+  void shutdown(bool wr_only = false);
 
   void setSocket(SOCKET_TYPE sock) {
     _sockbuf.setSocket(sock);
