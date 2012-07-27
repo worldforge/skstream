@@ -831,6 +831,7 @@ int tcp_socket_stream::open(struct addrinfo * i, bool nonblock)
 
   // set socket for underlying socketbuf
   _sockbuf.setSocket(sfd);
+  return 0;
 }
 
 
