@@ -41,7 +41,6 @@ public:
   static const int SK_SRV_NONE = 0;
   static const int SK_SRV_PURE = 1 << 0;
   static const int SK_SRV_REUSE = 1 << 1;
-  static const int SK_SRV_NOLINGER = 1 << 2;
 protected:
   SOCKET_TYPE _socket;
   int _flags;
@@ -96,8 +95,7 @@ public:
 class tcp_socket_server : public ip_socket_server {
 public:
   explicit tcp_socket_server(int flags = SK_SRV_PURE |
-                                         SK_SRV_REUSE |
-                                         SK_SRV_NOLINGER) :
+                                         SK_SRV_REUSE) :
       ip_socket_server(INVALID_SOCKET, flags) {
   }
 
