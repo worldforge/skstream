@@ -52,6 +52,9 @@
 #define SHUT_RDWR SD_BOTH
 #endif
 
+// This would be using, but streambuf is a class, not a namespace
+typedef std::streambuf::int_type int_type;
+
 static inline int getSystemError()
 {
   #ifdef _WIN32
@@ -251,7 +254,7 @@ dgram_socketbuf::~dgram_socketbuf()
 // The next function are those who do the dirt work
 
 // overflow() - handles output to a connected socket.
-std::streambuf::int_type stream_socketbuf::overflow(std::streambuf::int_type nCh) {
+int_type stream_socketbuf::overflow(int_type nCh) {
   // in case of error, user finds out by testing fail()
   if(_socket==INVALID_SOCKET) {
     return traits_type::eof(); // Invalid socket
@@ -313,7 +316,7 @@ std::streambuf::int_type stream_socketbuf::overflow(std::streambuf::int_type nCh
 }
 
 // underflow() - handles input from a connected socket.
-std::streambuf::int_type stream_socketbuf::underflow()
+int_type stream_socketbuf::underflow()
 {
   if(_socket == INVALID_SOCKET) {
     return traits_type::eof(); // Invalid socket!
@@ -401,7 +404,7 @@ bool dgram_socketbuf::setTarget(const std::string& address, unsigned port,
 }
 
 /// Handle output to a connected socket.
-std::streambuf::int_type dgram_socketbuf::overflow(std::streambuf::int_type nCh)
+int_type dgram_socketbuf::overflow(int_type nCh)
 {
   // in case of error, user finds out by testing fail()
   if(_socket==INVALID_SOCKET) {
@@ -466,7 +469,7 @@ std::streambuf::int_type dgram_socketbuf::overflow(std::streambuf::int_type nCh)
 }
 
 // underflow() - handles input from a connected socket.
-int dgram_socketbuf::underflow() {
+int_type dgram_socketbuf::underflow() {
   if(_socket == INVALID_SOCKET) {
     return traits_type::eof(); // Invalid socket!
   }
