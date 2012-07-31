@@ -37,12 +37,13 @@
 class unix_socket_stream : public stream_socket_stream {
 private:
   explicit unix_socket_stream(const unix_socket_stream&);
-  explicit unix_socket_stream(SOCKET_TYPE socket);
 
   unix_socket_stream& operator=(const unix_socket_stream& socket);
 
 public:
   unix_socket_stream();
+
+  explicit unix_socket_stream(SOCKET_TYPE socket);
 
   explicit unix_socket_stream(const std::string & address,
                               bool nonblock = false);

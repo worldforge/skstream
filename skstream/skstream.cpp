@@ -1115,6 +1115,11 @@ unix_socket_stream::unix_socket_stream()
 {
 }
 
+unix_socket_stream::unix_socket_stream(SOCKET_TYPE socket)
+    : stream_socket_stream(socket)
+{
+}
+
 unix_socket_stream::unix_socket_stream(const std::string & address,
                                        bool nonblock)
 {
