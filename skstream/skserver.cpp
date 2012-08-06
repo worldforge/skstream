@@ -142,6 +142,11 @@ int ip_socket_server::bindToAddressInfo(struct addrinfo * i)
     ::setsockopt(_socket, IPPROTO_IPV6, IPV6_V6ONLY, (char *)&flag, sizeof(flag));
   }
 
+  if (_flags & SK_SRV_REUSE) {
+    int flag = 1;
+    ::setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&flag, sizeof(flag));
+  }
+
   sockaddr_storage iaddr;
   ::memcpy(&iaddr, i->ai_addr, i->ai_addrlen);
   SOCKLEN iaddrlen = i->ai_addrlen;
@@ -150,11 +155,6 @@ int ip_socket_server::bindToAddressInfo(struct addrinfo * i)
     setLastError();
     close();
     return -1;
-  }
-
-  if (_flags & SK_SRV_REUSE) {
-    int flag = 1;
-    ::setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&flag, sizeof(flag));
   }
 
 
