@@ -71,6 +71,10 @@ static inline int closesocket(SOCKET_TYPE sock)
 // class basic_socket_server implementation
 /////////////////////////////////////////////////////////////////////////////
 
+const int basic_socket_server::SK_SRV_NONE;
+const int basic_socket_server::SK_SRV_PURE;
+const int basic_socket_server::SK_SRV_REUSE;
+
 basic_socket_server::~basic_socket_server() {
   if(_socket != INVALID_SOCKET) {
     ::closesocket(_socket);
