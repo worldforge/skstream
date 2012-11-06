@@ -1,3 +1,12 @@
+2012-11-06  Al Riddoch  <alriddoch@googlemail.com>
+
+	* Support has been added for resolving addresses separately from
+	  socket options, handling multiple results, and iterating.
+
+	* Legacy code for systems without getaddrinfo has been removed.
+
+	* Support has been added for various socket options.
+
 2011-02-13  Al Riddoch  <alriddoch@googlemail.com>
 
 	* skstream/skstream.cpp, skstream/skstream.h: A number of bugs and
