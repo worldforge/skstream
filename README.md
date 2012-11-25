@@ -1,3 +1,6 @@
+# Skstream
+<http://github.com/worldforge/skstream.git> Status: [![Build Status](https://secure.travis-ci.org/worldforge/skstream.png?branch=master)](http://travis-ci.org/worldforge/skstream)
+
 Skstream is an iostream based C++ socket library. It is ideally suited for use
 as the underlying transport for Atlas-C++, and has been well tested and
 debugged. It was first discovered for WorldForge when it was used in UClient
