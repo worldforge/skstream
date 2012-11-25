@@ -1,4 +1,5 @@
 #! /bin/sh
+cp README.md README
 
 echo aclocal...
 (aclocal --version) < /dev/null > /dev/null 2>&1 || {
@@ -6,7 +7,7 @@ echo aclocal...
     exit 1
 }
 
-aclocal $ACLOCAL_FLAGS -I m4
+aclocal $ACLOCAL_FLAGS
 
 echo autoheader...
 (autoheader --version) < /dev/null > /dev/null 2>&1 || {
