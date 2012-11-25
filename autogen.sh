@@ -1,4 +1,5 @@
 #! /bin/sh
+cp README.md README
 
 echo aclocal...
 (aclocal --version) < /dev/null > /dev/null 2>&1 || {
