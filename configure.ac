@@ -55,8 +55,6 @@ dnl Test for C++ bool keyword
 
 AC_LANG(C++)
 
-AX_CXX_COMPILE_STDCXX_11
-
 dnl Test for C++ Standard Library
 
 AC_CHECK_HEADERS(cstdio iostream string)
