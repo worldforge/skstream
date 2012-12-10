@@ -950,7 +950,7 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
 
   fd_set wfds;
   fd_set * efdsp = 0;
-  struct timeval wait_time = {milliseconds / 1000, (milliseconds % 1000) * 1000};
+  struct timeval wait_time = {(long)(milliseconds / 1000), (long)((milliseconds % 1000) * 1000)};
 
   FD_ZERO(&wfds);
   FD_SET(_connecting_socket, &wfds);
@@ -1221,7 +1221,7 @@ bool unix_socket_stream::isReady(unsigned int milliseconds)
   }
 
   fd_set fds;
-  struct timeval wait_time = {milliseconds / 1000, (milliseconds % 1000) * 1000};
+  struct timeval wait_time = {(long)(milliseconds / 1000), (long)((milliseconds % 1000) * 1000)};
 
   FD_ZERO(&fds);
   FD_SET(_connecting_socket, &fds);

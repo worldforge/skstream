@@ -63,7 +63,7 @@ int basic_socket_poll::poll(const socket_map& map, unsigned long timeout)
       maxfd_ = socket + 1;
   }
 
-  struct timeval timeout_val = {timeout / 1000, timeout % 1000};
+  struct timeval timeout_val = {(long)(timeout / 1000), (long)(timeout % 1000)};
 
   return ::select(maxfd_, &read_, &write_, &except_, &timeout_val);
 }
