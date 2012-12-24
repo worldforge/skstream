@@ -51,6 +51,14 @@
 #define SHUT_RDWR SD_BOTH
 #endif
 
+//IPV6_V6ONLY isn't defined on some versions of Windows, as well as mingw.
+//Note that this value would only come into play if the system supports IPv6, and then it's assumed that the socket library also understand how to handle this flag.
+//However, I'm not completely certain that this always will work. But since we don't really support running servers on win32 anyways, and the
+//unsupported system being winxp which by now is deprecated I think doing it this way isn't totally crazy. /erik 20130515
+#ifndef IPV6_V6ONLY
+#define IPV6_V6ONLY 27
+#endif
+
 static inline int getSystemError()
 {
   #ifdef _WIN32
