@@ -1,5 +1,5 @@
 # Skstream
-[DavidJFelix/skstream.git](https://github.com/DavidJFelix/skstream) Status: [![Build Status](https://api.travis-ci.org/DavidJFelix/skstream.png)](http://travis-ci.org/DavidJFelix/skstream)
+[DavidJFelix/skstream.git](https://github.com/DavidJFelix/skstream) Status: [![Build Status](https://api.travis-ci.org/DavidJFelix/skstream.png?branch=master)](http://travis-ci.org/DavidJFelix/skstream)
 
 Skstream is an iostream based C++ socket library. It is ideally suited for use
 as the underlying transport for Atlas-C++, and has been well tested and
