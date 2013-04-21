@@ -4,6 +4,8 @@ AC_INIT([skstream], [0.3.9], [alriddoch@googlemail.com])
 AC_CONFIG_SRCDIR([skstream/skstream.cpp])
 AC_CONFIG_HEADERS([config.h])
 
+AC_CONFIG_MACRO_DIR([m4])
+
 dnl Detect the canonical host environment
 
 AC_CANONICAL_HOST
