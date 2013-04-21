@@ -11,7 +11,7 @@ libskstreaminclude_HEADERS = sksocket.h \
                              skstream.h skstream_unix.h \
                              skserver.h skserver_unix.h \
                              skaddress.h \
-                             skpoll.h sasproto.h
+                             skpoll.h
 
 libskstreamconfigincludedir = $(libdir)/skstream-0.3/include/skstream
 libskstreamconfiginclude_HEADERS = skstreamconfig.h

@@ -1,4 +1,3 @@
-usr/include/skstream-0.3/skstream/sasproto.h
 usr/include/skstream-0.3/skstream/skpoll.h
 usr/include/skstream-0.3/skstream/skserver.h
 usr/include/skstream-0.3/skstream/skserver_unix.h
