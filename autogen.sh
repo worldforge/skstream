@@ -1,4 +1,5 @@
 #! /bin/sh
+cp README.md README
 
 rm -f config.cache
 
