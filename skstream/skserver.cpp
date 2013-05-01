@@ -51,6 +51,11 @@
 #define SHUT_RDWR SD_BOTH
 #endif
 
+//IPV6_V6ONLY isn't defined on some versions of Windows, as well as mingw.
+#ifndef IPV6_V6ONLY
+#define IPV6_V6ONLY 27
+#endif
+
 static inline int getSystemError()
 {
   #ifdef _WIN32
