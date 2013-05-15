@@ -78,6 +78,7 @@ bool basic_socket::startup() {
       int error = WSAStartup(wMinVer, &wsaData);
       return (error == 0);
   }
+  return true;
 #else // _WIN32
   return true;
 #endif // _WIN32
