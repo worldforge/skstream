@@ -965,7 +965,7 @@ bool tcp_socket_stream::isReady(unsigned int milliseconds)
 
   if (::select(_connecting_socket + 1, 0, &wfds, efdsp, &wait_time) != 1
 #ifdef _WIN32
-      || !FD_ISSET(_connecting_socket, &efds) && !FD_ISSET(_connecting_socket, &wfds)) {
+      || (!FD_ISSET(_connecting_socket, &efds) && !FD_ISSET(_connecting_socket, &wfds))) {
 #else // _WIN32
       || !FD_ISSET(_connecting_socket, &wfds)) {
 #endif // _WIN32
