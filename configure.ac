@@ -375,5 +375,6 @@ AC_CONFIG_FILES([
 	skstream-0.3.pc
 	skstream-unix-0.3.pc
 	skstream/skstreamconfig.h
+	Doxyfile
 ])
 AC_OUTPUT
