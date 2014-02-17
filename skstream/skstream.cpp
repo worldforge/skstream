@@ -276,6 +276,7 @@ int_type stream_socketbuf::overflow(int_type nCh) {
     FD_SET(_socket,&socks); // add buffer socket to fd_set
     sr = ::select(_socket+1,NULL,&socks,NULL,&tv);
     if(sr == 0){
+    	std::cout << "Timeout stream_socketbuf::overflow" << std::endl << std::flush;
       Timeout = true;
       return traits_type::eof(); // a timeout error should be set here! - RGJ
     } else if(sr < 0) {
@@ -338,6 +339,7 @@ int_type stream_socketbuf::underflow()
     FD_SET(_socket,&socks); // add buffer socket to fd_set
     sr = ::select(_socket+1,&socks,NULL,NULL,&tv);
     if(sr == 0){
+    	std::cout << "Timeout stream_socketbuf::underflow" << std::endl << std::flush;
       Timeout = true;
       return traits_type::eof(); // a timeout error should be set here! - RGJ
     } else if(sr < 0) {
@@ -429,6 +431,7 @@ int_type dgram_socketbuf::overflow(int_type nCh)
     FD_SET(_socket,&socks); // add buffer socket to fd_set
     sr = ::select(_socket+1,NULL,&socks,NULL,&tv);
     if(sr == 0){
+    	std::cout << "Timeout dgram_socketbuf::overflow" << std::endl << std::flush;
       Timeout = true;
       return traits_type::eof(); // a timeout error should be set here! - RGJ
     } else if(sr < 0) {
@@ -492,6 +495,7 @@ int_type dgram_socketbuf::underflow() {
     FD_SET(_socket,&socks); // add buffer socket to fd_set
     sr = ::select(_socket+1,&socks,NULL,NULL,&tv);
     if(sr == 0){
+    	std::cout << "Timeout dgram_socketbuf::underflow" << std::endl << std::flush;
       Timeout = true;
       return traits_type::eof(); // a timeout error should be set here! - RGJ
     } else if(sr < 0) {
