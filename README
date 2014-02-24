@@ -1,3 +1,8 @@
+NOTICE!!!
+This library is as of 2014-02-17 unmaintained and without any specific maintainer.
+We recommend that you use Boost::Asio instead.
+
+
 Skstream is an iostream based C++ socket library. It is ideally suited for use
 as the underlying transport for Atlas-C++, and has been well tested and
 debugged. It was first discovered for WorldForge when it was used in UClient
